@@ -213,6 +213,11 @@ body.armed canvas{cursor:crosshair}
 #btnInstall{border-color:var(--gold)}
 @media (orientation:landscape) and (max-height:500px){#installSheet .title{font-size:30px;margin:0}#installSheet{gap:8px}}
 #installSheet,#shareSheet,#screenBoard{background:rgba(12,10,24,.96)}
+/* v3.3 — המשך משחק שמור */
+.resumerow{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;pointer-events:auto}
+.resumerow .primary{font-size:17px;padding:10px 24px}
+@media (orientation:landscape) and (max-height:500px){#screenStart{gap:8px}}
+@media (orientation:landscape) and (max-height:500px){#screenStart .title{font-size:40px;margin:0;line-height:1.1}#screenStart{justify-content:flex-start;padding-top:10px}#screenStart .card{padding-top:8px;padding-bottom:8px}#screenStart .card .big{font-size:40px}}
 
 </style>
 </head>
@@ -258,6 +263,7 @@ body.armed canvas{cursor:crosshair}
 <div id="screenStart" class="screen">
   <h1 class="title">מגדל האגדות</h1>
   <p class="sub">בחר נשק התחלתי — ההחלטה הראשונה שלך בקרב</p>
+  <div class="resumerow hidden" id="resumeRow"><button class="primary" id="btnResumeSave">▶ המשך משחק</button><span class="sub" id="resumeInfo"></span></div>
   <div class="cards" id="weaponCards"></div>
   <div class="worldpick hidden" id="worldPick"><button class="act on" data-world="1">🌲 עולם 1</button><button class="act" data-world="2">💀 עולם 2</button></div>
   <p class="sub" id="bestTxt"></p>
@@ -382,7 +388,7 @@ body.armed canvas{cursor:crosshair}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '3.2.0';
+TD.VERSION = '3.3.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -699,12 +705,14 @@ TD.CONFIG = {
 // מחולל אקראי דטרמיניסטי (mulberry32) — מאפשר לבדיקות לשחזר משחק זהה
 TD.makeRng = function (seed) {
   var a = seed >>> 0;
-  return function () {
+  var f = function () {
     a = (a + 0x6D2B79F5) | 0;
     var t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+  f.state = function () { return a >>> 0; };     // v3.3: לשמירת משחק — ממשיכים מאותה נקודה
+  return f;
 };
 
 TD.createState = function (weaponId, seed, world) {
@@ -2776,6 +2784,85 @@ TD.pvpDrain = function (s) {
 };
 
 /* =====================================================================
+ * מקטע 58 — SAVE (v3.3): נקודת שמירה — המשחק נשמר כל עוד לא נפסלת
+ * - נשמר בין גלים (בהפסקה): זהב, דמות, מגדל, חיילים, ביצורים, עמדות, מחקר, לחשים, כוחות...
+ * - יציאה באמצע גל → חוזרים לתחילת אותו גל (נקודת השמירה האחרונה)
+ * - נמחק רק כשהמגדל נופל. קרב 2 שחקנים לא נשמר
+ * לוגיקה טהורה: serialize/restore עובדים גם בבדיקות (Node)
+ * ===================================================================== */
+TD.SAVE_VERSION = 1;
+TD.SAVE_KEY = 'save1';
+
+// שדות זמניים שלא נשמרים (מתחדשים לבד)
+TD.SAVE_SKIP = { rng: 1, weapon: 1, enemies: 1, projectiles: 1, particles: 1, texts: 1, effects: 1, events: 1, meteors: 1, clouds: 1,
+  chests: 1, spawnQueue: 1, pvp: 1, paused: 1, shake: 1, submitted: 1 };
+
+TD.canSave = function (s) { return !!s && !s.pvp && !s.over && s.phase === 'break' && s.wave >= 1; };
+
+TD.serialize = function (s) {
+  var C = TD.CONFIG, out = {}, k;
+  function plain(o) {          // רק ערכים פשוטים (בלי הפניות לאויבים/def)
+    var r = {};
+    for (var q in o) { var v = o[q]; if (v == null || typeof v !== 'object' && typeof v !== 'function') r[q] = v; }
+    return r;
+  }
+  var json = function (v) {
+    return JSON.parse(JSON.stringify(v, function (key, val) {
+      if (key === 'def' || key === 'target' || typeof val === 'function') return undefined;
+      if (val && typeof val === 'object' && !Array.isArray(val) && val.def && C.enemies[val.type]) return null;
+      return val;
+    }));
+  };
+  for (k in s) {
+    if (TD.SAVE_SKIP[k]) continue;
+    if (k === 'soldiers') out.soldiers = s.soldiers.filter(function (o) { return !o.dead; }).map(plain);
+    else if (k === 'hero' || k === 'tower') out[k] = plain(s[k]);
+    else out[k] = json(s[k]);
+  }
+  out.rngState = s.rng && s.rng.state ? s.rng.state() : (Date.now() & 0x7fffffff);
+  return { v: TD.SAVE_VERSION, game: TD.VERSION, at: Date.now(), state: out };
+};
+
+TD.restore = function (data) {
+  if (!data || data.v !== TD.SAVE_VERSION || !data.state) return null;
+  var d = data.state, C = TD.CONFIG;
+  if (!C.weapons[d.weaponId]) return null;
+  var s = TD.createState(d.weaponId, d.rngState, d.world);
+  for (var k in d) {
+    if (k === 'rngState' || k === 'soldiers' || k === 'hero' || k === 'tower') continue;
+    var base = s[k], val = d[k];
+    if (base && val && typeof base === 'object' && !Array.isArray(base) && typeof val === 'object' && !Array.isArray(val)) {
+      for (var q in val) base[q] = val[q];             // ממזג — שדות חדשים בגרסה חדשה נשארים עם ברירת מחדל
+    } else s[k] = val;
+  }
+  for (k in d.hero) s.hero[k] = d.hero[k];
+  for (k in d.tower) s.tower[k] = d.tower[k];
+  s.soldiers = (d.soldiers || []).filter(function (o) { return C.soldiers.types[o.type]; }).map(function (o) {
+    o.def = C.soldiers.types[o.type]; o.dead = false; o.retreating = false; return o;
+  });
+  // רק מצב בטוח: הפסקה בין גלים, בלי אויבים
+  s.phase = 'break'; s.breakTimer = Math.max(s.breakTimer || 0, 8); s.spawnQueue = []; s.enemies = []; s.projectiles = [];
+  s.over = false; s.paused = false; s.speed = 1; s.events = []; s.pvp = null;
+  s.hero.down = false; if (s.hero.hp <= 0) s.hero.hp = s.hero.maxHp;
+  s.resumed = true;
+  TD.recalcHero(s, false); TD.recalcTower(s, false);
+  return s;
+};
+
+// שמירה/טעינה/מחיקה בזיכרון המכשיר (TD.storage מוגן מתקלות)
+TD.saveGame = function (s) {
+  if (!TD.canSave(s)) return false;
+  try { TD.storage.set(TD.SAVE_KEY, TD.serialize(s)); return true; } catch (e) { return false; }
+};
+TD.loadSave = function () { try { return TD.restore(TD.storage.get(TD.SAVE_KEY, null)); } catch (e) { return null; } };
+TD.saveInfo = function () {
+  var d = TD.storage.get(TD.SAVE_KEY, null);
+  if (!d || d.v !== TD.SAVE_VERSION || !d.state) return null;
+  return { wave: d.state.wave, world: d.state.world || 1, weaponId: d.state.weaponId, hero: d.state.hero && d.state.hero.level, tower: d.state.tower && d.state.tower.level, at: d.at };
+};
+TD.clearSave = function () { TD.storage.set(TD.SAVE_KEY, null); };
+
+/* =====================================================================
  * מקטע 60 — RENDER (גרפיקה)
  * כל הדמויות, האויבים, הנשקים והרקע מצוירים בקוד — בלי תמונות.
  * כדי לשנות מראה של אויב: חפש את הפונקציה שלו ב-ENEMY_DRAW.
@@ -3694,7 +3781,7 @@ TD.Render = (function () {
  * ===================================================================== */
 TD.UI = (function () {
   var U = {}, $ = function (id) { return document.getElementById(id); };
-  var panelTab = 'up', hudTimer = 0, bannerTimer = 0, lastCoin = 0, panelRefresh = 0;
+  var panelTab = 'up', hudTimer = 0, bannerTimer = 0, lastCoin = 0, panelRefresh = 0, saveTimer = 2;
 
   /* ---------- סאונד פשוט (WebAudio, בלי קבצים) ---------- */
   var audio = null, muted = TD.storage.get('muted', false);
@@ -3763,6 +3850,12 @@ TD.UI = (function () {
     $('worldPick').classList.toggle('hidden', !w2);
     if (!w2) U.selectedWorld = 1;
     Array.prototype.forEach.call(document.querySelectorAll('#worldPick [data-world]'), function (b) { b.classList.toggle('on', +b.getAttribute('data-world') === (U.selectedWorld || 1)); });
+    var sv = TD.saveInfo();                                   // v3.3: משחק שמור
+    $('resumeRow').classList.toggle('hidden', !sv);
+    if (sv) {
+      var Wp = TD.CONFIG.weapons[sv.weaponId];
+      $('resumeInfo').textContent = 'גל ' + (sv.wave + 1) + ' • ' + (Wp ? Wp.icon + ' ' + Wp.name : '') + ' • דמות ' + sv.hero + ' • מגדל ' + sv.tower + (sv.world === 2 ? ' • 💀 עולם 2' : '') + '   (משחק חדש יחליף את השמירה)';
+    }
     var best = TD.storage.get('best', 0);
     $('bestTxt').textContent = best ? '🏆 השיא שלך: גל ' + best : 'משלב 5 המגדל יורה • משלב דמות 10 מגייסים חיילים';
     $('ver').textContent = 'גרסה ' + TD.VERSION;
@@ -3821,6 +3914,14 @@ TD.UI = (function () {
     // v3.2: הורדה לטלפון — הכפתור נעלם כשהמשחק כבר מותקן / פתוח כאפליקציה
     U.syncInstall = function () { $('btnInstall').classList.toggle('hidden', TD.Social.installState() === 'installed'); };
     TD.Social.onInstallChange(function (st) { U.syncInstall(); if (st === 'installed') { show('installSheet', false); } });
+    $('btnResumeSave').onclick = function () {
+      var sv = TD.saveInfo(); if (!sv) return;
+      TD.startGame(sv.weaponId, { resume: true });
+      if (TD.game && TD.game.resumed) { banner('▶ ממשיכים מגל ' + (TD.game.wave + 1), 'המשחק נשמר בנקודה האחרונה'); }
+      else { toast('השמירה לא תקינה — מתחילים משחק חדש'); TD.clearSave(); }
+    };
+    // שמירה: בזמן ההפסקה בין גלים, ביציאה מהאפליקציה וביציאה לתפריט
+    window.addEventListener('pagehide', function () { TD.saveGame(TD.game); });
     $('btnInstall').onclick = function () {
       TD.Social.install().then(function (r) {
         if (r === 'accepted') toast('📲 מגדל האגדות מותקן — פתח מהאייקון במסך הבית');
@@ -3850,11 +3951,12 @@ TD.UI = (function () {
       if (U.lastGame) U.submitScore(U.lastGame);
     };
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden && TD.game && !TD.game.over && !TD.game.pvp) U.setPause(true);
+      if (document.hidden && TD.game && !TD.game.over && !TD.game.pvp) { TD.saveGame(TD.game); U.setPause(true); }
     });
   };
 
   U.toMenu = function () {
+    TD.saveGame(TD.game);
     TD.game = null; U.armed = null; document.body.classList.remove('armed'); magicKey = ''; $('magicBar').innerHTML = '';
     if (TD.Net) TD.Net.leave();
     document.body.classList.remove('playing', 'panel-open', 'pvp');
@@ -4329,7 +4431,7 @@ TD.UI = (function () {
         case 'pvpSent': toast('📨 נשלח ליריב: ' + d.name); break;
         case 'pvpIncoming': banner('⚔️ היריב תוקף!', d.count + ' אויבים בדרך' + (d.name ? ' — ' + d.name : '')); SFX.alarm(); vibrate([60, 40, 60]); break;
         case 'pvpWin': SFX.wave(); U.showOver(s); break;
-        case 'gameOver': SFX.over(); vibrate(400); U.showOver(s); break;
+        case 'gameOver': TD.clearSave(); SFX.over(); vibrate(400); U.showOver(s); break;
       }
     }
   };
@@ -4446,6 +4548,8 @@ TD.UI = (function () {
     U.handleEvents(s);
     if ($('perkModal').classList.contains('hidden')) { if (s.perkChoice) U.showPerks(s); else if (s.powerChoice) U.showPowers(s); }
     if (s.worldChoice && !s.perkChoice && !s.powerChoice && $('worldModal').classList.contains('hidden')) show('worldModal', true);
+    saveTimer -= dt;
+    if (saveTimer <= 0) { saveTimer = 2; TD.saveGame(s); }      // v3.3: נקודת שמירה כל 2 שנ׳ בהפסקה בין גלים
     hudTimer -= dt;
     if (hudTimer <= 0) { hudTimer = 0.1; U.syncButtons(); panelRefresh -= 1; if (panelRefresh <= 0 && panelTab === 'staff' && !$('panel').classList.contains('hidden')) { panelRefresh = 10; U.renderPanel(); } }
   };
@@ -4874,7 +4978,8 @@ TD.Social = (function () {
 
   // opts: {pvp:true, seed} לקרב 2 שחקנים — אותו seed לשני הצדדים = אותם גלים
   TD.startGame = function (weaponId, opts) {
-    var s = TD.createState(weaponId, opts && opts.seed != null ? opts.seed : undefined, opts && opts.world);
+    var s = opts && opts.resume ? TD.loadSave() : null;   // v3.3: המשך משחק שמור
+    if (!s) s = TD.createState(weaponId, opts && opts.seed != null ? opts.seed : undefined, opts && opts.world);
     if (opts && opts.pvp) TD.pvpStart(s, opts);
     TD.game = s;
     TD.UI.onStart();
