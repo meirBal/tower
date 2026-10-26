@@ -247,11 +247,11 @@ body.armed canvas{cursor:crosshair}
   <div class="magicbar" id="magicBar"></div>
   <div class="bottom">
     <button class="ability" id="btnAbility"><div class="cd" id="abCd"></div><span id="abIcon">⚡</span><small id="abTxt"></small></button>
-    <button class="act" id="btnHero"><span class="ic">🧝</span>דמות<small id="heroCost"></small></button>
-    <button class="act" id="btnTower"><span class="ic">🏰</span>מגדל<small id="towerCost"></small></button>
-    <button class="act" id="btnBuild"><span class="ic">🧱</span>ביצורים<small>וצוות</small></button>
+    <button class="act" id="btnHero"><span class="ic" data-w1="🧝" data-w2="🪖">🧝</span>דמות<small id="heroCost"></small></button>
+    <button class="act" id="btnTower"><span class="ic" data-w1="🏰" data-w2="🏢">🏰</span><span data-w1="מגדל" data-w2="בונקר">מגדל</span><small id="towerCost"></small></button>
+    <button class="act" id="btnBuild"><span class="ic">🧱</span>ביצורים<small data-w1="וצוות" data-w2="ורובוטים">וצוות</small></button>
     <button class="act" id="btnArmy"><span class="ic">🛡️</span>צבא<small id="armyTxt"></small></button>
-    <button class="act" id="btnShop"><span class="ic">🔮</span>קסמים<small>לחשים ושיקויים</small></button>
+    <button class="act" id="btnShop"><span class="ic" data-w1="🔮" data-w2="🛰️">🔮</span><span data-w1="קסמים" data-w2="ציוד">קסמים</span><small data-w1="לחשים ושיקויים" data-w2="יכולות וערכות">לחשים ושיקויים</small></button>
     <button class="act pvp-only" id="btnAttack"><span class="ic">⚔️</span>תקיפה<small>שלח ליריב</small></button>
     <div class="spacer"></div>
     <button class="act" id="btnNext"><span class="ic">▶</span>גל הבא<small id="nextTxt" style="color:#fff"></small></button>
@@ -265,7 +265,7 @@ body.armed canvas{cursor:crosshair}
   <p class="sub">בחר נשק התחלתי — ההחלטה הראשונה שלך בקרב</p>
   <div class="resumerow hidden" id="resumeRow"><button class="primary" id="btnResumeSave">▶ המשך משחק</button><span class="sub" id="resumeInfo"></span></div>
   <div class="cards" id="weaponCards"></div>
-  <div class="worldpick hidden" id="worldPick"><button class="act on" data-world="1">🌲 עולם 1</button><button class="act" data-world="2">💀 עולם 2</button></div>
+  <div class="worldpick hidden" id="worldPick"><button class="act on" data-world="1">🌲 עולם 1</button><button class="act" data-world="2">🪖 עולם 2</button></div>
   <p class="sub" id="bestTxt"></p>
   <div class="pvpline"><button class="act" id="btnPvp">⚔️ קרב 2 שחקנים</button><button class="act" id="btnBoard">🏆 טבלת שיאים</button><button class="act" id="btnShare">📤 שתף</button><button class="act hidden" id="btnInstall">📲 הורד לטלפון</button><span class="sub" id="pvpNote"></span></div>
 </div>
@@ -273,7 +273,7 @@ body.armed canvas{cursor:crosshair}
 <!-- ===== טבלת שיאים ===== -->
 <div id="screenBoard" class="screen hidden">
   <h1 class="title">🏆 טבלת שיאים</h1>
-  <div class="worldpick" id="boardTabs"><button class="act on" data-bw="1">🌲 עולם 1</button><button class="act" data-bw="2">💀 עולם 2</button></div>
+  <div class="worldpick" id="boardTabs"><button class="act on" data-bw="1">🌲 עולם 1</button><button class="act" data-bw="2">🪖 עולם 2</button></div>
   <div class="nameline"><span class="sub">השם שלך:</span><input id="nameInput" maxlength="16" autocomplete="off" placeholder="כינוי"><button class="act" id="btnSaveName">שמור</button></div>
   <div class="board" id="boardList"></div>
   <p class="sub" id="boardStatus"></p>
@@ -330,11 +330,11 @@ body.armed canvas{cursor:crosshair}
 
 <!-- ===== בחירת עולם בגל 50 ===== -->
 <div id="worldModal" class="screen hidden">
-  <h1 class="title">💀 עולם 2 נפתח!</h1>
-  <p class="sub">הגעת לגל 50 — מעצמה. עולם "ממלכת המתים" פתוח לך מעכשיו בתפריט, עם אויבים חדשים ושיפורים חדשים</p>
+  <h1 class="title">🪖 עולם 2 נפתח!</h1>
+  <p class="sub">הגעת לגל 50 — מעצמה. "עולם החיילים" פתוח לך מעכשיו בתפריט: נשקים מודרניים, אויבים עם רובים וסכינים, רכבים ורחפנים, ושדרוגים טכנולוגיים חדשים</p>
   <div class="cards">
     <button class="card" id="btnWorldStay"><div class="big">🌲</div><h3>להמשיך כאן</h3><p>להמשיך את המשחק הזה בעולם 1 — כמה רחוק תגיע?</p></button>
-    <button class="card" id="btnWorldGo"><div class="big">💀</div><h3>לעבור לעולם 2</h3><p>משחק חדש בממלכת המתים: מתחילים עם 700 זהב, דמות 6 ומגדל 5</p></button>
+    <button class="card" id="btnWorldGo"><div class="big">🪖</div><h3>לעבור לעולם 2</h3><p>משחק חדש בעולם החיילים: מתחילים עם 700 זהב, דמות 6 ומגדל 5</p></button>
   </div>
 </div>
 
@@ -363,9 +363,9 @@ body.armed canvas{cursor:crosshair}
       <button data-tab="up">⬆ שדרוגים</button>
       <button data-tab="skills">⭐ מיומנויות</button>
       <button data-tab="build">🧱 ביצורים</button>
-      <button data-tab="magic">🔮 קסמים</button>
+      <button data-tab="magic" data-w1="🔮 קסמים" data-w2="🛰️ ציוד">🔮 קסמים</button>
       <button data-tab="army">🛡️ צבא</button>
-      <button data-tab="staff">👷 צוות</button>
+      <button data-tab="staff" data-w1="👷 צוות" data-w2="🤖 צוות">👷 צוות</button>
       <button data-tab="attack" class="hidden">⚔️ תקיפה</button>
       <button class="x" id="btnClose">✕</button>
     </div>
@@ -388,7 +388,7 @@ body.armed canvas{cursor:crosshair}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '3.3.0';
+TD.VERSION = '3.4.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -408,15 +408,15 @@ TD.CONFIG = {
     bow: {
       name: 'קשת הנץ', icon: '🏹', type: 'ranged',
       desc: 'טווח ארוך מאוד וירי מהיר על מטרה אחת. נשארת קרוב למגדל.',
-      color: '#a8743a', tunic: '#2f7a3e', leash: 340,
-      range: 430, damage: 13, cooldown: 0.55, projSpeed: 780,
+      color: '#a8743a', tunic: '#2f7a3e', leash: 260, armor: 0.3,
+      range: 430, damage: 13.8, cooldown: 0.55, projSpeed: 780,
       ability: { name: 'גשם חיצים', icon: '🌧️', cost: 45, cooldown: 7, damageMult: 1.6, arrows: 14 }
     },
     staff: {
       name: 'מטה הלהבה', icon: '🔥', type: 'magic',
       desc: 'כדורי אש עם נזק שטח. איטי יותר, אבל מושלם מול קבוצות.',
-      color: '#ff9b3d', tunic: '#5a3a9a', leash: 160,
-      range: 320, damage: 15, cooldown: 0.95, projSpeed: 460, splash: 70, splashPct: 0.6,
+      color: '#ff9b3d', tunic: '#5a3a9a', leash: 160, armor: 0.2,
+      range: 320, damage: 16.8, cooldown: 0.95, projSpeed: 460, splash: 70, splashPct: 0.6,
       ability: { name: 'שרשרת ברקים', icon: '⚡', cost: 50, cooldown: 7, damageMult: 2.6, chains: 7, falloff: 0.88 }
     }
   },
@@ -445,14 +445,14 @@ TD.CONFIG = {
     holdLine: 200, chargeLine: 420, retreatPct: 0.35, returnPct: 0.8, regenPct: 0.03, retreatRegenPct: 0.08,
     towerArcherEvery: 5, towerShare: 0.35,
     maxRank: 3, rankBonus: 0.4, rankCost: [1.2, 2.0], swapPct: 0.7,   // שדרוג חייל קיים והחלפת סוג
-    corpseLife: 25, reviveHpPct: 0.5,   // חייל שנפל משאיר גוף — רק רופא יכול להחיות
+    corpseLife: 30, reviveHpPct: 0.3,   // חייל שנפל משאיר גוף — רק רופא יכול להחיות
     types: {
       militia: { name: 'לוחם חנית', icon: '🗡️', role: 'charge', unlock: 10, cost: 45, hp: 260, damage: 11, range: 34, cooldown: 0.8, speed: 95, armor: 0.2, color: '#3a6fd8',
         desc: 'רץ לאויבים, נסוג להתאושש כשנפצע' },
       towerArcher: { name: 'קשת במגדל', icon: '🏰', role: 'tower', unlock: 12, cost: 70, hp: 120, damage: 12, range: 960, cooldown: 1.0, speed: 0, armor: 0, ranged: true, color: '#1d8a8a',
         desc: 'רואה את כל השדה (גם מעבר לחומה), מוגן מהתקפה ישירה — אבל הקשתים סופגים יחד 35% מכל נזק למגדל. מקום לכל 5 שלבי מגדל' },
       medic: { name: 'רופא', icon: '🩺', role: 'medic', unlock: 12, cost: 80, hp: 200, damage: 0, range: 0, cooldown: 1, speed: 85, armor: 0.3, color: '#e8e8f0',
-        desc: 'מרפא חיילים סביבו ומחייה חיילים שנפלו. בלעדיו — חייל שנפל אבוד', heal: 0.04, healRadius: 140, reviveTime: 2.5 },
+        desc: 'מרפא חיילים סביבו ומחייה חיילים שנפלו (לוקח זמן). בלעדיו — חייל שנפל אבוד', heal: 0.015, healRadius: 120, reviveTime: 9, reviveCooldown: 14, reviveDazed: 4 },
       archer: { name: 'קשת בשטח', icon: '🏹', role: 'field', unlock: 14, cost: 60, hp: 170, damage: 13, range: 430, cooldown: 1.0, speed: 70, armor: 0, ranged: true, color: '#2aa3a3',
         desc: 'עומד מאחורי הדמות ויורה רחוק (430), ניתן לתקוף אותו' },
       knight: { name: 'אביר', icon: '🛡️', role: 'hold', unlock: 18, cost: 95, hp: 520, damage: 22, range: 38, cooldown: 1.0, speed: 60, armor: 0.4, color: '#c9a227',
@@ -475,8 +475,9 @@ TD.CONFIG = {
 
   /* ---------- צוות תמיכה — לא לוחמים, לא תופסים מקום בצבא ---------- */
   support: {
-    builder: { name: 'בנאי', icon: '👷', desc: 'מתקן את החומה (כשבטוח) ותמיד גם את המגדל', cost: 70, growth: 1.3, max: 4, towerRepairPct: 0.006,
-      repairPct: 0.02, safeRadius: 160, safeAfterHit: 2, speed: 80 },
+    // v3.4: תיקון איטי יותר — המגדל רק כשלא הותקף ב-towerSafeAfterHit שניות; כל בנאי נוסף מוסיף פחות (שורש)
+    builder: { name: 'בנאי', icon: '👷', desc: 'מתקן את החומה ואת המגדל — לאט, ורק כשהם לא תחת אש', cost: 70, growth: 1.3, max: 4, towerRepairPct: 0.0018,
+      towerSafeAfterHit: 5, breakMult: 2.5, repairPct: 0.008, safeRadius: 160, safeAfterHit: 3, speed: 70 },
     chemist: { name: 'כימאי', icon: '🧑‍🔬', desc: 'חוקר שיקויים מיוחדים — כל מתכון שנחקר הופך ליכולת לחיצה חדשה', cost: 90, growth: 1.35, max: 3 }
   },
 
@@ -504,7 +505,7 @@ TD.CONFIG = {
       potions: { name: 'שיקויים מיוחדים', icon: '🧪', items: ['acid', 'firebomb', 'poison', 'thunder'] },
       mastery: { name: 'שליטה בלחשים (שלב 3+)', icon: '📜', items: ['m_bolt', 'm_freeze', 'm_meteor', 'm_heal', 'm_acid', 'm_firebomb', 'm_poison', 'm_thunder'] },
       weapons: { name: 'נשקים לעמדות', icon: '⚙️', items: ['w_ballista', 'w_flamer', 'w_frost', 'w_tesla', 'w_mortar'] },
-      world2: { name: 'סודות עולם המתים', icon: '💀', world: 2, items: ['holy', 'w_sun'] }
+      world2: { name: 'טכנולוגיה צבאית', icon: '🛰️', world: 2, items: ['holy', 'w_sun'] }
     },
     items: {
       acid: { time: 60, spell: 'acid' }, firebomb: { time: 75, spell: 'firebomb' }, poison: { time: 90, spell: 'poison' }, thunder: { time: 100, spell: 'thunder' },
@@ -515,7 +516,7 @@ TD.CONFIG = {
       w_ballista: { name: 'בליסטרה כבדה', icon: '🎯', time: 60, weapon: 'ballista' }, w_flamer: { name: 'להביור', icon: '🔥', time: 80, weapon: 'flamer' },
       w_frost: { name: 'תותח כפור', icon: '🧊', time: 100, weapon: 'frost' }, w_tesla: { name: 'סליל טסלה', icon: '🌀', time: 120, weapon: 'tesla' },
       w_mortar: { name: 'מרגמה', icon: '💥', time: 140, weapon: 'mortar' },
-      holy: { time: 120, spell: 'holy' }, w_sun: { name: 'תותח שמש', icon: '☀️', time: 150, weapon: 'sun' }
+      holy: { time: 120, spell: 'holy' }, w_sun: { name: 'תותח לייזר', icon: '🔆', time: 150, weapon: 'sun' }
     }
   },
 
@@ -528,7 +529,7 @@ TD.CONFIG = {
       frost: { name: 'תותח כפור', icon: '🧊', desc: 'פגזי קרח: נזק שטח והאטה, גם מעופפים', cost: 200, upBase: 140, upGrowth: 1.45, damage: 22, splash: 75, slow: 0.4, cooldown: 1.6, range: 520, air: true },
       tesla: { name: 'סליל טסלה', icon: '🌀', desc: 'ברק שקופץ בין 4 אויבים, גם מעופפים', cost: 240, upBase: 160, upGrowth: 1.45, damage: 28, chains: 4, cooldown: 1.2, range: 400, air: true },
       mortar: { name: 'מרגמה', icon: '💥', desc: 'פגז כבד לכל השדה (לא קרוב מ-200)', cost: 260, upBase: 170, upGrowth: 1.45, damage: 80, splash: 95, cooldown: 3.2, range: 900, minRange: 200 },
-      sun: { name: 'תותח שמש', icon: '☀️', desc: 'קרן אור — כפול נגד מתים (עולם 2)', cost: 320, upBase: 200, upGrowth: 1.45, damage: 60, cooldown: 1.4, range: 700, air: true, holy: true }
+      sun: { name: 'תותח לייזר', icon: '🔆', desc: 'קרן לייזר — כפול נגד רכבים, רחפנים ומסוקים (עולם 2)', cost: 320, upBase: 200, upGrowth: 1.45, damage: 60, cooldown: 1.4, range: 700, air: true, holy: true }
     },
     perLevel: 0.35
   },
@@ -580,7 +581,7 @@ TD.CONFIG = {
       research: 75, radius: 85, damageMult: 3, burnMult: 0.6, perLevel: 0.35 },
     poison: { name: 'ענן רעל', icon: '☠️', desc: 'ענן שפוגע בכל מי שעובר בו ל-6 שנ׳', target: true, energy: 40, cooldown: 7, cost: 170, upBase: 120, upGrowth: 1.6,
       research: 90, radius: 110, time: 6, dpsMult: 0.9, perLevel: 0.35 },
-    holy: { name: 'אור קדוש', icon: '✨', desc: 'פיצוץ אור על כל השדה — כפול נגד מתים (עולם 2)', target: false, energy: 60, cooldown: 12, cost: 260, upBase: 160, upGrowth: 1.6,
+    holy: { name: 'פולס EMP', icon: '📡', desc: 'פולס על כל השדה — כפול נגד רכבים, רחפנים ומסוקים (עולם 2)', target: false, energy: 60, cooldown: 12, cost: 260, upBase: 160, upGrowth: 1.6,
       research: 120, damageMult: 2.5, perLevel: 0.35, air: true },
     thunder: { name: 'בקבוק רעם', icon: '🌩️', desc: 'ברק מקפץ בין 6 אויבים — גם מעופפים', target: true, energy: 30, cooldown: 4, cost: 140, upBase: 100, upGrowth: 1.6,
       research: 75, chains: 6, falloff: 0.85, damageMult: 2.2, perLevel: 0.35, air: true }
@@ -652,19 +653,20 @@ TD.CONFIG = {
     hawk: { name: 'בז', fromWave: 7, weight: 3, flying: true, hp: 34, speed: 105, damage: 9, range: 40, cooldown: 1.2, reward: 11, size: 13, color: '#8a6a4a', shape: 'hawk' },
     harpy: { name: 'הרפיה', fromWave: 13, weight: 2, flying: true, hp: 110, speed: 55, damage: 16, range: 170, cooldown: 2.2, reward: 22, size: 18, color: '#6b4a8a', shape: 'harpy', ranged: 'stone', projSpeed: 420 },
     sniper: { name: 'צלף גובלין', fromWave: 12, weight: 1.2, maxPerWave: 3, hp: 60, speed: 45, damage: 13, range: 700, cooldown: 3.4, reward: 18, size: 15, color: '#9a8a3a', shape: 'sniper', ranged: 'bullet', projSpeed: 900, holdX: 760, noTower: true },
-    // ===== עולם 2: ממלכת המתים (undead — "אור קדוש" ותותח שמש כפולים נגדם) =====
-    skeleton: { world: 2, undead: true, name: 'שלד', fromWave: 1, weight: 10, hp: 30, speed: 60, damage: 6, range: 26, cooldown: 1.0, reward: 5, size: 14, color: '#e8e2d0', shape: 'skeleton', rebirth: 0.4 },
-    ghoul: { world: 2, undead: true, name: 'גול', fromWave: 3, weight: 6, hp: 85, speed: 44, damage: 13, range: 30, cooldown: 1.2, reward: 11, size: 20, color: '#7d8f6a', shape: 'ghoul', armor: 0.1 },
-    boneArcher: { world: 2, undead: true, name: 'קשת עצמות', fromWave: 4, weight: 5, hp: 26, speed: 50, damage: 8, range: 250, cooldown: 1.6, reward: 9, size: 14, color: '#d8d0b8', shape: 'boneArcher', ranged: 'arrow', projSpeed: 540, rebirth: 0.3 },
-    ghostHound: { world: 2, undead: true, name: 'כלב רפאים', fromWave: 6, weight: 5, hp: 40, speed: 130, damage: 9, range: 28, cooldown: 0.8, reward: 10, size: 18, color: '#9fb4d8', shape: 'ghostHound' },
-    bat: { world: 2, undead: true, name: 'עטלף ערפד', fromWave: 7, weight: 4, flying: true, hp: 30, speed: 115, damage: 9, range: 40, cooldown: 1.0, reward: 11, size: 12, color: '#4a3a5a', shape: 'bat' },
-    necromancer: { world: 2, undead: true, name: 'נקרומנסר', fromWave: 8, weight: 2.5, hp: 55, speed: 40, damage: 11, range: 280, cooldown: 2.4, reward: 18, size: 16, color: '#3a2a5a', shape: 'necromancer', ranged: 'orb', projSpeed: 360, summon: { type: 'skeleton', every: 6, max: 2 } },
-    golem: { world: 2, undead: true, name: 'גולם אבן', fromWave: 11, weight: 2, hp: 280, speed: 26, damage: 26, range: 36, cooldown: 1.9, reward: 30, size: 30, color: '#7a7a7a', shape: 'golem', armor: 0.35 },
-    wraith: { world: 2, undead: true, name: 'רוח רפאים', fromWave: 13, weight: 2, flying: true, hp: 120, speed: 50, damage: 17, range: 180, cooldown: 2.2, reward: 22, size: 18, color: '#b8c8e8', shape: 'wraith', ranged: 'orb', projSpeed: 400 },
-    banshee: { world: 2, undead: true, name: 'בנשי', fromWave: 12, weight: 1.2, maxPerWave: 3, hp: 65, speed: 45, damage: 14, range: 700, cooldown: 3.2, reward: 18, size: 15, color: '#d0e0ff', shape: 'banshee', ranged: 'bullet', projSpeed: 900, holdX: 760, noTower: true },
-    boneCatapult: { world: 2, undead: true, name: 'בליסטרת עצמות', fromWave: 14, weight: 1.5, hp: 150, speed: 24, damage: 32, range: 430, cooldown: 4.0, reward: 25, size: 24, color: '#c8bfa8', shape: 'catapult', ranged: 'rock', projSpeed: 420, siege: true },
-    lich: { world: 2, undead: true, name: 'הליץ׳', boss: true, hp: 1000, speed: 22, damage: 30, range: 320, cooldown: 2.2, reward: 140, size: 34, color: '#5a3a8a', shape: 'lich', ranged: 'orb', projSpeed: 380, summon: { type: 'skeleton', every: 5, max: 4 }, armor: 0.2 },
-    boneDragon: { world: 2, undead: true, name: 'דרקון עצמות', boss: true, flying: true, hp: 1300, speed: 34, damage: 32, range: 300, cooldown: 2.4, reward: 220, size: 36, color: '#e8e2d0', shape: 'dragon', ranged: 'fire', projSpeed: 380, splash: 60 },
+    // ===== עולם 2: עולם החיילים (mech — פולס EMP ותותח לייזר כפולים נגדם) =====
+    /* ---------- v3.4: עולם 2 — עולם החיילים. אויבים עם רובים, סכינים, רכבים ורחפנים (mech = רכב/רחפן: נזק כפול מ-EMP ולייזר) ---------- */
+    knifer: { world: 2, name: 'לוחם סכין', fromWave: 1, weight: 10, hp: 30, speed: 72, damage: 6, range: 26, cooldown: 0.8, reward: 5, size: 14, color: '#c9a27a', shape: 'knifer' },
+    rifleman: { world: 2, name: 'רובאי', fromWave: 2, weight: 8, hp: 42, speed: 48, damage: 6, range: 210, cooldown: 1.3, reward: 8, size: 15, color: '#b08a64', shape: 'rifleman', ranged: 'bullet', projSpeed: 950 },
+    heavyGunner: { world: 2, name: 'מקלען כבד', fromWave: 5, weight: 4, hp: 115, speed: 34, damage: 4, range: 250, cooldown: 0.4, reward: 15, size: 19, color: '#a07a5a', shape: 'heavyGunner', ranged: 'bullet', projSpeed: 1000, armor: 0.15 },
+    dog: { world: 2, name: 'כלב תקיפה', fromWave: 6, weight: 5, hp: 40, speed: 130, damage: 9, range: 28, cooldown: 0.8, reward: 10, size: 18, color: '#5a4636', shape: 'dog' },
+    drone: { world: 2, mech: true, name: 'רחפן נפץ', fromWave: 7, weight: 4, flying: true, hp: 30, speed: 115, damage: 10, range: 40, cooldown: 1.0, reward: 11, size: 12, color: '#3a3f46', shape: 'drone' },
+    officer: { world: 2, name: 'קצין', fromWave: 8, weight: 2.5, hp: 60, speed: 40, damage: 9, range: 240, cooldown: 1.6, reward: 18, size: 16, color: '#7a6a4a', shape: 'officer', ranged: 'bullet', projSpeed: 900, summon: { type: 'knifer', every: 6, max: 2 } },
+    apc: { world: 2, mech: true, name: 'נגמ"ש', fromWave: 11, weight: 2, hp: 280, speed: 26, damage: 9, range: 230, cooldown: 0.7, reward: 30, size: 30, color: '#6b7350', shape: 'apc', ranged: 'bullet', projSpeed: 1000, armor: 0.35 },
+    heli: { world: 2, mech: true, name: 'מסוק', fromWave: 13, weight: 2, flying: true, hp: 120, speed: 50, damage: 17, range: 200, cooldown: 2.2, reward: 22, size: 18, color: '#4a5240', shape: 'heli', ranged: 'rocket', projSpeed: 520 },
+    enemySniper: { world: 2, name: 'צלף אויב', fromWave: 12, weight: 1.2, maxPerWave: 3, hp: 65, speed: 45, damage: 14, range: 700, cooldown: 3.2, reward: 18, size: 15, color: '#8a7a5a', shape: 'enemySniper', ranged: 'bullet', projSpeed: 1400, holdX: 760, noTower: true },
+    mortarTeam: { world: 2, name: 'צוות מרגמה', fromWave: 14, weight: 1.5, hp: 150, speed: 24, damage: 32, range: 430, cooldown: 4.0, reward: 25, size: 22, color: '#6b6b4a', shape: 'mortarTeam', ranged: 'shell', projSpeed: 420, siege: true },
+    tank: { world: 2, mech: true, name: 'טנק מערכה', boss: true, hp: 1000, speed: 22, damage: 30, range: 320, cooldown: 2.2, reward: 140, size: 34, color: '#5a6340', shape: 'tank', ranged: 'shell', projSpeed: 600, summon: { type: 'rifleman', every: 6, max: 3 }, armor: 0.25 },
+    gunship: { world: 2, mech: true, name: 'מסוק קרב', boss: true, flying: true, hp: 1300, speed: 34, damage: 32, range: 300, cooldown: 2.4, reward: 220, size: 36, color: '#3f4636', shape: 'gunship', ranged: 'rocket', projSpeed: 480, splash: 60 },
     ogre: { name: 'מלך האוגרים', boss: true, hp: 900, speed: 24, damage: 38, range: 40, cooldown: 2.0, reward: 120, size: 38, color: '#a0703a', shape: 'ogre', armor: 0.2 },
     dragon: { name: 'דרקון', boss: true, flying: true, hp: 1100, speed: 34, damage: 28, range: 300, cooldown: 2.4, reward: 200, size: 36, color: '#c8321e', shape: 'dragon', ranged: 'fire', projSpeed: 380, splash: 60 }
   },
@@ -673,7 +675,68 @@ TD.CONFIG = {
   worlds: {
     unlockWave: 50,
     1: { name: 'עמק הירוקים', icon: '🌲', enemyHp: 1, enemyDmg: 1, reward: 1, bosses: ['ogre', 'dragon'], startGold: 50 },
-    2: { name: 'ממלכת המתים', icon: '💀', enemyHp: 1.6, enemyDmg: 1.3, reward: 1.35, bosses: ['lich', 'boneDragon'], startGold: 700, startHero: 6, startTower: 5 }
+    2: { name: 'עולם החיילים', icon: '🪖', enemyHp: 1.6, enemyDmg: 1.3, reward: 1.35, bosses: ['tank', 'gunship'], startGold: 700, startHero: 6, startTower: 5 }
+  },
+
+  /* ---------- v3.4: עיצוב עולם 2 — "עולם החיילים" ----------
+   * רק שמות, אייקונים, תיאורים וצבעים. המכניקה זהה, המראה והשמות מודרניים.
+   * המפתח = נתיב בקונפיגורציה. מוחל ב-TD.applySkin (מקטע 10) כשמתחילים משחק בעולם 2 */
+  skins: {
+    2: {
+      'weapons.sword': { name: 'קומנדו', icon: '🪖', tunic: '#4f5d34', color: '#2b2b2b',
+        desc: 'סכין קרבי ושוטגן — קרב צמוד, פוגע בכמה אויבים צמודים. שריון קרמי 35% וגונב חיים מכל פגיעה.',
+        ability: { name: 'רימון הלם', icon: '💥' } },
+      'weapons.bow': { name: 'צלף', icon: '🎯', tunic: '#6b6a45', color: '#3a3a30',
+        desc: 'רובה צלפים — טווח ארוך מאוד וירי מהיר על מטרה אחת. נשאר קרוב לבונקר.',
+        ability: { name: 'הפצצה אווירית', icon: '✈️' } },
+      'weapons.staff': { name: 'מטול רימונים', icon: '💣', tunic: '#3d4a58', color: '#7fd0ff',
+        desc: 'רימונים עם נזק שטח. איטי יותר, אבל מושלם מול קבוצות.',
+        ability: { name: 'מטען EMP', icon: '⚡' } },
+      'soldiers.types.militia': { name: 'לוחם חי"ר', icon: '🪖', color: '#5a6b3a', desc: 'רץ עם רובה וכידון אל האויבים, נסוג לחובש כשנפצע' },
+      'soldiers.types.archer': { name: 'מקלען', icon: '🔫', color: '#4f5d34', desc: 'עומד מאחורי הדמות ויורה רחוק (430), ניתן לתקוף אותו' },
+      'soldiers.types.towerArcher': { name: 'צלף בבונקר', icon: '🏢', color: '#4a5a3a', desc: 'רואה את כל השדה (גם מעבר לחומה), מוגן מהתקפה ישירה — אבל הצלפים סופגים יחד 35% מכל נזק לבונקר. מקום לכל 5 שלבי בונקר' },
+      'soldiers.types.knight': { name: 'לוחם משוריין', icon: '🛡️', color: '#3f4a52', desc: 'מגן בליסטי ושריון כבד — מחזיק את הקו ליד הדמות' },
+      'soldiers.types.medic': { name: 'חובש', icon: '🩺', desc: 'מטפל בחיילים סביבו ומחזיר לקרב חיילים שנפלו (לוקח זמן). בלעדיו — חייל שנפל אבוד' },
+      'support.builder': { name: 'רובוט תיקון', icon: '🤖', desc: 'מתקן את החומה ואת הבונקר — לאט, ורק כשהם לא תחת אש' },
+      'support.chemist': { name: 'מהנדס', icon: '👨‍💻', desc: 'מפתח טכנולוגיות — כל מחקר פותח ציוד או נשק חדש' },
+      'defenses.wall': { name: 'חומת בטון', desc: 'חוסמת אויבים. הם חייבים לפרוץ אותה כדי להתקדם' },
+      'defenses.spikes': { name: 'גדר תיל', icon: '➰', desc: 'פוגעת בכל אויב רגלי שעומד או עובר עליה' },
+      'defenses.cannon': { name: 'תותח אוטומטי', icon: '🔫', desc: 'יורה פגזים עם נזק שטח, טווח ארוך' },
+      'defenses.totem': { name: 'מחולל קריו', icon: '🧊', desc: 'מאט אויבים קרובים — יותר זמן לירות בהם' },
+      'wallAddons.oil': { name: 'להביור קבוע', icon: '🔥', desc: 'שורף אויבים שתוקפים את החומה' },
+      'wallAddons.thorns': { name: 'גדר חשמלית', icon: '⚡', desc: 'מחזירה 35% מנזק קרב פנים לתוקף' },
+      'wallAddons.turret': { name: 'צריח מקלע', icon: '🗼', desc: 'יורה מראש החומה (טווח 420, גם במעופפים)' },
+      'posts.weapons.ballista': { name: 'משגר טילים', icon: '🚀', desc: 'טיל כבד למטרה אחת, טווח 620, גם מעופפים' },
+      'posts.weapons.frost': { name: 'תותח קריו', icon: '🧊' },
+      'posts.weapons.mortar': { name: 'מרגמה כבדה', icon: '💥' },
+      'research.items.w_ballista': { name: 'משגר טילים', icon: '🚀' },
+      'research.items.w_frost': { name: 'תותח קריו', icon: '🧊' },
+      'research.items.w_mortar': { name: 'מרגמה כבדה', icon: '💥' },
+      'research.branches.potions': { name: 'ציוד מיוחד', icon: '🧪' },
+      'research.branches.mastery': { name: 'שדרוג ציוד (שלב 3+)', icon: '🔧' },
+      'spells.bolt': { name: 'מכת לייזר', icon: '🛰️', desc: 'קרן מלוויין — פגיעה חזקה באויב אחד' },
+      'spells.meteor': { name: 'הפצצה אווירית', icon: '✈️', desc: 'פצצה נופלת על אזור ופוגעת בכולם' },
+      'spells.freeze': { name: 'רימון קריו', icon: '❄️' },
+      'spells.heal': { name: 'ערכת שדה', icon: '💉' },
+      'spells.acid': { name: 'ננו-חומצה', icon: '🧪' },
+      'spells.firebomb': { name: 'רימון תבערה', icon: '🔥' },
+      'spells.poison': { name: 'ענן גז', icon: '☠️', desc: 'ענן גז שפוגע בכל מי שעובר בו ל-6 שנ׳' },
+      'spells.thunder': { name: 'רימון חשמלי', icon: '🌩️', desc: 'פריקה חשמלית שקופצת בין 6 אויבים — גם מעופפים' },
+      'potions.life': { name: 'ערכת עזרה', icon: '🩹' }, 'potions.mana': { name: 'סוללת אנרגיה', icon: '🔋' },
+      'potions.rage': { name: 'סטימפק קרבי', icon: '💉' }, 'potions.haste': { name: 'משקה אנרגיה', icon: '⚡' },
+      'shop.heal': { name: 'ערכת עזרה', icon: '🩹' }, 'shop.full': { name: 'ערכה גדולה', icon: '❤️' }, 'shop.energy': { name: 'סוללה', icon: '🔋' },
+      'shop.repair': { name: 'תיקון בונקר', icon: '🔧' }, 'shop.revive': { name: 'דפיברילטור', icon: '⚡' },
+      'skills.fireArrows': { name: 'תחמושת תבערה', desc: 'כדורי הבונקר שורפים (+25% נזק מתמשך)' },
+      'skills.masonry': { name: 'בטון מזוין', desc: '-10% נזק לבונקר ולחומה' },
+      'skills.mana': { name: 'סוללה מוגדלת', icon: '🔋', desc: '+25% אנרגיה מקסימלית (ליכולות ולציוד)' },
+      'skills.marksman': { name: 'כוונת לייזר' },
+      'perks.dmg': { name: 'תחמושת משופרת', icon: '🔫' }, 'perks.tower': { name: 'יסודות בטון', icon: '🏢', desc: '+25% חיי בונקר ותיקון מלא' },
+      'perks.regen': { name: 'ערכת חובש' }, 'perks.energy': { name: 'כור קטן', icon: '🔋' }, 'perks.chest': { name: 'רחפן סיור', icon: '🛸' },
+      'heroPowers.list.vampire': { name: 'ננו-ריפוי', icon: '🧬' }, 'heroPowers.list.bulwark': { name: 'שריון קרמי', icon: '🦺' },
+      'heroPowers.list.battery': { name: 'כור נייד', icon: '🔋' },
+      'heroPowers.list.engineer': { name: 'מהנדס ראשי', desc: 'רובוטים מהירים פי 2, עמדות +20% נזק' },
+      'heroPowers.list.cleave': { desc: 'פוגע ב-2 מטרות נוספות (קומנדו) / כדור נוסף (צלף ומטול)' }
+    }
   },
 
   /* ---------- גלים ---------- */
@@ -715,6 +778,28 @@ TD.makeRng = function (seed) {
   return f;
 };
 
+/* ---------- v3.4: עיצוב לפי עולם (שמות/אייקונים/צבעים בלבד — CONFIG.skins) ---------- */
+TD.skinWorld = 1;
+TD.applySkin = function (world) {
+  var C = TD.CONFIG, skins = C.skins || {}, w, path, f;
+  function at(p) { var o = C, parts = p.split('.'); for (var i = 0; i < parts.length && o; i++) o = o[parts[i]]; return o; }
+  if (!TD._skinBase) {                              // צילום ערכי עולם 1 לפני כל שינוי
+    TD._skinBase = {};
+    for (w in skins) for (path in skins[w]) {
+      var tgt = at(path); if (!tgt) continue;
+      var base = TD._skinBase[path] || (TD._skinBase[path] = {});
+      for (f in skins[w][path]) if (!(f in base)) base[f] = tgt[f] && typeof tgt[f] === 'object' ? JSON.parse(JSON.stringify(tgt[f])) : tgt[f];
+    }
+  }
+  function put(tgt, f, v) { if (v && typeof v === 'object' && tgt[f] && typeof tgt[f] === 'object') { for (var k in v) tgt[f][k] = v[k]; } else tgt[f] = v; }
+  for (path in TD._skinBase) { var o = at(path); if (o) for (f in TD._skinBase[path]) put(o, f, TD._skinBase[path][f] && typeof TD._skinBase[path][f] === 'object' ? JSON.parse(JSON.stringify(TD._skinBase[path][f])) : TD._skinBase[path][f]); }
+  if (skins[world]) for (path in skins[world]) { var o2 = at(path); if (o2) for (f in skins[world][path]) put(o2, f, skins[world][path][f]); }
+  // שמות "שליטה" נגזרים מהשם המעודכן של הלחש
+  var items = C.research.items;
+  for (var id in items) if (items[id].master) items[id].name = (world === 2 ? 'שדרוג ' : 'שליטה ב') + C.spells[items[id].master].name;
+  TD.skinWorld = world === 2 ? 2 : 1;
+};
+
 TD.createState = function (weaponId, seed, world) {
   var C = TD.CONFIG, W = C.world;
   if (!C.weapons[weaponId]) weaponId = 'sword';
@@ -747,6 +832,7 @@ TD.createState = function (weaponId, seed, world) {
     pvp: null                     // מצב קרב 2 שחקנים (מקטע 55)
   };
   s.world = world === 2 ? 2 : 1;
+  TD.applySkin(s.world);
   var Wd = C.worlds[s.world];
   s.gold = Wd.startGold;
   if (Wd.startHero) s.hero.level = Wd.startHero;
@@ -994,7 +1080,7 @@ TD.damageDefender = function (s, kind, ref, amount) {
     // קשתי המגדל סופגים יחד towerShare מכל נזק למגדל (מתחלק ביניהם)
     var tas = s.soldiers.filter(function (o) { return !o.dead && o.def.role === 'tower'; });
     for (var a = 0; a < tas.length; a++) TD.damageDefender(s, 'soldier', tas[a], amount * C.soldiers.towerShare / tas.length);
-    t.hp -= amount; t.hitFlash = 0.15;
+    t.hp -= amount; t.hitFlash = 0.15; t.lastHitT = s.t;
     TD.addText(s, t.x + 30, C.world.groundY - 190, '-' + Math.round(amount), '#ff9f43');
     if (t.hp <= 0 && !s.over) {
       t.hp = 0; s.over = true; s.shake = 1;
@@ -1491,10 +1577,12 @@ TD.updateSupport = function (s, dt) {
   }
   // בנאים שלא עובדים על החומה — מתקנים את המגדל (תמיד)
   var idle = s.support.builders.length - atWall, t = s.tower;
-  if (idle > 0 && t.hp < t.maxHp && !s.over) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * B.towerRepairPct * idle * dt);
+  var towerSafe = t.lastHitT == null || s.t - t.lastHitT >= B.towerSafeAfterHit;
+  if (idle > 0 && towerSafe && t.hp < t.maxHp && !s.over)
+    t.hp = Math.min(t.maxHp, t.hp + t.maxHp * B.towerRepairPct * Math.sqrt(idle) * (s.phase === 'break' ? B.breakMult : 1) * dt);
   if (atWall && w) {
     var eng = 1 + TD.powerStacks(s, 'engineer');
-    w.hp = Math.min(w.maxHp, w.hp + w.maxHp * B.repairPct * atWall * eng * dt);
+    w.hp = Math.min(w.maxHp, w.hp + w.maxHp * B.repairPct * Math.sqrt(atWall) * eng * (s.phase === 'break' ? B.breakMult : 1) * dt);
     if (w.addons) for (var aid in w.addons) { var ad = w.addons[aid]; if (ad.hp < ad.maxHp) ad.hp = Math.min(ad.maxHp, ad.hp + ad.maxHp * B.repairPct * atWall * dt); }
     if (w.rebuilding && w.hp >= w.maxHp * C.defenses.wall.rebuildAt) {
       w.rebuilding = false; s.stats.rebuilt++;
@@ -1596,7 +1684,7 @@ TD.updatePosts = function (s, dt) {
     } else {
       var kind = { ballista: 'bolt', frost: 'frostball', mortar: 'shell', sun: 'sunray' }[p.weapon];
       TD.fire(s, { owner: p.weapon === 'mortar' ? 'cannon' : 'post', kind: kind, x: x + 10, y: G - 92, target: tgt, tx: tgt.x, ty: tgt.y - tgt.def.size,
-        speed: p.weapon === 'mortar' ? 420 : 760, damage: pw.damage * (d.holy && tgt.def.undead ? 2 : 1), splash: d.splash || 0, splashPct: 0.7, slow: d.slow || 0 });
+        speed: p.weapon === 'mortar' ? 420 : 760, damage: pw.damage * (d.holy && (tgt.def.mech || tgt.def.undead) ? 2 : 1), splash: d.splash || 0, splashPct: 0.7, slow: d.slow || 0 });
     }
   }
 };
@@ -2154,7 +2242,7 @@ TD.castSpell = function (s, id, x, y) {
     TD.addEffect(s, { type: 'ring', x: x, y: TD.CONFIG.world.groundY - 20, r: p.radius, color: id === 'acid' ? '#b6ff6b' : '#ff7b2e', life: 0.45 });
     TD.burst(s, x, TD.CONFIG.world.groundY - 20, id === 'acid' ? '#9be35c' : '#ff9b3d', 18);
   } else if (id === 'holy') {
-    for (i = 0; i < s.enemies.length; i++) { e = s.enemies[i]; if (e.dead) continue; TD.damageEnemy(s, e, p.damage * (e.def.undead ? 2 : 1), '#fff7b0'); hit++; }
+    for (i = 0; i < s.enemies.length; i++) { e = s.enemies[i]; if (e.dead) continue; TD.damageEnemy(s, e, p.damage * (e.def.mech || e.def.undead ? 2 : 1), '#fff7b0'); hit++; }
     if (!hit) return false;
     TD.addEffect(s, { type: 'flash', life: 0.5 });
   } else if (id === 'poison') {
@@ -2445,6 +2533,7 @@ TD.updateSoldiers = function (s, dt) {
     so.anim += dt; so.swing = Math.max(0, so.swing - dt); so.hitFlash = Math.max(0, so.hitFlash - dt);
     so.atkTimer -= dt;
     so.idle = (so.idle || 0) + dt;
+    if (so.dazed > 0) { so.dazed -= dt; so.moving = false; continue; }   // v3.4: אחרי החייאה — מתאושש
     // v3.0: ריפוי בשדה רק כשיש רופא (הוא מרפא — ראו updateMedic). בלי רופא אין נסיגה ואין התאוששות
     var hasMedic = TD.hasMedic(s);
     if (!hasMedic) so.retreating = false;
@@ -2605,7 +2694,8 @@ TD.updateMedic = function (s, so, dt) {
   // גוף להחייאה: רק מאחורי הדמות (בטוח)
   var c = null;
   for (i = 0; i < s.corpses.length; i++) if (s.corpses[i].claimed === so.id) c = s.corpses[i];
-  if (!c) {
+  so.reviveCd = Math.max(0, (so.reviveCd || 0) - dt);
+  if (!c && so.reviveCd <= 0) {
     var bd = Infinity;
     for (i = 0; i < s.corpses.length; i++) {
       var k = s.corpses[i];
@@ -2630,7 +2720,8 @@ TD.updateMedic = function (s, so, dt) {
       s.corpses = s.corpses.filter(function (q) { return q !== c; });
       var r = TD.addSoldier(s, c.type, c.x, c.rank);
       r.hp = r.maxHp * S.reviveHpPct;
-      so.reviveT = 0; s.stats.revives++;
+      r.dazed = d.reviveDazed || 0;                 // v3.4: חייל שהוחייה מתאושש כמה שניות לפני שחוזר לקרב
+      so.reviveT = 0; so.reviveCd = d.reviveCooldown || 0; s.stats.revives++;
       TD.burst(s, c.x, W.groundY - 30, '#7dff9b', 16);
       TD.emit(s, 'revive', { name: r.def.name });
     }
@@ -2869,6 +2960,7 @@ TD.clearSave = function () { TD.storage.set(TD.SAVE_KEY, null); };
  * ===================================================================== */
 TD.Render = (function () {
   var R = {}, C = function () { return TD.CONFIG; };
+  var W2 = false;   // v3.4: עולם 2 (עולם החיילים) — נקבע בכל ציור
   var scene = null;
 
   /* ---------- כלי ציור ---------- */
@@ -2895,6 +2987,11 @@ TD.Render = (function () {
     for (i = 0; i < 70; i++) sc.stars.push([-400 + rnd() * 1800, -300 + rnd() * 560, rnd() * 1.6 + 0.4, rnd() * 6]);
     for (i = 0; i < 6; i++) sc.clouds.push([rnd() * 1400 - 200, 40 + rnd() * 140, 0.6 + rnd() * 0.8, 6 + rnd() * 10]);
     for (i = 0; i < 120; i++) sc.grass.push([-400 + rnd() * 1800, rnd() * 6]);
+    // עולם 2: קו רקיע של עיר הרוסה, עשן, ביצורים בשדה
+    sc.city = []; for (x = -400; x <= 1400;) { var bw = 40 + rnd() * 70; sc.city.push([x, bw, 90 + rnd() * 150, rnd()]); x += bw + rnd() * 18; }
+    sc.city2 = []; for (x = -380; x <= 1400;) { var bw2 = 34 + rnd() * 50; sc.city2.push([x, bw2, 40 + rnd() * 70, rnd()]); x += bw2 + 4 + rnd() * 30; }
+    sc.smoke = []; for (i = 0; i < 4; i++) sc.smoke.push([520 + rnd() * 700, 300 + rnd() * 60, rnd() * 10]);
+    sc.props = []; for (i = 0; i < 9; i++) sc.props.push([560 + rnd() * 760, 445 + rnd() * 70, rnd() < 0.5 ? 'hedgehog' : 'bags']);
     return sc;
   }
 
@@ -2905,11 +3002,11 @@ TD.Render = (function () {
     { top: '#0b1030', bot: '#2b2f5e', sun: '#e8ecff', night: 1 }    // לילה
   ];
 
-  var SKIES2 = [   // עולם 2 — עולם המתים: שמיים סגולים-ירוקים, ירח חולני
-    { top: '#1a1030', bot: '#4a6a4a', sun: '#d8ffcf', night: 0.5 },
-    { top: '#24163e', bot: '#6a5a7a', sun: '#e8f8ff', night: 0.35 },
-    { top: '#2a0e2a', bot: '#7a3a3a', sun: '#ff9b8a', night: 0.5 },
-    { top: '#05050f', bot: '#1c2a24', sun: '#b6ffb0', night: 1 }
+  var SKIES2 = [   // עולם 2 — עולם החיילים: שמי מדבר מאובקים, עשן, ובלילה — זיקוקי נותבים
+    { top: '#6f8fae', bot: '#e6c9a0', sun: '#fff1cf', night: 0 },
+    { top: '#8aa6c0', bot: '#efd9b4', sun: '#fffbe8', night: 0 },
+    { top: '#4a3a5a', bot: '#e09a5a', sun: '#ffbf7a', night: 0.15 },
+    { top: '#0a0f1c', bot: '#2a2a30', sun: '#e8ecff', night: 1 }
   ];
   function drawBackground(ctx, s, v) {
     var L = -v.ox, Rr = v.vw - v.ox, T = -v.oy, G = C().world.groundY, t = s ? s.t : performance.now() / 1000;
@@ -2946,14 +3043,24 @@ TD.Render = (function () {
       ctx.lineTo(pts[pts.length - 1][0], base); ctx.closePath(); ctx.fillStyle = color; ctx.fill();
     }
     if (w2) {
-      hills(scene.far, '#241c33', G); hills(scene.near, '#1a2420', G);
-      // עצים מתים ומצבות על הרכס
-      for (i = 0; i < scene.near.length; i += 4) {
-        var hx = scene.near[i][0], hy = scene.near[i][1];
-        line(ctx, hx, hy + 4, hx + 2, hy - 30, '#120e18', 3); line(ctx, hx + 1, hy - 18, hx + 12, hy - 28, '#120e18', 2); line(ctx, hx + 1, hy - 12, hx - 9, hy - 22, '#120e18', 2);
+      // עיר הרוסה ברקע — בניינים עם חלונות ושברים
+      var far = sky.night ? '#1b2030' : '#9a9aa4', near = sky.night ? '#141820' : '#7a7468';
+      for (i = 0; i < scene.city.length; i++) {
+        var b = scene.city[i], bx = b[0], bw = b[1], bh = b[2], by = G - 40 - bh;
+        ctx.fillStyle = far; ctx.beginPath(); ctx.moveTo(bx, G);
+        ctx.lineTo(bx, by + (b[3] < 0.3 ? 14 : 0)); ctx.lineTo(bx + bw * 0.4, by); if (b[3] < 0.3) { ctx.lineTo(bx + bw * 0.55, by + 22); ctx.lineTo(bx + bw * 0.7, by + 6); }
+        ctx.lineTo(bx + bw, by + (b[3] > 0.7 ? 18 : 0)); ctx.lineTo(bx + bw, G); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = sky.night ? (b[3] > 0.5 ? 'rgba(255,200,120,0.35)' : 'rgba(0,0,0,0.25)') : 'rgba(40,40,50,0.28)';
+        for (var wy = by + 14; wy < G - 50; wy += 18) for (var wx = bx + 6; wx < bx + bw - 8; wx += 12) if (((wx * 7 + wy) | 0) % 5) ctx.fillRect(wx, wy, 6, 9);
       }
-      ctx.save(); ctx.globalAlpha = 0.18 + 0.06 * Math.sin(t * 0.7); ctx.fillStyle = '#9fe8a0';
-      ctx.fillRect(L, G - 40, Rr - L, 40); ctx.restore();   // ערפל ירקרק
+      for (i = 0; i < scene.city2.length; i++) { var b2 = scene.city2[i]; ctx.fillStyle = near; ctx.fillRect(b2[0], G - 20 - b2[2], b2[1], b2[2] + 20); }
+      // עשן עולה
+      for (i = 0; i < scene.smoke.length; i++) {
+        var sm = scene.smoke[i];
+        for (var q = 0; q < 6; q++) { var ph = ((t * 18 + q * 30 + sm[2] * 20) % 180); ctx.globalAlpha = 0.28 * (1 - ph / 180); circle(ctx, sm[0] + Math.sin(ph / 30 + sm[2]) * 12 + ph * 0.25, sm[1] - ph, 14 + ph * 0.18, sky.night ? '#3a3a44' : '#5a5650'); }
+        ctx.globalAlpha = 1;
+      }
+      if (sky.night) for (i = 0; i < 4; i++) { var tr = (t * 0.6 + i * 0.37) % 1; line(ctx, 300 + i * 220 + tr * 120, 260 - tr * 220, 312 + i * 220 + tr * 120, 250 - tr * 220, 'rgba(255,90,60,0.8)', 2); }
     } else {
       hills(scene.far, sky.night ? '#1d2147' : '#7a8fb8', G);
       hills(scene.near, sky.night ? '#141a33' : '#4f7a5a', G);
@@ -2961,29 +3068,73 @@ TD.Render = (function () {
 
     // קרקע
     var gg = ctx.createLinearGradient(0, G, 0, 540);
-    if (w2) { gg.addColorStop(0, '#3a4038'); gg.addColorStop(0.15, '#3a3430'); gg.addColorStop(1, '#1e1a18'); }
+    if (w2) { gg.addColorStop(0, sky.night ? '#5a5040' : '#c9a873'); gg.addColorStop(0.15, sky.night ? '#4a4034' : '#a8885a'); gg.addColorStop(1, '#5a4630'); }
     else { gg.addColorStop(0, sky.night ? '#2a4a2a' : '#5fa043'); gg.addColorStop(0.15, sky.night ? '#2c3a22' : '#6b5a3a'); gg.addColorStop(1, '#3a2c1c'); }
     ctx.fillStyle = gg; ctx.fillRect(L, G, Rr - L, 540 - G + 400);
-    ctx.fillStyle = w2 ? '#4a5446' : sky.night ? '#335a2c' : '#79c255';
+    ctx.fillStyle = w2 ? (sky.night ? '#6a5e48' : '#d8bb86') : sky.night ? '#335a2c' : '#79c255';
     ctx.fillRect(L, G - 3, Rr - L, 7);
-    ctx.strokeStyle = w2 ? '#5a6a52' : sky.night ? '#3f6e35' : '#8fd468'; ctx.lineWidth = 2;
-    for (i = 0; i < scene.grass.length; i++) {
+    ctx.strokeStyle = w2 ? (sky.night ? '#6a6040' : '#9a8a50') : sky.night ? '#3f6e35' : '#8fd468'; ctx.lineWidth = 2;
+    for (i = 0; i < scene.grass.length; i += w2 ? 4 : 1) {
       var gx = scene.grass[i][0];
       ctx.beginPath(); ctx.moveTo(gx, G); ctx.lineTo(gx + 2 + Math.sin(t * 2 + gx) * 1.5, G - 6 - scene.grass[i][1]); ctx.stroke();
     }
     for (i = 0; i < scene.stones.length; i++) ellipse(ctx, scene.stones[i][0], scene.stones[i][1], scene.stones[i][2] * 1.6, scene.stones[i][2], 'rgba(0,0,0,0.18)');
-    if (w2) for (i = 0; i < scene.stones.length; i += 5) {          // מצבות בשדה
-      var sx = scene.stones[i][0] + 40, sy = scene.stones[i][1] - 4;
-      if (sx < 480) continue;
-      ctx.fillStyle = '#5a5a62'; rr(ctx, sx - 7, sy - 18, 14, 20, 6); ctx.fill();
-      ctx.fillStyle = '#3a3a42'; ctx.fillRect(sx - 1, sy - 14, 2, 9); ctx.fillRect(sx - 4, sy - 11, 8, 2);
+    if (w2) for (i = 0; i < scene.props.length; i++) {               // שקי חול ומחסומי טנקים בשדה
+      var pr = scene.props[i], px = pr[0], py = pr[1];
+      if (pr[2] === 'bags') { for (var sbk = 0; sbk < 3; sbk++) { ellipse(ctx, px - 10 + sbk * 10, py - 4, 7, 4.5, '#a89268'); } ellipse(ctx, px - 5, py - 10, 7, 4.5, '#b49c70'); ellipse(ctx, px + 5, py - 10, 7, 4.5, '#9c8660'); }
+      else { line(ctx, px - 9, py, px + 9, py - 16, '#4a4a50', 3); line(ctx, px + 9, py, px - 9, py - 16, '#4a4a50', 3); line(ctx, px, py + 2, px, py - 18, '#5a5a60', 3); }
     }
     // לילה — הכהיית העולם
     if (sky.night) { ctx.fillStyle = 'rgba(10,15,50,0.18)'; ctx.fillRect(L, T, Rr - L, 900); }
   }
 
   /* ---------- המגדל ---------- */
+  function drawBunker(ctx, s) {
+    var t = s.tower, G = C().world.groundY, x = t.x, lvl = t.level, flash = t.hitFlash > 0, tt = s.t || 0;
+    var con = flash ? '#fff' : (lvl >= 15 ? '#8f98a3' : lvl >= 8 ? '#a3a39b' : '#9b968c'), dark = '#5d5a54';
+    ellipse(ctx, x, G + 4, 64, 10, 'rgba(0,0,0,0.3)');
+    // גוף בטון — מתרחב למטה
+    ctx.fillStyle = con; ctx.beginPath(); ctx.moveTo(x - 54, G); ctx.lineTo(x - 44, G - 196); ctx.lineTo(x + 44, G - 196); ctx.lineTo(x + 54, G); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = dark; ctx.lineWidth = 1.5;
+    for (var row = 1; row < 7; row++) { var yy = G - row * 28; ctx.beginPath(); ctx.moveTo(x - 54 + row * 1.4, yy); ctx.lineTo(x + 54 - row * 1.4, yy); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(x - 6, G - 196); ctx.lineTo(x - 8, G); ctx.stroke();
+    // חרכי ירי — זוהרים כשהבונקר חמוש
+    var armed = TD.towerStats(s).shoots;
+    ctx.fillStyle = armed ? '#ffb04a' : '#22252c';
+    ctx.fillRect(x - 26, G - 150, 52, 8); ctx.fillRect(x - 26, G - 98, 52, 8);
+    if (armed) glow(ctx, x, G - 146, 28, 'rgba(255,170,70,0.35)');
+    // דלת פלדה + שקי חול
+    ctx.fillStyle = '#3d4248'; ctx.fillRect(x - 14, G - 44, 28, 44); ctx.fillStyle = '#5a6068'; ctx.fillRect(x - 11, G - 40, 22, 4); ctx.fillRect(x - 11, G - 22, 22, 4);
+    for (var sb = 0; sb < 7; sb++) ellipse(ctx, x - 66 + sb * 22, G - 6, 12, 7, sb % 2 ? '#a89268' : '#b8a276');
+    for (sb = 0; sb < 3; sb++) ellipse(ctx, x + 44 + sb * 11, G - 17, 11, 6, '#a48e64');
+    // גג + אנטנה + דגל
+    ctx.fillStyle = flash ? '#fff' : '#7d7a72'; ctx.fillRect(x - 52, G - 208, 104, 14);
+    line(ctx, x + 34, G - 208, x + 34, G - 270, '#3a3a3a', 2); circle(ctx, x + 34, G - 272, 3, Math.sin(tt * 4) > 0 ? '#ff4a4a' : '#5a1a1a');
+    var wv = Math.sin(tt * 5);
+    line(ctx, x - 40, G - 208, x - 40, G - 280, '#4a4a4a', 3);
+    ctx.beginPath(); ctx.moveTo(x - 40, G - 280); ctx.quadraticCurveTo(x - 20, G - 280 + wv * 4, x - 2, G - 272); ctx.quadraticCurveTo(x - 20, G - 262 - wv * 4, x - 40, G - 260); ctx.closePath();
+    ctx.fillStyle = lvl >= 15 ? '#2e6bd1' : lvl >= 8 ? '#c9a227' : '#5a6b3a'; ctx.fill();
+    // סדקים
+    if (t.hp < t.maxHp * 0.5) {
+      ctx.strokeStyle = '#3a3630'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x - 30, G - 180); ctx.lineTo(x - 18, G - 160); ctx.lineTo(x - 26, G - 136); ctx.lineTo(x - 14, G - 118); ctx.stroke();
+      if (t.hp < t.maxHp * 0.25) { ctx.beginPath(); ctx.moveTo(x + 32, G - 84); ctx.lineTo(x + 22, G - 62); ctx.lineTo(x + 34, G - 40); ctx.stroke(); }
+    }
+    // צריח מקלע על הגג
+    if (armed) {
+      var rc = t.recoil * 16;
+      ctx.save(); ctx.translate(x + 14 - rc, G - 218);
+      ctx.fillStyle = '#3e4a32'; rr(ctx, -14, -10, 28, 16, 5); ctx.fill();
+      ctx.fillStyle = '#2a2e30'; ctx.fillRect(10, -6, 30, 5); ctx.fillRect(10, 0, 26, 3);
+      if (t.recoil > 0.12) glow(ctx, 44, -3, 12, 'rgba(255,200,80,0.9)');
+      ctx.restore();
+    }
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; rr(ctx, x - 22, G - 186, 44, 20, 10); ctx.fill();
+    ctx.fillStyle = '#ffe08a'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('★' + lvl, x, G - 176);
+  }
   function drawTower(ctx, s) {
+    if (W2) { drawBunker(ctx, s); return; }
     var t = s.tower, G = C().world.groundY, x = t.x, lvl = t.level, flash = t.hitFlash > 0;
     var stone = flash ? '#fff' : (lvl >= 15 ? '#b9b0d4' : lvl >= 8 ? '#bdb3a0' : '#9c9488');
     var dark = lvl >= 15 ? '#6f6596' : '#6d665b';
@@ -3075,6 +3226,18 @@ TD.Render = (function () {
     else if (o.helm === 'wizard') { ctx.beginPath(); ctx.moveTo(-11, -55); ctx.lineTo(12, -55); ctx.lineTo(-2, -78); ctx.closePath(); ctx.fillStyle = fl ? '#fff' : (o.hatColor || '#3d2a7a'); ctx.fill(); circle(ctx, -2, -78, 2.5, '#ffd34d'); }
     else if (o.helm === 'crown') { ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.moveTo(-9, -56); ctx.lineTo(-9, -64); ctx.lineTo(-4, -59); ctx.lineTo(0, -66); ctx.lineTo(4, -59); ctx.lineTo(9, -64); ctx.lineTo(9, -56); ctx.closePath(); ctx.fill(); }
     else if (o.helm === 'feather') { line(ctx, -2, -58, -10, -72, '#ff5d8f', 3); }
+    else if (o.helm === 'combat') {                         // קסדה צבאית + רצועה
+      ctx.beginPath(); ctx.arc(0, -52, 10.5, Math.PI * 1.02, Math.PI * 1.98); ctx.lineTo(10, -50); ctx.lineTo(-10, -50); ctx.closePath();
+      ctx.fillStyle = fl ? '#fff' : (o.helmColor || '#4f5d34'); ctx.fill(); line(ctx, 6, -50, 5, -44, '#222', 1.2);
+      if (o.goggles) { ctx.fillStyle = '#1a1a1a'; ctx.fillRect(-1, -55, 9, 3); }
+    }
+    else if (o.helm === 'beret') { ctx.beginPath(); ctx.ellipse(-1, -57, 10, 4.5, -0.15, 0, Math.PI * 2); ctx.fillStyle = fl ? '#fff' : (o.helmColor || '#7a1f2a'); ctx.fill(); }
+    else if (o.helm === 'mask') {                           // כובע גרב — רק העיניים
+      ctx.beginPath(); ctx.arc(0, -50, 9, 0, Math.PI * 2); ctx.fillStyle = fl ? '#fff' : (o.helmColor || '#2a2a2a'); ctx.fill();
+      ctx.fillStyle = skin; ctx.fillRect(1, -53, 7, 3.5); circle(ctx, 4, -51.5, 1.4, o.eye || '#222');
+    }
+    else if (o.helm === 'cap') { ctx.beginPath(); ctx.arc(0, -53, 9, Math.PI, 0); ctx.fillStyle = fl ? '#fff' : (o.helmColor || '#6b5a3a'); ctx.fill(); ctx.fillRect(0, -54, 13, 2.5); }
+    if (o.vest) { rr(ctx, -9, -41, 18, 15, 3); ctx.fillStyle = fl ? '#fff' : o.vest; ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(-7, -36, 5, 4); ctx.fillRect(2, -36, 5, 4); }
     if (o.weapon) o.weapon(ctx);
     ctx.restore();
   }
@@ -3128,12 +3291,40 @@ TD.Render = (function () {
     };
   }
 
+  /* ---------- v3.4: נשקים מודרניים (עולם 2) ---------- */
+  function gunArm(kind, swing, opt) {
+    opt = opt || {};
+    return function (ctx) {
+      var kick = swing > 0 ? -3 : 0;
+      ctx.save(); ctx.translate(kick, 0);
+      line(ctx, 2, -36, 12, -35, opt.skin || '#c99a6e', 4);           // יד
+      var col = opt.color || '#2b2b2b';
+      if (kind === 'rifle') { ctx.fillStyle = col; ctx.fillRect(2, -39, 26, 4); ctx.fillRect(6, -36, 4, 6); ctx.fillRect(-4, -38, 8, 3); if (opt.bayonet) line(ctx, 28, -37, 36, -37, '#ddd', 1.5); }
+      else if (kind === 'lmg') { ctx.fillStyle = col; ctx.fillRect(0, -40, 32, 5); ctx.fillRect(8, -35, 8, 7); line(ctx, 22, -35, 26, -27, '#333', 1.5); ctx.fillStyle = '#c9a227'; ctx.fillRect(10, -29, 5, 3); }
+      else if (kind === 'sniper') { ctx.fillStyle = col; ctx.fillRect(-6, -38, 44, 3.5); ctx.fillRect(6, -43, 12, 4); ctx.fillRect(-6, -36, 10, 5); circle(ctx, 18, -41, 1.6, '#7fd0ff'); }
+      else if (kind === 'launcher') { ctx.fillStyle = col; rr(ctx, -2, -42, 30, 9, 4); ctx.fill(); ctx.fillStyle = '#556b2f'; ctx.fillRect(4, -33, 5, 6); ctx.fillStyle = '#1a1a1a'; ctx.fillRect(26, -41, 3, 7); }
+      else if (kind === 'shotgun') { ctx.fillStyle = col; ctx.fillRect(0, -39, 28, 4.5); ctx.fillStyle = '#6b4a2a'; ctx.fillRect(-6, -38, 9, 5); ctx.fillRect(12, -35, 7, 3); }
+      else if (kind === 'pistol') { ctx.fillStyle = col; ctx.fillRect(10, -40, 10, 4); ctx.fillRect(10, -37, 3, 5); }
+      else if (kind === 'knife') { var a = swing > 0 ? 0.8 : -0.4; ctx.save(); ctx.translate(10, -35); ctx.rotate(a); ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, -1.5, 6, 3); ctx.beginPath(); ctx.moveTo(6, -2); ctx.lineTo(18, 0); ctx.lineTo(6, 2); ctx.fillStyle = '#d8dde3'; ctx.fill(); ctx.restore(); }
+      if (opt.flash && swing > 0.12 && kind !== 'knife') { var mx = kind === 'sniper' ? 40 : kind === 'pistol' ? 21 : kind === 'launcher' ? 30 : kind === 'lmg' ? 33 : 29; glow(ctx, mx + 3, -37, 10, 'rgba(255,200,80,0.95)'); }
+      ctx.restore();
+    };
+  }
+  function commandoArm(swing) {                                   // סכין ביד אחת, שוטגן על הגב/מיד שנייה
+    var sg = gunArm('shotgun', swing, { flash: true }), kn = gunArm('knife', swing);
+    return function (ctx) { sg(ctx); kn(ctx); if (swing > 0.12) { ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(30, -37); ctx.lineTo(60, -48); ctx.lineTo(60, -26); ctx.closePath(); ctx.fillStyle = '#ffd27a'; ctx.fill(); ctx.globalAlpha = 1; } };
+  }
+  function shieldGun(swing) {
+    var pg = gunArm('pistol', swing, { flash: true });
+    return function (ctx) { pg(ctx); rr(ctx, 6, -48, 9, 34, 3); ctx.fillStyle = '#2a3036'; ctx.fill(); ctx.fillStyle = 'rgba(160,200,230,0.6)'; ctx.fillRect(8, -45, 5, 5); };
+  }
+
   /* ---------- הגיבור ---------- */
   function drawHero(ctx, s) {
     var h = s.hero, w = s.weapon, G = C().world.groundY;
     if (h.down) {
       ctx.save(); ctx.translate(h.x, G); ctx.rotate(-Math.PI / 2); ctx.globalAlpha = 0.6;
-      humanoid(ctx, 0, 0, { tunic: w.tunic, cape: '#7a1f1f', helm: w.type === 'magic' ? 'wizard' : w.type === 'ranged' ? 'hood' : 'helmet' });
+      humanoid(ctx, 0, 0, W2 ? { tunic: w.tunic, helm: 'combat', skin: '#e0b48a' } : { tunic: w.tunic, cape: '#7a1f1f', helm: w.type === 'magic' ? 'wizard' : w.type === 'ranged' ? 'hood' : 'helmet' });
       ctx.restore();
       ctx.fillStyle = '#fff'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('💫 ' + Math.ceil(h.downTimer), h.x, G - 40);
@@ -3141,10 +3332,13 @@ TD.Render = (function () {
     }
     if (s.buffs && s.buffs.rage > 0) glow(ctx, h.x, G - 34, 46 + Math.sin(h.anim * 8) * 5, 'rgba(255,80,40,0.45)');
     if (s.buffs && s.buffs.haste > 0) for (var hz = 0; hz < 3; hz++) line(ctx, h.x - 22 - hz * 8, G - 50 + hz * 14, h.x - 40 - hz * 8, G - 50 + hz * 14, 'rgba(155,231,255,0.7)', 2);
-    var weapon = w.type === 'melee' ? swordArm(h.swing) : w.type === 'ranged' ? bowArm(h.swing, w.color) : staffArm(h.swing, h.anim, w.color);
+    var weapon = W2 ? (w.type === 'melee' ? commandoArm(h.swing) : w.type === 'ranged' ? gunArm('sniper', h.swing, { flash: true }) : gunArm('launcher', h.swing, { flash: true }))
+      : w.type === 'melee' ? swordArm(h.swing) : w.type === 'ranged' ? bowArm(h.swing, w.color) : staffArm(h.swing, h.anim, w.color);
     // הילה לפי שלב
     if (h.level >= 10) glow(ctx, h.x, G - 30, 40 + Math.sin(h.anim * 3) * 4, h.level >= 20 ? 'rgba(255,215,90,0.35)' : 'rgba(120,200,255,0.25)');
-    humanoid(ctx, h.x, G, {
+    if (W2) humanoid(ctx, h.x, G, { scale: 1.12, tunic: w.tunic, pants: '#3e4a2c', belt: '#2a2a2a', moving: h.moving, walk: h.anim, flash: h.hitFlash > 0, skin: '#e0b48a',
+      vest: h.level >= 5 ? '#3a4228' : null, helm: w.type === 'ranged' ? 'cap' : 'combat', helmColor: w.type === 'ranged' ? '#4a5230' : '#4f5d34', goggles: h.level >= 10, weapon: weapon });
+    else humanoid(ctx, h.x, G, {
       scale: 1.12, tunic: w.tunic, cape: '#7a1f1f', moving: h.moving, walk: h.anim, flash: h.hitFlash > 0,
       armor: h.level >= 5 ? '#aab4c0' : null,
       helm: w.type === 'magic' ? 'wizard' : w.type === 'ranged' ? 'hood' : 'helmet',
@@ -3156,14 +3350,15 @@ TD.Render = (function () {
   function drawSoldier(ctx, so) {
     var G = C().world.groundY, d = so.def, wpn;
     if (d.role === 'tower') {                      // קשת על המגדל — עומד על המשוננים
-      humanoid(ctx, so.x, G - 206, { scale: 0.7, tunic: d.color, flash: so.hitFlash > 0, helm: 'hood', hoodColor: '#145e5e', weapon: bowArm(so.swing, '#5a3a1a') });
+      if (W2) humanoid(ctx, so.x, G - 208, { scale: 0.7, tunic: d.color, flash: so.hitFlash > 0, helm: 'combat', skin: '#e0b48a', weapon: gunArm('sniper', so.swing, { flash: true }) });
+      else humanoid(ctx, so.x, G - 206, { scale: 0.7, tunic: d.color, flash: so.hitFlash > 0, helm: 'hood', hoodColor: '#145e5e', weapon: bowArm(so.swing, '#5a3a1a') });
       bar(ctx, so.x, G - 266, 22, so.hp / so.maxHp, '#5ec8ff');
       if (so.rank > 1) { ctx.fillStyle = '#ffd34d'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★'.repeat(so.rank), so.x, G - 272); }
       return;
     }
     if (so.retreating) { ctx.save(); ctx.globalAlpha = 0.75; }
     if (so.type === 'medic') {
-      humanoid(ctx, so.x, G, { scale: 0.92, tunic: '#f4f4f8', moving: so.moving, walk: so.anim, flash: so.hitFlash > 0, helm: null,
+      humanoid(ctx, so.x, G, { scale: 0.92, tunic: W2 ? '#5a6b3a' : '#f4f4f8', moving: so.moving, walk: so.anim, flash: so.hitFlash > 0, helm: W2 ? 'combat' : null, skin: W2 ? '#e0b48a' : null,
         weapon: function (ctx) {
           ctx.fillStyle = '#d23c3c'; ctx.fillRect(-2, -37, 4, 12); ctx.fillRect(-6, -33, 12, 4);          // צלב אדום
           rr(ctx, 8, -30, 12, 10, 2); ctx.fillStyle = '#7a4a2a'; ctx.fill();                         // תיק
@@ -3173,13 +3368,20 @@ TD.Render = (function () {
       bar(ctx, so.x, G - 72, 28, so.hp / so.maxHp, so.retreating ? '#ffd166' : '#7dff9b');
       return;
     }
+    if (W2) {
+      wpn = so.type === 'archer' ? gunArm('lmg', so.swing, { flash: true }) : so.type === 'knight' ? shieldGun(so.swing) : gunArm('rifle', so.swing, { flash: true, bayonet: true });
+      humanoid(ctx, so.x, G, { scale: so.type === 'knight' ? 1.05 : 0.92, tunic: d.color, pants: '#3e4a2c', moving: so.moving, walk: so.anim, flash: so.hitFlash > 0,
+        helm: 'combat', skin: '#e0b48a', vest: so.type === 'knight' ? '#2f3830' : '#3a4228', weapon: wpn });
+    } else {
     if (so.type === 'archer') wpn = bowArm(so.swing, '#5a3a1a');
     else if (so.type === 'knight') wpn = shieldSword(so.swing);
     else wpn = spear(so.swing);
     humanoid(ctx, so.x, G, { scale: so.type === 'knight' ? 1.05 : 0.92, tunic: d.color, moving: so.moving, walk: so.anim,
       flash: so.hitFlash > 0, helm: so.type === 'archer' ? 'hood' : 'helmet', hoodColor: '#1d6b6b',
       armor: so.type === 'knight' ? '#d8dde3' : null, weapon: wpn });
+    }
     bar(ctx, so.x, G - 72, 28, so.hp / so.maxHp, so.retreating ? '#ffd166' : '#5ec8ff');
+    if (so.dazed > 0) { ctx.fillStyle = '#bfe6ff'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('💫', so.x, G - 84); }
     if (so.rank > 1) { ctx.fillStyle = '#ffd34d'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('★'.repeat(so.rank), so.x, G - 80); }
     if (so.retreating) { ctx.restore(); ctx.fillStyle = '#ffd166'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('↩', so.x, G - 80); }
   }
@@ -3190,7 +3392,54 @@ TD.Render = (function () {
     ctx.fillStyle = '#ffe08a'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('★' + lvl, x, y);
   }
+  function drawDefensesW2(ctx, s) {
+    var D = C().defenses, G = C().world.groundY, t = s.t || 0, d;
+    if ((d = s.defenses.totem)) {                  // מחולל קריו
+      var tx = D.totem.x, ts = TD.defenseStats(s, 'totem');
+      ctx.save(); ctx.globalAlpha = 0.12 + 0.05 * Math.sin(t * 2); ellipse(ctx, tx, G + 2, ts.radius, 12, '#9be7ff'); ctx.restore();
+      ctx.fillStyle = d.hitFlash > 0 ? '#fff' : '#5a6470'; rr(ctx, tx - 12, G - 52, 24, 52, 5); ctx.fill();
+      for (var cr = 0; cr < 3; cr++) { ctx.strokeStyle = 'rgba(120,220,255,' + (0.5 + 0.4 * Math.sin(t * 4 + cr)) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(tx, G - 14 - cr * 14, 14, 4, 0, 0, Math.PI * 2); ctx.stroke(); }
+      glow(ctx, tx, G - 60, 18, 'rgba(150,230,255,0.7)'); lvlBadge(ctx, tx, G - 82, d.level);
+    }
+    if ((d = s.defenses.spikes)) {                 // גדר תיל
+      var x0 = D.spikes.x, w = D.spikes.width;
+      for (var k = 0; k <= w; k += 30) line(ctx, x0 + k, G, x0 + k, G - 20, '#5a4a3a', 2.5);
+      ctx.strokeStyle = '#9aa0a8'; ctx.lineWidth = 1.4;
+      for (k = 0; k < w; k += 7) { ctx.beginPath(); ctx.arc(x0 + k + 4, G - 10 - (k % 14 ? 1 : 0), 7 + d.level * 0.4, 0, Math.PI * 2); ctx.stroke(); }
+      lvlBadge(ctx, x0 + w / 2, G - 34, d.level);
+    }
+    if ((d = s.defenses.wall)) {                   // חומת בטון
+      var wx = D.wall.x - 8, up = TD.wallUp(s), hpr = d.maxHp ? d.hp / d.maxHp : 0, hh = up ? 74 : d.rebuilding ? Math.max(14, 74 * Math.min(1, hpr / D.wall.rebuildAt)) : 22, WW = 44;
+      var con = d.hitFlash > 0 ? '#fff' : d.level >= 4 ? '#a9adb3' : '#9a978e';
+      ellipse(ctx, wx + WW / 2, G + 3, 34, 6, 'rgba(0,0,0,0.25)');
+      ctx.fillStyle = con; ctx.beginPath(); ctx.moveTo(wx - 4, G); ctx.lineTo(wx + 4, G - hh); ctx.lineTo(wx + WW - 4, G - hh); ctx.lineTo(wx + WW + 4, G); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#6a675f'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(wx + WW / 2, G); ctx.lineTo(wx + WW / 2, G - hh); ctx.stroke();
+      ctx.fillStyle = '#c9a227'; for (var st = 0; st < 3; st++) ctx.fillRect(wx + 2, G - 12 - st * 22, WW - 4, 3);     // פסי אזהרה
+      if (up) {
+        if (hpr < 0.5) { line(ctx, wx + 10, G - hh + 6, wx + 18, G - hh + 30, '#444', 2); line(ctx, wx + 30, G - hh + 20, wx + 36, G - hh + 44, '#777', 1.5); line(ctx, wx + 12, G - hh + 2, wx + 6, G - hh - 6, '#8a5a3a', 2); }
+        bar(ctx, wx + WW / 2, G - hh - 24, 48, hpr, hpr < 0.3 ? '#ff5d5d' : '#c9c9c9'); lvlBadge(ctx, wx + WW / 2, G - hh - 36, d.level);
+      } else {
+        for (var rb = 0; rb < 6; rb++) { ctx.fillStyle = '#8a877e'; ctx.fillRect(wx - 6 + rb * 9, G - 7 - (rb % 2) * 4, 8, 7); }
+        line(ctx, wx + 4, G - 8, wx - 2, G - 22, '#8a5a3a', 2); line(ctx, wx + 30, G - 8, wx + 36, G - 20, '#8a5a3a', 2);       // ברזל זיון
+        if (d.rebuilding) bar(ctx, wx + WW / 2, G - 96, 48, Math.min(1, hpr / D.wall.rebuildAt), '#ffd166');
+      }
+    }
+    if ((d = s.defenses.cannon)) {                 // תותח אוטומטי על חצובה
+      var cx = D.cannon.x, rc = d.recoil * 20;
+      ellipse(ctx, cx, G + 2, 26, 5, 'rgba(0,0,0,0.25)');
+      line(ctx, cx - 4, G - 22, cx - 16, G, '#3a3a3a', 3); line(ctx, cx - 4, G - 22, cx + 8, G, '#3a3a3a', 3);
+      ctx.save(); ctx.translate(cx - 4 - rc * 0.3, G - 26); ctx.rotate(-0.15);
+      ctx.fillStyle = d.hitFlash > 0 ? '#fff' : '#3e4a32'; rr(ctx, -12, -9, 26, 16, 4); ctx.fill();
+      ctx.fillStyle = '#2a2e30'; ctx.fillRect(12, -5, 30, 6); ctx.fillRect(12, 2, 24, 3);
+      if (d.recoil > 0.12) glow(ctx, 46, -2, 16, 'rgba(255,200,90,0.9)');
+      ctx.restore();
+      lvlBadge(ctx, cx, G - 52, d.level);
+    }
+    if (s.defenses.wall && s.defenses.wall.addons) drawAddons(ctx, s);
+    if (s.posts) drawPosts(ctx, s);
+  }
   function drawDefenses(ctx, s) {
+    if (W2) { drawDefensesW2(ctx, s); return; }
     var D = C().defenses, G = C().world.groundY, t = s.t || 0, d;
     if ((d = s.defenses.totem)) {
       var tx = D.totem.x, ts = TD.defenseStats(s, 'totem');
@@ -3256,13 +3505,19 @@ TD.Render = (function () {
     var w = s.defenses.wall, A = w.addons, G = C().world.groundY, wx = C().defenses.wall.x - 8, top = G - 74, t = s.t || 0;
     if (!TD.wallUp(s)) return;
     function broken(a) { return a.hp <= 0; }
-    if (A.thorns) {                                  // קוצים בחזית החומה
+    if (A.thorns && W2) {                            // גדר חשמלית
+      var thw = A.thorns;
+      for (var kk = 0; kk < 4; kk++) line(ctx, wx + 46, G - 8 - kk * 16, wx + 58, G - 8 - kk * 16, broken(thw) ? '#555' : '#c9c9c9', 1.5);
+      line(ctx, wx + 58, G, wx + 58, G - 60, '#444', 2);
+      if (!broken(thw) && Math.sin(t * 13) > 0.5) glow(ctx, wx + 52, G - 8 - ((t * 60) % 48), 8, 'rgba(140,220,255,0.95)');
+    } else if (A.thorns) {                                  // קוצים בחזית החומה
       var th = A.thorns, col = broken(th) ? '#5a4a3a' : '#7a9a4a';
       for (var k = 0; k < 5; k++) { var yy = G - 10 - k * 13; ctx.beginPath(); ctx.moveTo(wx + 44, yy - 4); ctx.lineTo(wx + 44 + (broken(th) ? 4 : 10 + th.level), yy); ctx.lineTo(wx + 44, yy + 4); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); }
     }
     if (A.oil) {                                     // דוד שמן על החומה
       var o = A.oil, ox = wx + 32;
-      ctx.fillStyle = broken(o) ? '#3a3330' : '#2a2a2e'; rr(ctx, ox - 9, top - 26, 18, 14, 4); ctx.fill();
+      if (W2) { ctx.fillStyle = broken(o) ? '#3a3330' : '#c23a2a'; rr(ctx, ox - 8, top - 30, 10, 18, 4); ctx.fill(); ctx.fillStyle = '#333'; ctx.fillRect(ox, top - 18, 16, 4); }
+      else { ctx.fillStyle = broken(o) ? '#3a3330' : '#2a2a2e'; rr(ctx, ox - 9, top - 26, 18, 14, 4); ctx.fill(); }
       if (!broken(o)) {
         glow(ctx, ox, top - 28, 12, 'rgba(255,170,60,0.6)');
         var near = s.enemies.some(function (e) { return !e.dead && !e.def.flying && e.x >= wx + 8 && e.x <= wx + 78; });
@@ -3271,10 +3526,15 @@ TD.Render = (function () {
     }
     if (A.turret) {                                  // צריח קשתים קטן
       var tu = A.turret, tx = wx + 10;
+      if (W2) {
+        ctx.fillStyle = broken(tu) ? '#5a524a' : '#3e4a32'; rr(ctx, tx - 10, top - 26, 20, 14, 4); ctx.fill();
+        if (!broken(tu)) { ctx.fillStyle = '#2a2e30'; ctx.fillRect(tx + 8, top - 22, 22, 4); if (Math.sin(t * 20) > 0.7) glow(ctx, tx + 32, top - 20, 6, 'rgba(255,200,90,0.8)'); }
+      } else {
       ctx.fillStyle = broken(tu) ? '#5a524a' : '#8d8478'; ctx.fillRect(tx - 9, top - 34, 18, 24);
       if (!broken(tu)) {
         ctx.beginPath(); ctx.moveTo(tx - 12, top - 34); ctx.lineTo(tx, top - 50); ctx.lineTo(tx + 12, top - 34); ctx.closePath(); ctx.fillStyle = '#8e3b2b'; ctx.fill();
         ctx.fillStyle = '#1a1410'; ctx.fillRect(tx - 2, top - 28, 4, 8);
+      }
       }
     }
     // פס חיים קטן לכל חיזוק
@@ -3298,6 +3558,7 @@ TD.Render = (function () {
       switch (p.weapon) {
         case 'ballista':
           ctx.rotate(ang); ctx.translate(-rc, 0);
+          if (W2) { ctx.fillStyle = '#3e4a32'; rr(ctx, -14, -8, 40, 16, 4); ctx.fill(); ctx.fillStyle = '#1a1a1a'; circle(ctx, 25, -3, 3, '#1a1a1a'); circle(ctx, 25, 4, 3, '#1a1a1a'); if (p.timer > 0.3) { ctx.fillStyle = '#c9c9c9'; ctx.fillRect(22, -5, 8, 3); } break; }
           ctx.fillStyle = '#6b4423'; ctx.fillRect(-14, -4, 34, 8);
           ctx.strokeStyle = '#4a2f18'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(12, 0, 14, -1.3, 1.3); ctx.stroke();
           line(ctx, 14, -13, -6, 0, '#ddd', 1); line(ctx, 14, 13, -6, 0, '#ddd', 1);
@@ -3342,8 +3603,33 @@ TD.Render = (function () {
   }
 
   /* ---------- צוות תמיכה ---------- */
+  function drawRobot(ctx, b, G) {
+    var work = b.state === 'work', x = b.x, bob = Math.sin(b.anim * 10) * (b.state === 'walk' || b.state === 'retreat' ? 1.2 : 0);
+    ellipse(ctx, x, G + 1, 12, 3, 'rgba(0,0,0,0.25)');
+    circle(ctx, x - 6, G - 4, 4, '#2a2a2a'); circle(ctx, x + 6, G - 4, 4, '#2a2a2a');            // גלגלים
+    ctx.fillStyle = '#c9a227'; rr(ctx, x - 10, G - 24 + bob, 20, 16, 4); ctx.fill();               // גוף
+    ctx.fillStyle = '#2a2e34'; rr(ctx, x - 7, G - 36 + bob, 14, 11, 3); ctx.fill();                 // ראש
+    circle(ctx, x + 2, G - 31 + bob, 2.2, '#7fe0ff'); circle(ctx, x - 3, G - 31 + bob, 2.2, '#7fe0ff');
+    line(ctx, x, G - 36 + bob, x, G - 42 + bob, '#444', 1.5); circle(ctx, x, G - 43 + bob, 1.8, Math.sin(b.anim * 6) > 0 ? '#ff4a4a' : '#5a1a1a');
+    var a = work ? -0.8 + Math.abs(Math.sin(b.anim * 9)) * 1.4 : 0.2;                               // זרוע מכנית
+    ctx.save(); ctx.translate(x + 8, G - 18 + bob); ctx.rotate(a); line(ctx, 0, 0, 13, 0, '#888', 3); ctx.fillStyle = '#ddd'; ctx.fillRect(12, -3, 5, 6); ctx.restore();
+    if (work && Math.sin(b.anim * 18) > 0.6) glow(ctx, x + 22, G - 22, 7, 'rgba(120,220,255,0.95)');     // ניצוצות ריתוך
+  }
   function drawSupport(ctx, s) {
     var G = C().world.groundY, t = s.t || 0, i;
+    if (W2) {
+      if (s.support.chemists) {                    // עמדת מהנדסים: שולחן, מחשב ואנטנת לוויין
+        var lx = s.tower.x - 58;
+        ctx.fillStyle = '#4a4a50'; ctx.fillRect(lx - 18, G - 22, 38, 5); ctx.fillRect(lx - 16, G - 17, 3, 17); ctx.fillRect(lx + 14, G - 17, 3, 17);
+        ctx.fillStyle = '#1c2026'; ctx.fillRect(lx - 8, G - 38, 18, 13); ctx.fillStyle = Math.sin(t * 3) > 0 ? '#5ad1ff' : '#3aa1df'; ctx.fillRect(lx - 6, G - 36, 14, 9);
+        line(ctx, lx + 22, G - 22, lx + 22, G - 50, '#555', 2); ctx.beginPath(); ctx.arc(lx + 22, G - 54, 9, Math.PI * 0.1, Math.PI * 1.1); ctx.strokeStyle = '#bbb'; ctx.lineWidth = 3; ctx.stroke();
+        for (i = 0; i < s.support.chemists; i++)
+          humanoid(ctx, lx - 22 + i * 14, G, { scale: 0.62, tunic: '#3d4a58', helm: 'cap', helmColor: '#2a2e34', skin: '#e0b48a', walk: t });
+        if (s.research) bar(ctx, lx, G - 70, 40, s.research.progress, '#5ad1ff');
+      }
+      for (i = 0; i < s.support.builders.length; i++) drawRobot(ctx, s.support.builders[i], G);
+      return;
+    }
     if (s.support.chemists) {                      // מעבדה משמאל למגדל
       var lx = s.tower.x - 58;
       ctx.fillStyle = '#5a3a1a'; ctx.fillRect(lx - 16, G - 22, 34, 6); ctx.fillRect(lx - 14, G - 16, 4, 16); ctx.fillRect(lx + 12, G - 16, 4, 16);
@@ -3370,7 +3656,7 @@ TD.Render = (function () {
       var c = s.corpses[i], d = TD.CONFIG.soldiers.types[c.type];
       if (c.tower) continue;
       ctx.save(); ctx.globalAlpha = 0.55; ctx.translate(c.x, G); ctx.rotate(-Math.PI / 2);
-      humanoid(ctx, 0, 0, { scale: 0.8, tunic: d.color, helm: 'helmet' }); ctx.restore();
+      humanoid(ctx, 0, 0, { scale: 0.8, tunic: d.color, helm: W2 ? 'combat' : 'helmet' }); ctx.restore();
       ctx.beginPath(); ctx.arc(c.x, G - 30, 11, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (c.life / TD.CONFIG.soldiers.corpseLife));
       ctx.strokeStyle = c.claimed ? '#7dff9b' : '#ff8a80'; ctx.lineWidth = 2.5; ctx.stroke();
       ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(c.claimed ? '🩺' : '🩹', c.x, G - 26);
@@ -3425,6 +3711,98 @@ TD.Render = (function () {
     if (weapon) weapon(ctx);
     ctx.restore();
   }
+  /* ---------- v3.4: אויבי עולם 2 — חיילים, כלבים, רכבים, רחפנים ומסוקים ---------- */
+  function soldierE(ctx, e, sc, wpn, o) {
+    o = o || {};
+    humanoid(ctx, e.x, e.y, { mirror: true, scale: sc, skin: o.skin || '#c99a6e', tunic: o.tunic || e.def.color, pants: o.pants || '#7a6448', belt: '#3a3020',
+      moving: !e.attacking && !(e.def.holdX && e.x <= e.def.holdX), walk: e.anim, flash: e.hitFlash > 0, eye: '#1a1a1a',
+      helm: o.helm || 'combat', helmColor: o.helmColor || '#8a7452', vest: o.vest || null, weapon: wpn });
+  }
+  function shotFlash(e) { return e.atkTimer > e.def.cooldown - 0.12 ? 0.2 : 0; }
+  function vehicleTracks(ctx, x, y, w, wheels, rot, col) {
+    ctx.fillStyle = col || '#2a2a2a'; rr(ctx, x - w / 2, y - 14, w, 14, 7); ctx.fill();
+    for (var i = 0; i < wheels; i++) { var wx = x - w / 2 + 8 + i * ((w - 16) / Math.max(1, wheels - 1)); circle(ctx, wx, y - 7, 5, '#555'); ctx.save(); ctx.translate(wx, y - 7); ctx.rotate(rot); line(ctx, -4, 0, 4, 0, '#888', 1.5); ctx.restore(); }
+  }
+  var ENEMY_W2 = {
+    knifer: function (ctx, e) { soldierE(ctx, e, 0.8, gunArm('knife', e.lunge > 0 ? 0.2 : 0), { helm: 'mask', helmColor: '#2a2622', tunic: '#a88a64' }); },
+    rifleman: function (ctx, e) { soldierE(ctx, e, 0.86, gunArm('rifle', shotFlash(e), { flash: true, color: '#3a3226' })); },
+    heavyGunner: function (ctx, e) { soldierE(ctx, e, 1.12, gunArm('lmg', shotFlash(e), { flash: true }), { vest: '#5a4a34', helmColor: '#6a5a40' }); },
+    officer: function (ctx, e) {
+      soldierE(ctx, e, 0.92, gunArm('pistol', shotFlash(e), { flash: true }), { helm: 'beret', helmColor: '#6b1f2a', tunic: '#7a6a4a' });
+      if (e.sumTimer != null && e.sumTimer < 1) { ctx.fillStyle = '#ffe08a'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('📢', e.x, e.y - 74); }
+    },
+    enemySniper: function (ctx, e) {
+      soldierE(ctx, e, 0.84, gunArm('sniper', shotFlash(e), { flash: true }), { helm: 'mask', helmColor: '#5a6a3a', tunic: '#6a7a4a', pants: '#5a6a3a' });
+      if (e.atkTimer < 0.4 && e.attacking) { ctx.save(); ctx.globalAlpha = 0.5; line(ctx, e.x - 36, e.y - 37, e.x - 260, e.y - 30, '#ff3b3b', 1); ctx.restore(); }   // קרן לייזר כוונת
+    },
+    mortarTeam: function (ctx, e) {
+      var x = e.x, y = e.y, fl = e.hitFlash > 0;
+      ellipse(ctx, x, y + 1, 30, 5, 'rgba(0,0,0,0.25)');
+      ctx.save(); ctx.translate(x - 16, y - 8); ctx.rotate(-0.9 - (e.atkTimer > e.def.cooldown - 0.3 ? 0.08 : 0));
+      ctx.fillStyle = fl ? '#fff' : '#3e4a32'; ctx.fillRect(-3, -4, 30, 8); ctx.restore();
+      line(ctx, x - 14, y - 10, x - 6, y, '#333', 2); circle(ctx, x - 16, y - 2, 5, '#444');
+      if (e.atkTimer > e.def.cooldown - 0.25) glow(ctx, x - 34, y - 34, 14, 'rgba(255,200,90,0.9)');
+      soldierE(ctx, { x: x + 12, y: y, anim: e.anim, hitFlash: e.hitFlash, def: e.def, attacking: true, atkTimer: 9 }, 0.72, null, { helmColor: '#7a6a4a' });
+    },
+    dog: function (ctx, e) {
+      var fl = e.hitFlash > 0, run = Math.sin(e.anim * 16) * 6, x = e.x, y = e.y, fur = fl ? '#fff' : e.def.color;
+      ctx.save(); ctx.translate(x, y); ctx.scale(-1, 1);
+      ellipse(ctx, 0, 1, 22, 4, 'rgba(0,0,0,0.25)');
+      line(ctx, -12, -12, -14 - run, 0, fur, 4); line(ctx, -5, -12, -5 + run, 0, fur, 4); line(ctx, 10, -12, 8 + run, 0, fur, 4); line(ctx, 16, -12, 18 - run, 0, fur, 4);
+      ellipse(ctx, 2, -17, 19, 8, fur); ctx.fillStyle = fl ? '#fff' : '#b08a5a'; ctx.fillRect(-6, -21, 12, 6);              // אפוד
+      ctx.beginPath(); ctx.moveTo(-18, -19); ctx.quadraticCurveTo(-28, -26, -26, -14); ctx.strokeStyle = fur; ctx.lineWidth = 3; ctx.stroke();
+      ellipse(ctx, 22, -23, 8, 7, fur); ctx.beginPath(); ctx.moveTo(26, -22); ctx.lineTo(36, -18); ctx.lineTo(26, -16); ctx.fillStyle = fur; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(18, -28); ctx.lineTo(19, -37); ctx.lineTo(24, -29); ctx.fill();
+      ctx.fillStyle = '#c23a2a'; ctx.fillRect(14, -21, 3, 6);                                                                  // קולר
+      circle(ctx, 26, -25, 1.6, '#ffcf3a'); ctx.restore();
+    },
+    drone: function (ctx, e) {
+      var fl = e.hitFlash > 0, x = e.x, y = e.y + Math.sin(e.anim * 6) * 5, b = fl ? '#fff' : e.def.color;
+      ellipse(ctx, x, C().world.groundY + 2, 10, 3, 'rgba(0,0,0,0.15)');
+      line(ctx, x - 14, y - 6, x + 14, y + 4, b, 2.5); line(ctx, x - 14, y + 4, x + 14, y - 6, b, 2.5);
+      [[-14, -6], [14, 4], [-14, 4], [14, -6]].forEach(function (p, i) { ctx.save(); ctx.globalAlpha = 0.55; ellipse(ctx, x + p[0], y + p[1] - 3, 8 * Math.abs(Math.cos(e.anim * 40 + i)), 2, '#cfd6dc'); ctx.restore(); });
+      ctx.fillStyle = b; rr(ctx, x - 6, y - 5, 12, 9, 3); ctx.fill();
+      circle(ctx, x, y + 6, 3, '#c23a2a'); if (Math.sin(e.anim * 8) > 0) circle(ctx, x - 4, y - 2, 1.4, '#ff3b3b');
+    },
+    heli: function (ctx, e) {
+      var fl = e.hitFlash > 0, x = e.x, y = e.y + Math.sin(e.anim * 2.4) * 7, b = fl ? '#fff' : e.def.color, sc = e.def.boss ? 1.7 : 1;
+      ellipse(ctx, x, C().world.groundY + 2, 30 * sc, 5, 'rgba(0,0,0,0.18)');
+      ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+      ctx.fillStyle = b; ctx.beginPath(); ctx.ellipse(0, 0, 22, 10, 0, 0, Math.PI * 2); ctx.fill();          // גוף
+      ctx.fillRect(14, -3, 30, 5); ctx.beginPath(); ctx.moveTo(42, -3); ctx.lineTo(48, -14); ctx.lineTo(48, 2); ctx.closePath(); ctx.fill();   // זנב
+      ctx.fillStyle = 'rgba(160,210,240,0.85)'; ctx.beginPath(); ctx.ellipse(-12, -2, 9, 6, 0, Math.PI * 0.9, Math.PI * 2.1); ctx.fill();      // חלון
+      line(ctx, -10, 10, 12, 10, '#222', 2); line(ctx, -6, 6, -8, 10, '#222', 2); line(ctx, 8, 6, 10, 10, '#222', 2);                       // מגלשיים
+      line(ctx, 0, -10, 0, -14, '#222', 2);
+      ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#d0d4d8'; ctx.fillRect(-34 * Math.abs(Math.cos(e.anim * 30)), -16, 68 * Math.abs(Math.cos(e.anim * 30)), 2); ctx.restore();
+      circle(ctx, 48, -6, 4 * Math.abs(Math.sin(e.anim * 30)), 'rgba(200,200,200,0.5)');
+      if (e.def.boss) { ctx.fillStyle = '#2a2e30'; ctx.fillRect(-8, 6, 16, 4); ctx.fillRect(-10, 8, 6, 3); ctx.fillRect(4, 8, 6, 3); }
+      if (e.attacking && e.atkTimer > e.def.cooldown - 0.3) glow(ctx, -24, 4, 10, 'rgba(255,170,60,0.9)');
+      ctx.restore();
+    },
+    apc: function (ctx, e) {
+      var fl = e.hitFlash > 0, x = e.x, y = e.y, b = fl ? '#fff' : e.def.color, rot = -e.x / 10;
+      ellipse(ctx, x, y + 2, 40, 6, 'rgba(0,0,0,0.3)');
+      for (var i = 0; i < 4; i++) { circle(ctx, x - 24 + i * 16, y - 8, 8, '#2a2a2a'); circle(ctx, x - 24 + i * 16, y - 8, 3, '#666'); }
+      ctx.fillStyle = b; ctx.beginPath(); ctx.moveTo(x - 38, y - 12); ctx.lineTo(x - 30, y - 36); ctx.lineTo(x + 30, y - 36); ctx.lineTo(x + 38, y - 16); ctx.lineTo(x + 38, y - 12); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x - 20, y - 30, 8, 5); ctx.fillRect(x - 6, y - 30, 8, 5);
+      ctx.fillStyle = fl ? '#fff' : '#4d5338'; rr(ctx, x - 8, y - 46, 20, 11, 3); ctx.fill(); ctx.fillStyle = '#222'; ctx.fillRect(x - 30, y - 43, 24, 4);
+      if (shotFlash(e)) glow(ctx, x - 32, y - 41, 9, 'rgba(255,200,80,0.95)');
+    },
+    tank: function (ctx, e) {
+      var fl = e.hitFlash > 0, x = e.x, y = e.y, b = fl ? '#fff' : e.def.color, rot = -e.x / 9;
+      glow(ctx, x, y - 40, 80, 'rgba(255,120,40,0.18)');
+      ellipse(ctx, x, y + 3, 66, 8, 'rgba(0,0,0,0.35)');
+      vehicleTracks(ctx, x, y, 124, 6, rot);
+      ctx.fillStyle = b; ctx.beginPath(); ctx.moveTo(x - 64, y - 14); ctx.lineTo(x - 54, y - 34); ctx.lineTo(x + 56, y - 34); ctx.lineTo(x + 64, y - 14); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = fl ? '#fff' : '#4a5232'; rr(ctx, x - 26, y - 56, 56, 24, 8); ctx.fill();                     // צריח
+      var recoil = e.atkTimer > e.def.cooldown - 0.25 ? 8 : 0;
+      ctx.fillStyle = '#3a3e2a'; ctx.fillRect(x - 86 + recoil, y - 49, 62, 7); ctx.fillRect(x - 90 + recoil, y - 51, 8, 11);
+      if (recoil) glow(ctx, x - 96, y - 46, 22, 'rgba(255,190,80,0.95)');
+      line(ctx, x + 18, y - 56, x + 26, y - 74, '#333', 2);
+      ctx.fillStyle = '#c9a227'; ctx.fillRect(x - 10, y - 30, 14, 3);
+    },
+    gunship: function (ctx, e) { ENEMY_W2.heli(ctx, e); }
+  };
   var ENEMY_DRAW = {
     goblin: function (ctx, e) {
       humanoid(ctx, e.x, e.y, { mirror: true, scale: 0.78, skin: e.def.color, tunic: '#6b4a2b', ears: true, moving: !e.attacking, walk: e.anim, flash: e.hitFlash > 0, eye: '#ffeb3b',
@@ -3622,7 +4000,7 @@ TD.Render = (function () {
   };
 
   function drawEnemy(ctx, e) {
-    var f = ENEMY_DRAW[e.def.shape] || ENEMY_DRAW.goblin;
+    var f = ENEMY_W2[e.def.shape] || ENEMY_DRAW[e.def.shape] || ENEMY_DRAW.goblin;
     var top0 = e.y - e.def.size * (e.def.flying ? 1.2 : 2);
     if (e.elite) glow(ctx, e.x, top0, e.def.size * 2.6, 'rgba(255,205,60,0.5)');
     if (e.pvp) glow(ctx, e.x, top0, e.def.size * 2.2, 'rgba(255,60,60,0.45)');
@@ -3652,7 +4030,19 @@ TD.Render = (function () {
     if (p.delay > 0) return;
     var a = Math.atan2(p.vy, p.vx);
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
-    switch (p.kind) {
+    var kind = p.kind;
+    if (W2) kind = { arrow: 'tracer', bolt: 'tracer', firebolt: 'tracerFire', fireball: 'grenade', rain: 'missile', orb: 'tracer', stone: 'grenade' }[kind] || kind;
+    switch (kind) {
+      case 'tracer':
+        line(ctx, -18, 0, 4, 0, 'rgba(255,220,120,0.35)', 4); line(ctx, -14, 0, 4, 0, '#fff3b0', 1.8); break;
+      case 'tracerFire':
+        glow(ctx, 0, 0, 10, 'rgba(255,120,30,0.7)'); line(ctx, -16, 0, 4, 0, '#ffb35c', 2.5); break;
+      case 'grenade':
+        ctx.rotate(p.life * 12); ctx.fillStyle = '#3e4a32'; ctx.beginPath(); ctx.ellipse(0, 0, 6, 4.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#c9a227'; ctx.fillRect(-1, -5, 2, 3); break;
+      case 'missile': case 'rocket':
+        for (var sm = 1; sm <= 3; sm++) { ctx.globalAlpha = 0.35 / sm; circle(ctx, -10 - sm * 7, 0, 3 + sm, '#bbb'); }
+        ctx.globalAlpha = 1; glow(ctx, -10, 0, 8, 'rgba(255,150,40,0.9)');
+        ctx.fillStyle = '#d8dde3'; ctx.fillRect(-8, -2.5, 16, 5); ctx.beginPath(); ctx.moveTo(8, -2.5); ctx.lineTo(13, 0); ctx.lineTo(8, 2.5); ctx.fillStyle = '#c23a2a'; ctx.fill(); break;
       case 'arrow': case 'rain':
         line(ctx, -16, 0, 4, 0, '#d9c49a', 2);
         ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(2, -3); ctx.lineTo(2, 3); ctx.fillStyle = '#ccc'; ctx.fill();
@@ -3699,6 +4089,14 @@ TD.Render = (function () {
       ctx.beginPath(); ctx.arc(fx.x, fx.y, mr, 0, Math.PI * 2); ctx.stroke();
       line(ctx, fx.x - mr - 5, fx.y, fx.x - mr + 3, fx.y, '#fff59d', 2); line(ctx, fx.x + mr - 3, fx.y, fx.x + mr + 5, fx.y, '#fff59d', 2);
       line(ctx, fx.x, fx.y - mr - 5, fx.x, fx.y - mr + 3, '#fff59d', 2);
+    } else if (fx.type === 'bolt' && W2) {    // עולם 2: קרן לייזר מהלוויין
+      ctx.globalAlpha = Math.max(0, k);
+      line(ctx, fx.x + 40, fx.y - 220, fx.x, fx.y, 'rgba(255,60,60,0.35)', 9); line(ctx, fx.x + 40, fx.y - 220, fx.x, fx.y, '#ffd0d0', 2.5);
+      glow(ctx, fx.x, fx.y, 18, 'rgba(255,90,90,0.8)');
+    } else if (fx.type === 'flash' && W2) {   // פולס EMP
+      ctx.globalAlpha = Math.max(0, k) * 0.35; ctx.fillStyle = '#9be7ff'; ctx.fillRect(-400, -400, 1800, 1400);
+      ctx.globalAlpha = Math.max(0, k);
+      for (var er = 0; er < 3; er++) { ctx.beginPath(); ctx.arc(480, 300, (1 - k) * 700 + er * 60, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(140,220,255,0.8)'; ctx.lineWidth = 6; ctx.stroke(); }
     } else if (fx.type === 'bolt') {          // מכת לחיצה — ברק מהשמיים
       ctx.strokeStyle = '#fff59d'; ctx.lineWidth = 3; ctx.shadowColor = '#ffe066'; ctx.shadowBlur = 14;
       ctx.beginPath(); ctx.moveTo(fx.x + (Math.random() - 0.5) * 30, fx.y - 160);
@@ -3726,6 +4124,7 @@ TD.Render = (function () {
   /* ---------- ציור כללי ---------- */
   R.draw = function (ctx, s, v) {
     if (!scene) scene = buildScene();
+    W2 = !!(s && s.world === 2);
     ctx.setTransform(v.dpr * v.scale, 0, 0, v.dpr * v.scale, 0, 0);
     ctx.direction = 'ltr'; // הדף RTL — מספרים בקנבס חייבים LTR (+12 ולא 12+)
     ctx.translate(v.ox, v.oy);
@@ -3749,8 +4148,14 @@ TD.Render = (function () {
     if (s.meteors) for (i = 0; i < s.meteors.length; i++) {      // מטאור נופל
       var mt = s.meteors[i], pr = 1 - mt.t / mt.max, my = -60 + (mt.y + 60) * pr, mx = mt.x + 120 * (1 - pr);
       ctx.save(); ctx.globalAlpha = 0.25 + 0.35 * pr; ellipse(ctx, mt.x, mt.y + 10, mt.r, 10, '#ff7b2e'); ctx.restore();
+      if (W2) {                                   // פצצה ממטוס
+        ctx.save(); ctx.translate(mx, my); ctx.rotate(-0.85); ctx.fillStyle = '#3e4a32'; rr(ctx, -16, -6, 30, 12, 6); ctx.fill();
+        ctx.fillStyle = '#2a2e30'; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(-26, -9); ctx.lineTo(-26, 9); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#c9a227'; ctx.fillRect(4, -6, 3, 12); ctx.restore();
+        if (pr < 0.3) { ctx.save(); ctx.globalAlpha = 0.5; ctx.fillStyle = '#3a3a3a'; ctx.beginPath(); ctx.moveTo(mx + 200, 40); ctx.lineTo(mx + 260, 30); ctx.lineTo(mx + 250, 46); ctx.closePath(); ctx.fill(); ctx.restore(); }
+      } else {
       glow(ctx, mx, my, 40, 'rgba(255,120,30,0.8)'); circle(ctx, mx, my, 14, '#5a3a22'); circle(ctx, mx - 4, my - 4, 5, '#ffb35c');
       for (var tr = 1; tr <= 4; tr++) glow(ctx, mx + tr * 14, my - tr * 16, 16 - tr * 3, 'rgba(255,160,60,0.5)');
+      }
     }
     for (i = 0; i < s.projectiles.length; i++) drawProjectile(ctx, s.projectiles[i]);
     for (i = 0; i < s.effects.length; i++) drawEffect(ctx, s.effects[i], s);
@@ -3814,7 +4219,7 @@ TD.UI = (function () {
 
   /* ---------- הודעות ---------- */
   function toast(msg) {
-    var el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
+    var el = document.createElement('div'); el.className = 'toast'; el.textContent = T(msg);
     var box = $('toasts'); box.appendChild(el);
     while (box.children.length > 2) box.removeChild(box.firstChild);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
@@ -3823,8 +4228,8 @@ TD.UI = (function () {
   function banner(title, sub) {
     var b = $('banner');
     b.innerHTML = '';
-    b.appendChild(document.createTextNode(title));
-    if (sub) { var sm = document.createElement('small'); sm.textContent = sub; b.appendChild(sm); }
+    b.appendChild(document.createTextNode(T(title)));
+    if (sub) { var sm = document.createElement('small'); sm.textContent = T(sub); b.appendChild(sm); }
     b.classList.add('show'); bannerTimer = 2.2;
   }
   U.banner = banner;
@@ -3833,6 +4238,7 @@ TD.UI = (function () {
 
   /* ---------- מסך פתיחה ---------- */
   U.buildStart = function () {
+    TD.applySkin(U.selectedWorld === 2 && TD.storage.get('world2', false) ? 2 : 1); U.applyWorldLabels();   // v3.4: הנשקים לפי העולם שנבחר
     var box = $('weaponCards'); box.innerHTML = '';
     var W = TD.CONFIG.weapons;
     Object.keys(W).forEach(function (id) {
@@ -3863,6 +4269,7 @@ TD.UI = (function () {
   };
 
   U.onStart = function () {
+    U.applyWorldLabels();
     var s = TD.game; U.armed = null; magicKey = ''; $('magicBar').innerHTML = ''; $('toasts').innerHTML = ''; $('banner').classList.remove('show');
     show('screenStart', false); show('screenOver', false); show('screenPause', false); show('lobby', false); show('hud', true);
     document.body.classList.add('playing');
@@ -4069,15 +4476,28 @@ TD.UI = (function () {
     var r = document.createElement('div'); r.className = 'row';
     r.innerHTML = '<div class="ic"></div><div class="tx"><b></b><span></span><br><em></em></div><button class="buy"></button>';
     r.querySelector('.ic').textContent = icon;
-    r.querySelector('b').textContent = title;
-    r.querySelector('span').textContent = desc;
-    r.querySelector('em').textContent = extra || '';
+    r.querySelector('b').textContent = T(title);
+    r.querySelector('span').textContent = T(desc);
+    r.querySelector('em').textContent = T(extra || '');
     if (warn) r.querySelector('em').className = 'warn';
     var b = r.querySelector('.buy'); b.textContent = btnText; b.disabled = !enabled;
     b.onclick = function () { if (onBuy()) { SFX.up(); U.renderPanel(); U.syncButtons(); } };
     return r;
   }
-  function note(text) { var d = document.createElement('div'); d.className = 'row head'; d.textContent = text; return d; }
+  // v3.4: מונחים לפי עולם — בעולם 2 מגדל=בונקר, בנאים=רובוטים, קסמים=ציוד...
+  var W2WORDS = [['המגדל', 'הבונקר'], ['מגדל', 'בונקר'], ['בנאים', 'רובוטים'], ['בנאי', 'רובוט'], ['כימאי', 'מהנדס'], ['לחשים', 'יכולות'], ['לחש', 'יכולת'],
+    ['קסמים', 'ציוד'], ['שיקויים', 'ערכות'], ['קשתים', 'צלפים'], ['רופא', 'חובש'], ['🔮 מאגר קסם', '🔋 סוללה מוגדלת'], ['👷', '🤖'], ['🧑‍🔬', '👨‍💻'], ['🔮', '🛰️']];
+  function T(text) {
+    if (TD.skinWorld !== 2 || !text) return text;
+    for (var i = 0; i < W2WORDS.length; i++) text = text.split(W2WORDS[i][0]).join(W2WORDS[i][1]);
+    return text;
+  }
+  U.T = T;
+  U.applyWorldLabels = function () {
+    var w = TD.skinWorld === 2 ? 'w2' : 'w1';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-w1]'), function (el) { el.textContent = el.getAttribute('data-' + w); });
+  };
+  function note(text) { var d = document.createElement('div'); d.className = 'row head'; d.textContent = T(text); return d; }
   function pips(level, max) { var t = ''; for (var i = 0; i < max; i++) t += i < level ? '●' : '○'; return t; }
 
   U.renderPanel = function () {
@@ -4112,7 +4532,7 @@ TD.UI = (function () {
       L.appendChild(note('⚡ כוח מיוחד הבא: דמות שלב ' + nextPow + (owned ? '   •   הכוחות שלך: ' + owned : '')));
       var slots = TD.postSlots(s);
       L.appendChild(note('⚙️ עמדות הגנה: ' + slots + '/' + C.posts.maxSlots + (slots < C.posts.maxSlots ? '   •   עמדה הבאה: מגדל שלב ' + (slots + 1) * C.posts.slotEvery : '') + '   •   טאב 🧱 ביצורים'));
-      L.appendChild(note('🌍 עולם ' + (s.world || 1) + (s.world === 2 ? ' — עולם המתים' : '   •   בגל ' + C.worlds.unlockWave + ' נפתח עולם 2')));
+      L.appendChild(note('🌍 עולם ' + (s.world || 1) + (s.world === 2 ? ' — עולם החיילים' : '   •   בגל ' + C.worlds.unlockWave + ' נפתח עולם 2')));
     } else if (panelTab === 'skills') {
       L.appendChild(note('⭐ שדרוגים קבועים. כל שלב הבא נפתח כל ' + C.gates.heroPerLevel + ' שלבי דמות'));
       Object.keys(C.skills).forEach(function (id) {
@@ -4846,7 +5266,7 @@ TD.Social = (function () {
     return '';
   };
   S.shareText = function (s) {
-    var base = s && !s.pvp ? '🏰 הגעתי לגל ' + s.wave + (s.world === 2 ? ' בעולם המתים' : '') + ' במגדל האגדות! ' + (s.stats.kills | 0) + ' אויבים הובסו. תצליח לעקוף אותי?' :
+    var base = s && !s.pvp ? '🏰 הגעתי לגל ' + s.wave + (s.world === 2 ? ' בעולם החיילים' : '') + ' במגדל האגדות! ' + (s.stats.kills | 0) + ' אויבים הובסו. תצליח לעקוף אותי?' :
       '🏰 מגדל האגדות — משחק הגנת מגדל לנייד. בוא לנסות לעקוף את השיא שלי!';
     var u = S.shareUrl();
     return u ? base + '\n' + u : base;
@@ -4992,7 +5412,7 @@ TD.Social = (function () {
     var s = TD.game;
     try {
       if (s && !s.paused) for (var i = 0; i < (s.speed || 1); i++) TD.update(s, dt);
-      if (!s) { menuState.t += dt; menuState.hero.anim += dt; }
+      if (!s) { menuState.t += dt; menuState.hero.anim += dt; menuState.world = TD.skinWorld; }
       TD.Render.draw(ctx, s || menuState, view);
       TD.UI.tick(s, dt);
       if (TD.Net) TD.Net.tick(dt);
