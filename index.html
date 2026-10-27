@@ -72,12 +72,12 @@ body.panel-open #toasts{display:none}
 /* ---------- מסכים ---------- */
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;
   background:radial-gradient(ellipse at center,rgba(20,18,34,.55),rgba(10,8,20,.92));z-index:20;overflow:auto}
-.title{font-size:clamp(28px,6vw,52px);font-weight:900;margin:0;letter-spacing:1px;
+.title{font-size:clamp(28px,calc(var(--vw,1vw) * 6),52px);font-weight:900;margin:0;letter-spacing:1px;
   background:linear-gradient(180deg,#fff3c4,#ffb347);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 3px 0 #5a2a00)}
 .sub{color:var(--dim);margin:0;font-size:14px;text-align:center}
 .cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.card{width:min(30vw,210px);min-width:150px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;text-align:center;
+.card{width:min(calc(var(--vw,1vw) * 30),210px);min-width:150px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;text-align:center;
   display:flex;flex-direction:column;gap:6px;align-items:center;transition:transform .12s,border-color .12s}
 .card:active,.card:hover{transform:translateY(-3px);border-color:var(--gold)}
 .card .big{font-size:40px}
@@ -92,7 +92,7 @@ body.playing .ver{display:none}
 
 /* ---------- חלון חנות/שדרוגים ---------- */
 .panel{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
-.box{width:min(94vw,640px);max-height:92vh;background:var(--panel);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;overflow:hidden}
+.box{width:min(calc(var(--vw,1vw) * 94),640px);max-height:calc(var(--vh,1vh) * 92);background:var(--panel);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;overflow:hidden}
 .tabs{display:flex;border-bottom:1px solid var(--line)}
 .tabs button{flex:1;padding:11px 6px;background:none;font-weight:800;font-size:15px;color:var(--dim)}
 .tabs button.on{color:var(--txt);box-shadow:inset 0 -3px 0 var(--gold)}
@@ -112,7 +112,8 @@ body.playing .ver{display:none}
 #rotate{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-size:20px;font-weight:800;text-align:center;padding:20px}
 #rotate .ph{font-size:56px;animation:rot 1.6s ease-in-out infinite}
 @keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
-@media (orientation:portrait) and (max-width:820px){#rotate{display:flex}}
+/* v3.5: במקום "סובב את הטלפון" — המשחק עצמו מסתובב לרוחב כשהטלפון לאורך */
+body.vland{position:fixed;top:0;left:0;transform-origin:top left;transform:rotate(-90deg) translateX(-100%)}
 @media (max-height:420px){.act{padding:5px 8px;min-width:62px;font-size:12px}.act .ic{font-size:17px}.ability{width:66px;height:66px;font-size:26px}.chip{font-size:13px;padding:4px 9px}}
 
 /* ---------- v2.0 ---------- */
@@ -134,7 +135,7 @@ body.pvp .solo-only{display:none!important}
 .pvpline{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
 .pvpline .act{pointer-events:auto;flex-direction:row;font-size:15px;padding:10px 16px}
 .pvpline .act:disabled{opacity:.45}
-.lobbybox{display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;max-width:min(92vw,560px)}
+.lobbybox{display:flex;flex-direction:column;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;max-width:min(calc(var(--vw,1vw) * 92),560px)}
 .joinrow{display:flex;gap:8px}
 .joinrow input{width:110px;font:inherit;font-size:22px;font-weight:800;text-align:center;letter-spacing:4px;text-transform:uppercase;
   background:rgba(0,0,0,.4);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:6px}
@@ -148,7 +149,7 @@ body.pvp .solo-only{display:none!important}
 .card.perk .big{font-size:44px}
 
 /* ---------- v2.1: סרגל לחשים ושיקויים ---------- */
-.magicbar{position:absolute;right:10px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;max-width:60vw;pointer-events:none}
+.magicbar{position:absolute;right:10px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;max-width:calc(var(--vw,1vw) * 60);pointer-events:none}
 .mb{pointer-events:auto;position:relative;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3b3170,#1b1638);
   border:2px solid #8f7fe0;font-size:21px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.4);overflow:hidden}
 .mb.potion{border-radius:14px;background:radial-gradient(circle at 40% 35%,#5a2a2a,#2a1414);border-color:#e08f7f}
@@ -183,7 +184,7 @@ body.armed canvas{cursor:crosshair}
 .nameline{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;pointer-events:auto}
 .nameline input,#overName{pointer-events:auto;background:rgba(0,0,0,.35);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;width:150px;user-select:text;-webkit-user-select:text}
 .nameline .act{flex-direction:row;font-size:14px;padding:8px 14px}
-.board{width:min(560px,92vw);max-height:46vh;overflow:auto;pointer-events:auto;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:4px}
+.board{width:min(560px,calc(var(--vw,1vw) * 92));max-height:calc(var(--vh,1vh) * 46);overflow:auto;pointer-events:auto;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:4px}
 .board .br{display:grid;grid-template-columns:34px 1fr auto auto;gap:10px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-size:14px}
 .board .br:last-child{border-bottom:0}
 .board .br .rk{font-weight:900;color:var(--dim);text-align:center}
@@ -205,7 +206,7 @@ body.armed canvas{cursor:crosshair}
 
 /* v3.2 — הורדה לטלפון */
 #installSheet{z-index:30}
-.installsteps{max-width:min(620px,92vw);font-size:15px;line-height:1.55;text-align:right;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:10px 16px}
+.installsteps{max-width:min(620px,calc(var(--vw,1vw) * 92));font-size:15px;line-height:1.55;text-align:right;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r);padding:10px 16px}
 .installsteps ol{margin:4px 0;padding-inline-start:20px}
 .installsteps b{color:var(--gold)}
 .installsteps .url{direction:ltr;unicode-bidi:embed;color:var(--en);word-break:break-all}
@@ -218,6 +219,15 @@ body.armed canvas{cursor:crosshair}
 .resumerow .primary{font-size:17px;padding:10px 24px}
 @media (orientation:landscape) and (max-height:500px){#screenStart{gap:8px}}
 @media (orientation:landscape) and (max-height:500px){#screenStart .title{font-size:40px;margin:0;line-height:1.1}#screenStart{justify-content:flex-start;padding-top:10px}#screenStart .card{padding-top:8px;padding-bottom:8px}#screenStart .card .big{font-size:40px}}
+
+/* v3.5: אותם כללי מסך-נמוך גם כשהמשחק מסובב וירטואלית (body.vland) */
+body.vland.h420 .act{padding:5px 8px;min-width:62px;font-size:12px}body.vland.h420 .act .ic{font-size:17px}body.vland.h420 .ability{width:66px;height:66px;font-size:26px}body.vland.h420 .chip{font-size:13px;padding:4px 9px}
+body.vland.h420 .magicbar{top:calc(54px + env(safe-area-inset-top))}body.vland.h420 .mb{width:40px;height:40px;font-size:18px}
+body.vland.h500 #screenOver{gap:8px}body.vland.h500 #screenOver .stats{grid-template-columns:repeat(4,auto);font-size:14px;gap:2px 14px}body.vland.h500 #screenOver .title{font-size:30px;margin:0}
+body.vland.h500 #screenBoard .title,body.vland.h500 #shareSheet .title{font-size:30px;margin:0}body.vland.h500 #screenBoard{gap:8px}
+body.vland.h500 #installSheet .title{font-size:30px;margin:0}body.vland.h500 #installSheet{gap:8px}
+body.vland.h500 #screenStart{gap:8px}
+body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body.vland.h500 #screenStart{justify-content:flex-start;padding-top:10px}body.vland.h500 #screenStart .card{padding-top:8px;padding-bottom:8px}body.vland.h500 #screenStart .card .big{font-size:40px}
 
 </style>
 </head>
@@ -388,7 +398,7 @@ body.armed canvas{cursor:crosshair}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '3.4.0';
+TD.VERSION = '3.5.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -4381,7 +4391,8 @@ TD.UI = (function () {
   U.bindTap = function (canvas, view) {
     canvas.addEventListener('pointerdown', function (ev) {
       var s = TD.game; if (!s || s.paused) return;
-      var x = ev.clientX / view.scale - view.ox, y = ev.clientY / view.scale - view.oy;
+      var pt = TD.screenToApp ? TD.screenToApp(ev.clientX, ev.clientY) : { x: ev.clientX, y: ev.clientY };   // v3.5: גם כשהמשחק מסובב
+      var x = pt.x / view.scale - view.ox, y = pt.y / view.scale - view.oy;
       if (U.armed) {                                   // לחש דרוך — הלחיצה מטילה אותו
         // הלחש נשאר בחור אחרי הטלה — אפשר ללחוץ שוב ושוב. ביטול: לחיצה נוספת על הלחש בסרגל
         var id = U.armed, st = TD.castState(s, id);
@@ -5380,8 +5391,24 @@ TD.Social = (function () {
   var canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   var view = { scale: 1, dpr: 1, vw: 960, vh: 540, ox: 0, oy: 0 };
 
+  // v3.5: טלפון לאורך → המשחק מסתובב לבד לרוחב ("רוחב וירטואלי"), בלי לבקש מהמשתמש לסובב
+  TD.vland = false;
+  function wantVirtualLandscape() {
+    var w = window.innerWidth, h = window.innerHeight;
+    return h > w && Math.min(w, h) <= 820 && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }
+  // נקודת מסך → נקודה בתוך האפליקציה המסובבת (rotate(-90deg): למעלה של המשחק = שמאל המסך)
+  TD.screenToApp = function (cx, cy) { return TD.vland ? { x: window.innerHeight - cy, y: cx } : { x: cx, y: cy }; };
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2), cw = window.innerWidth, ch = window.innerHeight;
+    TD.vland = wantVirtualLandscape();
+    var B = document.body;
+    B.classList.toggle('vland', TD.vland);
+    B.style.width = TD.vland ? window.innerHeight + 'px' : ''; B.style.height = TD.vland ? window.innerWidth + 'px' : '';
+    // יחידות vw/vh של העיצוב — לפי מידות האפליקציה (גם כשהיא מסובבת)
+    var appW = TD.vland ? window.innerHeight : window.innerWidth, appH = TD.vland ? window.innerWidth : window.innerHeight;
+    document.documentElement.style.setProperty('--vw', (appW / 100) + 'px'); document.documentElement.style.setProperty('--vh', (appH / 100) + 'px');
+    B.classList.toggle('h420', TD.vland && window.innerWidth <= 420); B.classList.toggle('h500', TD.vland && window.innerWidth <= 500);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2), cw = TD.vland ? window.innerHeight : window.innerWidth, ch = TD.vland ? window.innerWidth : window.innerHeight;
     canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
     canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px';
     var W = TD.CONFIG.world, sc = Math.min(cw / W.width, ch / W.height);
@@ -5391,6 +5418,19 @@ TD.Social = (function () {
   }
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', function () { setTimeout(resize, 200); });
+  // אנדרואיד בדפדפן: בלחיצה הראשונה — מסך מלא ונעילה לרוחב (שני כיווני הרוחב — מסתובב 180° לבד)
+  TD.tryLandscapeLock = function () {
+    try {
+      if (TD.lockTried || !screen.orientation || !screen.orientation.lock) return;
+      if (matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches) { screen.orientation.lock('landscape').catch(function () { }); return; }
+      if (!/android/i.test(navigator.userAgent || '') || /; wv\)/.test(navigator.userAgent || '') || window.self !== window.top) return;
+      TD.lockTried = true;
+      var el = document.documentElement, fs = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (!fs) return;
+      Promise.resolve(fs.call(el, { navigationUI: 'hide' })).then(function () { return screen.orientation.lock('landscape'); }).catch(function () { });
+    } catch (e) { }
+  };
+  document.addEventListener('pointerdown', function () { if (wantVirtualLandscape() || (screen.orientation && /portrait/.test(screen.orientation.type || ''))) TD.tryLandscapeLock(); }, true);
   resize();
 
   TD.game = null;
