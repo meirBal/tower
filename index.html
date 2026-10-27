@@ -233,6 +233,61 @@ body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body
 #perkCards .card.current{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,211,77,.35)}
 #perkCards .card .ab{color:#c9b6ff;font-size:13px;margin-top:6px}
 
+/* ---------- v4.0 מבוכי המגדל ---------- */
+.dgcall{background:linear-gradient(180deg,#5b3fa8,#2e1f63)!important;border-color:#b7a4ff!important}
+.dgcall small{color:#ffd34d;font-size:11px;margin-inline-start:4px}
+#dgHub{gap:9px;justify-content:flex-start;padding-top:calc(14px + env(safe-area-inset-top))}
+#dgHub .sub b{color:var(--gold)}
+.dgweapons,.dgtabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.dgweapons .act{flex-direction:row;gap:6px;padding:7px 12px;font-size:14px}
+.dgweapons .act small{color:var(--dim);font-size:11px}
+.dgtabs .act{flex-direction:row;padding:7px 12px;font-size:13px}
+.dgweapons .act.on,.dgtabs .act.on{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,211,77,.35)}
+.dgdaily{display:flex;gap:10px;align-items:center;background:linear-gradient(90deg,rgba(91,63,168,.45),rgba(20,18,34,.8));border:1px solid #8c7ae0;border-radius:16px;padding:8px 12px;flex-wrap:wrap;justify-content:center}
+.dgdaily>div{display:flex;flex-direction:column;gap:2px}
+.dgdaily .primary{font-size:15px;padding:8px 20px}
+.dgdaily .act{flex-direction:row;padding:8px 12px}
+.dglevels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(720px,calc(var(--vw,1vw) * 94))}
+.dglv{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:64px;transition:transform .1s}
+.dglv:active{transform:scale(.95)}
+.dglv b{font-size:19px;font-weight:900}
+.dglv span{font-size:11px;color:var(--dim);line-height:1.15;text-align:center;min-height:2.3em;display:flex;align-items:center}
+.dglv i{font-style:normal;color:var(--gold);font-size:13px;letter-spacing:1px;min-height:1em}
+.dglv.lock{opacity:.45}
+.dglv.boss{border-color:#a3453a;background:linear-gradient(180deg,rgba(120,30,25,.6),var(--panel))}
+body.dungeon #hud{display:none!important}
+#dgHud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#dgHud .top{gap:6px}
+.dghearts{font-size:14px;letter-spacing:-1px}
+.dgen{width:70px;flex:0 0 70px;height:10px}
+.dgname{font-size:12px;color:var(--dim);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:28%}
+#dgTime.late{color:#ff8a80}
+.dgpower{background:rgba(160,90,0,.7);border-color:#ffb347}
+#dgStick{position:absolute;left:0;top:56px;bottom:0;width:50%;pointer-events:auto;touch-action:none}
+#dgBase{position:fixed;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);opacity:0;pointer-events:none;transition:opacity .12s}
+#dgBase.on{opacity:1}
+#dgKnob{position:absolute;left:50%;top:50%;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.35);transform:translate(-50%,-50%)}
+.dghint{position:absolute;left:18px;bottom:calc(18px + env(safe-area-inset-bottom));font-size:12px;color:rgba(255,255,255,.35);font-weight:700}
+.dgbtn{pointer-events:auto;position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;color:#fff;font-weight:800}
+.dgbtn.atk{right:calc(18px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));width:84px;height:84px;font-size:34px;background:radial-gradient(circle at 40% 35%,#d64b3a,#6b1d14);border:3px solid #ff9f8f;box-shadow:0 0 16px rgba(255,90,60,.45)}
+.dgbtn.dash{right:calc(28px + env(safe-area-inset-right));bottom:calc(118px + env(safe-area-inset-bottom));width:64px;height:64px;font-size:22px;background:radial-gradient(circle at 40% 35%,#3aa0d6,#14426b);border:3px solid #8fd8ff;--cd:0deg}
+.dgbtn.dash::after{content:"";position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(rgba(0,0,0,.62) var(--cd),transparent 0);pointer-events:none}
+.dgbtn small{font-size:10px;line-height:1}
+.dgbtn.off{filter:grayscale(.7) brightness(.8)}
+.dgbtn:active{transform:scale(.93)}
+.dgstars{font-size:46px;color:var(--gold);letter-spacing:6px;text-shadow:0 3px 0 #6a4200;line-height:1}
+.h420 .dgbtn.atk{width:72px;height:72px;font-size:28px}.h420 .dgbtn.dash{width:56px;height:56px;right:26px;bottom:calc(102px + env(safe-area-inset-bottom))}
+.h420 .dglv{min-height:52px;padding:4px 2px}.h420 .dglv b{font-size:16px}
+@media (max-height:420px){.dgbtn.atk{width:72px;height:72px;font-size:28px}.dgbtn.dash{width:56px;height:56px;right:26px;bottom:calc(102px + env(safe-area-inset-bottom))}.dglv{min-height:52px;padding:4px 2px}.dglv b{font-size:16px}.dgname{display:none}}
+#dgHub .title{font-size:clamp(24px,calc(var(--vw,1vw) * 4.2),44px)}
+#dgHub .dglv{min-height:54px}
+.h420 #dgHub{gap:6px;padding-top:8px}.h420 #dgHub .sub{font-size:12px}.h420 .dgweapons .act small{display:none}
+@media (max-height:420px){#dgHub{gap:6px;padding-top:8px}#dgHub .sub{font-size:12px}.dgweapons .act small{display:none}.dgweapons .act,.dgtabs .act{padding:5px 10px}.dgdaily{padding:5px 10px}.dglevels{gap:6px}}
+#dgOver{gap:8px}
+#dgStats{grid-template-columns:repeat(4,auto);gap:3px 16px}
+@media (max-height:420px){.dgstars{font-size:36px}#dgOver .title{font-size:30px}}
+.h420 .dgstars{font-size:36px}
+
 </style>
 </head>
 <body>
@@ -281,7 +336,7 @@ body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body
   <div class="cards" id="weaponCards"></div>
   <div class="worldpick hidden" id="worldPick"><button class="act on" data-world="1">🌲 עולם 1</button><button class="act" data-world="2">🪖 עולם 2</button></div>
   <p class="sub" id="bestTxt"></p>
-  <div class="pvpline"><button class="act" id="btnPvp">⚔️ קרב 2 שחקנים</button><button class="act" id="btnBoard">🏆 טבלת שיאים</button><button class="act" id="btnShare">📤 שתף</button><button class="act hidden" id="btnInstall">📲 הורד לטלפון</button><span class="sub" id="pvpNote"></span></div>
+  <div class="pvpline"><button class="act dgcall" id="btnDungeon">🗝️ מבוכים <small>חדש!</small></button><button class="act" id="btnBoard">🏆 טבלת שיאים</button><button class="act" id="btnShare">📤 שתף</button><button class="act hidden" id="btnInstall">📲 הורד לטלפון</button></div>
 </div>
 
 <!-- ===== טבלת שיאים ===== -->
@@ -318,21 +373,57 @@ body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body
   <button class="act" id="btnShareBack">סגור</button>
 </div>
 
-<!-- ===== לובי 2 שחקנים ===== -->
-<div id="lobby" class="screen hidden">
-  <h1 class="title">⚔️ קרב 2 שחקנים</h1>
-  <p class="sub" id="lobbyStatus"></p>
-  <div id="lobbyStepCode" class="lobbybox">
-    <button class="primary" id="btnCreate">צור חדר חדש</button>
-    <div class="joinrow"><input id="codeInput" maxlength="4" autocomplete="off" autocapitalize="off" placeholder="קוד" dir="ltr"><button class="act" id="btnJoin">הצטרף</button></div>
+<!-- ===== v4.0 מבוכי המגדל ===== -->
+<div id="dgHub" class="screen hidden">
+  <h1 class="title">🗝️ מבוכי המגדל</h1>
+  <p class="sub">מבוכים חשוכים עם פנס • אסוף מטבעות, התחמק ממלכודות, מצא את היציאה <b id="dgTotal"></b></p>
+  <div class="dgweapons" id="dgWeapons"></div>
+  <div class="dgdaily"><div><b>📅 המבוך היומי</b><span class="sub" id="dgDailyInfo"></span></div><button class="primary" id="dgDailyPlay">שחק</button><button class="act" id="dgDailyBoard">🏆 טבלה</button></div>
+  <div class="dgtabs" id="dgTabs"></div>
+  <div class="dglevels" id="dgLevels"></div>
+  <button class="act" id="dgBack">חזרה לתפריט</button>
+</div>
+<div id="dgHud" class="hidden">
+  <div class="top">
+    <div class="chip dghearts" id="dgHearts"></div>
+    <div class="bar en dgen"><i id="dgEn"></i></div>
+    <div class="chip">🪙 <b id="dgCoins"></b></div>
+    <div class="chip" id="dgKeys"></div>
+    <div class="chip">⭐ <b id="dgScore">0</b></div>
+    <div class="chip" id="dgTimeChip">⏱ <b id="dgTime">0:00</b></div>
+    <div class="chip dgpower hidden" id="dgPower"></div>
+    <div class="spacer"></div>
+    <span class="dgname" id="dgName"></span>
+    <button class="round" id="dgSound" aria-label="סאונד">🔊</button>
+    <button class="round" id="dgPauseBtn" aria-label="השהיה">⏸</button>
   </div>
-  <div id="lobbyRoom" class="lobbybox hidden">
-    <div class="coderow"><span class="sub">קוד החדר:</span><b class="code" id="roomCode" dir="ltr"></b><button class="act" id="btnCopyCode">📋 העתק</button></div>
-    <p id="lobbyPeers" class="peers"></p>
-    <div class="lobbyws" id="lobbyWeapons"></div>
-    <p class="sub">כל אחד מגן על המגדל שלו מאותם גלים. בכפתור ⚔️ תקיפה שולחים אויבים ליריב. מי שהמגדל שלו נופל ראשון — מפסיד.</p>
+  <div id="dgStick"><div id="dgBase"><div id="dgKnob"></div></div><span class="dghint">גרור לכאן כדי לזוז</span></div>
+  <button id="dgDash" class="dgbtn dash" aria-label="דאש">⚡<small>דאש</small></button>
+  <button id="dgAtk" class="dgbtn atk" aria-label="תקיפה">⚔️</button>
+</div>
+<div id="dgPause" class="screen hidden">
+  <h1 class="title">הפסקה</h1>
+  <button class="primary" id="dgResume">המשך ▶</button>
+  <div class="pvpline"><button class="act" id="dgRestart">🔄 התחל מחדש</button><button class="act" id="dgQuit">🗺️ לבחירת שלבים</button></div>
+  <p class="sub">מקלדת: חצים/WASD • רווח = תקיפה • Shift = דאש</p>
+</div>
+<div id="dgOver" class="screen hidden">
+  <h1 class="title" id="dgOverTitle"></h1>
+  <div class="dgstars" id="dgStars"></div>
+  <p class="sub" id="dgStarHelp"></p>
+  <div class="stats" id="dgStats"></div>
+  <div class="overboard hidden" id="dgDailyRow">
+    <p class="sub" id="dgRank"></p>
+    <div class="nameline hidden" id="dgNameRow"><input id="dgNameInput" maxlength="16" autocomplete="off" placeholder="הכינוי שלך לטבלה"><button class="act" id="dgSubmit">🏆 שלח</button></div>
   </div>
-  <button class="act" id="btnLobbyBack">חזרה</button>
+  <div class="pvpline overactions"><button class="primary hidden" id="dgNext">השלב הבא ▶</button><button class="act" id="dgRetry">🔄 שוב</button><button class="act" id="dgLevelsBtn">🗺️ שלבים</button><button class="act" id="dgShare">📤 שתף</button></div>
+</div>
+<div id="dgBoard" class="screen hidden">
+  <h1 class="title">🏆 המבוך היומי</h1>
+  <p class="sub" id="dgBoardDay"></p>
+  <div class="board" id="dgBoardList"></div>
+  <p class="sub" id="dgBoardStatus"></p>
+  <button class="act" id="dgBoardBack">חזרה</button>
 </div>
 
 <!-- ===== קלפי בונוס ===== -->
@@ -402,7 +493,7 @@ body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '3.6.0';
+TD.VERSION = '4.0.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -634,7 +725,7 @@ TD.CONFIG = {
    * shareUrl = קישור להורדת המשחק שיצורף לשיתוף (ריק = הכתובת הנוכחית אם היא אתר אינטרנט) */
   social: {
     url: 'https://pzccxwngyomfxbwivery.supabase.co', key: 'sb_publishable_zMi73n4SGyEWL5h0gZgXyA_8rJV5oZr',
-    table: 'tower_scores', view: 'tower_leaderboard', boardSize: 50, minWave: 2, shareUrl: '',
+    table: 'tower_scores', view: 'tower_leaderboard', dgTable: 'dungeon_scores', dgView: 'dungeon_daily', boardSize: 50, minWave: 2, shareUrl: '',
     appUrl: 'https://meirbal.github.io/tower/',   // אתר ההתקנה לטלפון (GitHub Pages) — גם הקישור בשיתוף
     gameFile: 'tower_game.html'   // קובץ המשחק המלא שמתפרסם לצד הדף ב-Claude (לכפתור ⬇️ הורדה)
   },
@@ -2978,6 +3069,834 @@ TD.pvpDrain = function (s) {
 };
 
 /* =====================================================================
+ * מקטע 56 — DUNGEON (v4.0): "מבוכי המגדל" — מצב משחק שני
+ * מבוך במבט מלמעלה בסגנון פקמן: מטבעות, מלכודות, אויבים רודפים, מפתחות, יציאה.
+ * לוגיקה טהורה (בלי ציור) — נבדקת ב-Node. השלבים במקטע 57, הציור במקטע 66, הממשק ב-72.
+ *
+ * סימני מפה:
+ *  # קיר   . מטבע   (רווח) רצפה   S התחלה   X יציאה   K מפתח   D דלת
+ *  ^ דקרים   F סילון אש   ~ רצפה מתמוטטת   O בור   Z מסור אופקי   z מסור אנכי
+ *  < > n u משגר חיצים בקיר (שמאלה/ימינה/למעלה/למטה)   B אבן לדחיפה
+ *  L מנוף   = שער סגור   _ שער פתוח   T תיבת אוצר   M מימיק   ? קיר סודי
+ *  * לפיד קדוש (הפיכת צייד)   g גז   G רוח רודפת   A עכביש מארב   W שומר סיור   R עטלף   H בוס
+ * ===================================================================== */
+TD.DG = TD.DG || {};
+
+TD.CONFIG.dungeon = {
+  speed: 4.2, enemySpeed: 3.1, scaredSpeed: 2.2, bossSpeed: 2.6, chargeSpeed: 8.5,
+  hearts: 3, hurtInvuln: 1.6, dashTiles: 2, dashTime: 0.16, dashInvuln: 0.32, dashCd: 2.6,
+  energyMax: 100, energyRegen: 14, attackCost: { melee: 12, ranged: 10, magic: 18 }, attackCd: { melee: 0.35, ranged: 0.4, magic: 0.7 },
+  shotSpeed: 11, spikePeriod: 2.4, spikeUp: 1.0, firePeriod: 3.0, fireOn: 1.1, arrowPeriod: 2.2, arrowWarn: 0.45, arrowSpeed: 7,
+  sawSpeed: 2.4, sawRange: 3, crumbleDelay: 0.7, gasTick: 2.0, powerTime: 6.5, enemyRespawn: 9, mimicReward: 400,
+  light: 4.2, lightBoss: 7, lightDark: 2.8,
+  score: { coin: 10, allCoins: 500, chest: 100, secret: 300, enemy: 50, hunt: [200, 400, 800, 1600], nearMiss: 25, perSecond: 10, noHurtMult: 1.5, boss: 2000, key: 50 },
+  bossHp: 6, bossStun: 2.2, bossWindup: 0.6, bossHitsPerStun: 2,
+  themes: {
+    1: { name: 'קטקומבות המגדל', icon: '🏚️' },
+    2: { name: 'מערות האש', icon: '🌋' },
+    3: { name: 'המתקן הסודי', icon: '🛰️' }
+  }
+};
+
+var DIRS = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
+TD.DG.DIRS = DIRS;
+function dirOf(dx, dy) { return dx < 0 ? 'left' : dx > 0 ? 'right' : dy < 0 ? 'up' : dy > 0 ? 'down' : null; }
+
+/* ---------- טעינת שלב ---------- */
+TD.DG.load = function (level, opts) {
+  opts = opts || {};
+  var D = TD.CONFIG.dungeon, rows = level.map, H = rows.length, W = rows[0].length;
+  var s = {
+    level: level, chapter: level.chapter || 1, W: W, H: H, t: 0, over: false, won: false, paused: false,
+    tiles: [], coinsLeft: 0, coinsTotal: 0, keys: 0, score: 0, hurt: 0, chain: 0,
+    player: null, enemies: [], shots: [], arrows: [], boulders: [], saws: [], launchers: [],
+    crumble: {}, gasT: 0, power: 0, events: [], seen: {}, rng: TD.makeRng(level.seed || 1),
+    stats: { coins: 0, chests: 0, secrets: 0, enemies: 0, nearMiss: 0, bossHits: 0 },
+    weapon: opts.weapon || 'sword', dark: !!level.dark, nextId: 1
+  };
+  for (var y = 0; y < H; y++) {
+    var row = [];
+    for (var x = 0; x < W; x++) {
+      var ch = rows[y][x] || '#', tile = ch;
+      if (ch === 'S') { s.player = TD.DG.mover(x, y); tile = ' '; }
+      else if (ch === '.') { s.coinsLeft++; }
+      else if ('GAWRH'.indexOf(ch) >= 0) { s.enemies.push(TD.DG.enemy(s, ch, x, y)); tile = ' '; }
+      else if (ch === 'B') { s.boulders.push({ x: x, y: y }); tile = ' '; }
+      else if (ch === 'Z' || ch === 'z') { s.saws.push({ x: x, y: y, vx: ch === 'Z' ? 1 : 0, vy: ch === 'z' ? 1 : 0 }); tile = ' '; }
+      else if ('<>nu'.indexOf(ch) >= 0) { s.launchers.push({ x: x, y: y, dir: { '<': 'left', '>': 'right', n: 'up', u: 'down' }[ch], phase: ((x * 7 + y * 3) % 10) / 10 }); }
+      row.push(tile);
+    }
+    s.tiles.push(row);
+  }
+  s.coinsTotal = s.coinsLeft;
+  // מסור נע רק בקטע קצר (עד 3 משבצות לכל צד) — יש לאן לברוח ממנו
+  s.saws.forEach(function (z) {
+    var dx = z.vx ? 1 : 0, dy = z.vy ? 1 : 0, lo = 0, hi = 0;
+    while (lo < D.sawRange && !TD.DG.solid(s, z.x - dx * (lo + 1), z.y - dy * (lo + 1), 'saw')) lo++;
+    while (hi < D.sawRange && !TD.DG.solid(s, z.x + dx * (hi + 1), z.y + dy * (hi + 1), 'saw')) hi++;
+    z.min = (dx ? z.x : z.y) - lo; z.max = (dx ? z.x : z.y) + hi;
+  });
+  if (!s.player) s.player = TD.DG.mover(1, 1);
+  var p = s.player; p.hearts = D.hearts; p.energy = D.energyMax; p.inv = 0; p.dashCd = 0; p.dash = 0; p.atkCd = 0; p.face = 'right'; p.input = null; p.safe = { x: p.x, y: p.y };
+  s.par = level.par || TD.DG.parTime(s);
+  if (level.boss) for (var yy = 0; yy < H; yy++) for (var xx = 0; xx < W; xx++) s.seen[xx + ',' + yy] = 1;   // זירת בוס — רואים הכול
+  TD.DG.reveal(s);
+  return s;
+};
+TD.DG.mover = function (x, y) { return { x: x, y: y, tx: x, ty: y, fx: x, fy: y, prog: 1, dir: null }; };
+TD.DG.enemy = function (s, ch, x, y) {
+  var e = TD.DG.mover(x, y);
+  e.id = s.nextId++; e.kind = { G: 'chaser', A: 'ambusher', W: 'patrol', R: 'random', H: 'boss' }[ch]; e.home = { x: x, y: y };
+  e.dead = 0; e.hp = e.kind === 'boss' ? TD.CONFIG.dungeon.bossHp : 1; e.stun = 0; e.charge = null; e.patrolDir = 'right'; e.fire = 2;
+  return e;
+};
+
+/* ---------- מעבר במפה ---------- */
+TD.DG.tile = function (s, x, y) { return (y < 0 || y >= s.H || x < 0 || x >= s.W) ? '#' : s.tiles[y][x]; };
+TD.DG.boulderAt = function (s, x, y) { for (var i = 0; i < s.boulders.length; i++) if (s.boulders[i].x === x && s.boulders[i].y === y) return s.boulders[i]; return null; };
+TD.DG.solid = function (s, x, y, who) {
+  var t = TD.DG.tile(s, x, y);
+  if ('#<>nu?=O'.indexOf(t) >= 0) return true;
+  if (t === 'D') return who !== 'player' || s.keys <= 0;
+  if (t === 'T' || t === 'M') return who !== 'player';
+  if (TD.DG.boulderAt(s, x, y)) return true;
+  if (who === 'enemy' && (t === 'X' || t === 'g')) return false;
+  return false;
+};
+
+/* תנועה על רשת: מתקדם ממשבצת למשבצת, פנייה רק במרכז משבצת (כמו פקמן) */
+TD.DG.stepMover = function (s, m, dt, speed, chooseDir, who) {
+  var dist = speed * dt, guard = 0;
+  while (dist > 0 && guard++ < 8) {
+    if (m.prog >= 1) {
+      m.x = m.tx; m.y = m.ty; m.fx = m.tx; m.fy = m.ty;
+      var nd = chooseDir(m);
+      if (!nd) { m.dir = null; return; }
+      var d = DIRS[nd];
+      if (TD.DG.solid(s, m.tx + d.x, m.ty + d.y, who)) {
+        if (who === 'player' && TD.DG.tryPush(s, m.tx + d.x, m.ty + d.y, d)) { /* האבן זזה */ }
+        else { m.dir = null; return; }
+      }
+      m.dir = nd; m.fx = m.tx; m.fy = m.ty; m.tx += d.x; m.ty += d.y; m.prog = 0;
+      if (who === 'player') TD.DG.leaveTile(s, m.fx, m.fy);
+    }
+    var need = 1 - m.prog, step = Math.min(need, dist);
+    m.prog += step; dist -= step;
+    m.x = m.fx + (m.tx - m.fx) * m.prog; m.y = m.fy + (m.ty - m.fy) * m.prog;
+    if (m.prog >= 1 && who === 'player') TD.DG.enterTile(s, m.tx, m.ty);
+  }
+};
+// היפוך כיוון באמצע הדרך (רק אחורה — כמו פקמן)
+TD.DG.reverse = function (m, nd) {
+  if (!m.dir || m.prog >= 1) return false;
+  var d = DIRS[nd], c = DIRS[m.dir];
+  if (d.x !== -c.x || d.y !== -c.y) return false;
+  var fx = m.fx, fy = m.fy; m.fx = m.tx; m.fy = m.ty; m.tx = Math.round(fx); m.ty = Math.round(fy); m.prog = 1 - m.prog; m.dir = nd;
+  return true;
+};
+
+/* ---------- אבנים לדחיפה ---------- */
+TD.DG.tryPush = function (s, x, y, d) {
+  var b = TD.DG.boulderAt(s, x, y);
+  if (!b) return false;
+  var nx = x + d.x, ny = y + d.y, t = TD.DG.tile(s, nx, ny);
+  if (t === 'O') { s.boulders.splice(s.boulders.indexOf(b), 1); s.tiles[ny][nx] = ' '; TD.DG.emit(s, 'fill', { x: nx, y: ny }); return true; }   // ממלא בור
+  if (TD.DG.solid(s, nx, ny, 'boulder') || t === 'T' || t === 'M' || t === 'X' || t === 'K' || t === 'L' || t === 'D') return false;
+  for (var i = 0; i < s.enemies.length; i++) { var e = s.enemies[i]; if (!e.dead && e.tx === nx && e.ty === ny) return false; }
+  b.x = nx; b.y = ny; TD.DG.emit(s, 'push', {});
+  return true;
+};
+
+/* ---------- כניסה ויציאה ממשבצת (שחקן) ---------- */
+TD.DG.leaveTile = function (s, x, y) {
+  if (TD.DG.tile(s, x, y) === '~' && !s.crumble[x + ',' + y]) s.crumble[x + ',' + y] = TD.CONFIG.dungeon.crumbleDelay;
+};
+TD.DG.enterTile = function (s, x, y) {
+  var D = TD.CONFIG.dungeon, t = TD.DG.tile(s, x, y), p = s.player;
+  if (t === '.') { s.tiles[y][x] = ' '; s.coinsLeft--; s.stats.coins++; TD.DG.addScore(s, D.score.coin); if (!s.coinsLeft) { TD.DG.addScore(s, D.score.allCoins); TD.DG.emit(s, 'allCoins', {}); } }
+  else if (t === 'K') { s.tiles[y][x] = ' '; s.keys++; TD.DG.addScore(s, D.score.key); TD.DG.emit(s, 'key', {}); }
+  else if (t === 'D') { s.tiles[y][x] = ' '; s.keys--; TD.DG.emit(s, 'door', {}); }
+  else if (t === 'T') { s.tiles[y][x] = ' '; s.stats.chests++; TD.DG.addScore(s, D.score.chest); TD.DG.emit(s, 'chest', { x: x, y: y }); }
+  else if (t === 'M') { s.tiles[y][x] = ' '; TD.DG.hurt(s, 'mimic'); TD.DG.emit(s, 'mimic', { x: x, y: y }); }
+  else if (t === '*') { s.tiles[y][x] = ' '; s.power = D.powerTime; s.chain = 0; TD.DG.emit(s, 'power', {}); }
+  else if (t === 'L') { TD.DG.toggleGates(s); }
+  else if (t === 'X') { TD.DG.finish(s); }
+  else if (t === '~') { s.crumble[x + ',' + y] = s.crumble[x + ',' + y] || D.crumbleDelay; }
+  if (t !== '~' && t !== 'g' && t !== '^' && t !== 'F') p.safe = { x: x, y: y };
+  TD.DG.reveal(s);
+};
+TD.DG.toggleGates = function (s) {
+  for (var y = 0; y < s.H; y++) for (var x = 0; x < s.W; x++) {
+    if (s.tiles[y][x] === '=') s.tiles[y][x] = '_';
+    else if (s.tiles[y][x] === '_' && !(s.player.tx === x && s.player.ty === y) && !TD.DG.boulderAt(s, x, y)) s.tiles[y][x] = '=';
+  }
+  TD.DG.emit(s, 'lever', {});
+};
+
+/* ---------- מלכודות: מצב לפי זמן ---------- */
+TD.DG.spikesUp = function (s, x, y) { var D = TD.CONFIG.dungeon, ph = (s.t + ((x + y) % 2) * D.spikePeriod / 2) % D.spikePeriod; return ph < D.spikeUp; };
+TD.DG.spikesWarn = function (s, x, y) { var D = TD.CONFIG.dungeon, ph = (s.t + ((x + y) % 2) * D.spikePeriod / 2) % D.spikePeriod; return ph > D.spikePeriod - 0.4; };
+TD.DG.fireOn = function (s, x, y) { var D = TD.CONFIG.dungeon, ph = (s.t + (x % 3) * D.firePeriod / 3) % D.firePeriod; return ph < D.fireOn; };
+TD.DG.fireWarn = function (s, x, y) { var D = TD.CONFIG.dungeon, ph = (s.t + (x % 3) * D.firePeriod / 3) % D.firePeriod; return ph > D.firePeriod - 0.5; };
+TD.DG.launcherWarn = function (s, L) { var D = TD.CONFIG.dungeon, ph = (s.t / D.arrowPeriod + L.phase) % 1; return ph > 1 - D.arrowWarn / D.arrowPeriod; };
+
+/* ---------- נזק לשחקן ---------- */
+TD.DG.vulnerable = function (s) { var p = s.player; return !s.over && p.inv <= 0 && p.dash <= 0; };
+TD.DG.hurt = function (s, why) {
+  var p = s.player, D = TD.CONFIG.dungeon;
+  if (!TD.DG.vulnerable(s) && why !== 'fall') return false;
+  p.hearts--; s.hurt++; p.inv = D.hurtInvuln;
+  TD.DG.emit(s, 'hurt', { why: why, hearts: p.hearts });
+  if (p.hearts <= 0) { s.over = true; s.won = false; TD.DG.emit(s, 'dead', {}); }
+  return true;
+};
+TD.DG.fall = function (s) {
+  var p = s.player;
+  TD.DG.hurt(s, 'fall');
+  p.tx = p.safe.x; p.ty = p.safe.y; p.x = p.tx; p.y = p.ty; p.fx = p.tx; p.fy = p.ty; p.prog = 1; p.dir = null; p.input = null;
+};
+
+/* ---------- ניקוד ---------- */
+TD.DG.addScore = function (s, n) { s.score += n; };
+TD.DG.emit = function (s, type, data) { s.events.push({ type: type, data: data || {} }); if (s.events.length > 100) s.events.shift(); };
+
+/* ---------- ראות (פנס) ---------- */
+TD.DG.lightRadius = function (s) { var D = TD.CONFIG.dungeon; return s.level && s.level.boss ? D.lightBoss : s.dark ? D.lightDark : D.light; };
+TD.DG.reveal = function (s) {
+  var p = s.player, r = Math.ceil(TD.DG.lightRadius(s));
+  for (var y = p.ty - r; y <= p.ty + r; y++) for (var x = p.tx - r; x <= p.tx + r; x++)
+    if (x >= 0 && y >= 0 && x < s.W && y < s.H && (x - p.tx) * (x - p.tx) + (y - p.ty) * (y - p.ty) <= r * r + 1) s.seen[x + ',' + y] = 1;
+};
+
+/* ---------- פעולות שחקן ---------- */
+TD.DG.setInput = function (s, dir) {
+  var p = s.player; p.input = dir;
+  if (dir) { p.face = dir; TD.DG.reverse(p, dir); }
+};
+TD.DG.dash = function (s) {
+  var p = s.player, D = TD.CONFIG.dungeon;
+  if (s.over || p.dashCd > 0) return false;
+  var dir = p.dir || p.input || p.face, d = DIRS[dir], n = 0;
+  var bx = p.prog >= 1 ? p.tx : p.tx, by = p.prog >= 1 ? p.ty : p.ty;
+  while (n < D.dashTiles && !TD.DG.solid(s, bx + d.x * (n + 1), by + d.y * (n + 1), 'player') && TD.DG.tile(s, bx + d.x * (n + 1), by + d.y * (n + 1)) !== 'D') n++;
+  p.dashCd = D.dashCd; p.dash = D.dashInvuln; p.face = dir;
+  if (n) {
+    TD.DG.leaveTile(s, p.fx, p.fy);
+    for (var i = 1; i < n; i++) TD.DG.enterTile(s, bx + d.x * i, by + d.y * i);   // אוסף מטבעות בדרך
+    p.fx = p.x; p.fy = p.y; p.tx = bx + d.x * n; p.ty = by + d.y * n; p.prog = 0; p.dir = dir; p.dashMove = D.dashTime;
+  }
+  TD.DG.emit(s, 'dash', { n: n });
+  return true;
+};
+TD.DG.attack = function (s) {
+  var p = s.player, D = TD.CONFIG.dungeon, type = { sword: 'melee', bow: 'ranged', staff: 'magic' }[s.weapon] || 'melee';
+  if (s.over || p.atkCd > 0 || p.energy < D.attackCost[type]) return false;
+  p.energy -= D.attackCost[type]; p.atkCd = D.attackCd[type]; p.swing = 0.25;
+  var d = DIRS[p.face], cx = Math.round(p.x), cy = Math.round(p.y);
+  if (type === 'melee') {
+    TD.DG.hitTile(s, cx + d.x, cy + d.y, 1); TD.DG.hitTile(s, cx, cy, 1);
+    TD.DG.hitNear(s, p.x + d.x * 0.8, p.y + d.y * 0.8, 0.9, 1);
+  } else s.shots.push({ x: p.x, y: p.y, vx: d.x, vy: d.y, kind: type, life: 3 });
+  TD.DG.emit(s, 'attack', { type: type });
+  return true;
+};
+// פגיעה במשבצת: קיר סודי, מימיק
+TD.DG.hitTile = function (s, x, y) {
+  var t = TD.DG.tile(s, x, y), D = TD.CONFIG.dungeon;
+  if (t === '?') { s.tiles[y][x] = ' '; s.stats.secrets++; TD.DG.addScore(s, D.score.secret); TD.DG.emit(s, 'secret', { x: x, y: y }); return true; }
+  if (t === 'M') { s.tiles[y][x] = ' '; TD.DG.addScore(s, D.mimicReward); s.stats.chests++; TD.DG.emit(s, 'mimicKilled', { x: x, y: y }); return true; }
+  return false;
+};
+TD.DG.hitNear = function (s, x, y, r, dmg) {
+  var hit = false;
+  for (var i = 0; i < s.enemies.length; i++) {
+    var e = s.enemies[i];
+    if (e.dead) continue;
+    if (Math.abs(e.x - x) <= r && Math.abs(e.y - y) <= r) { TD.DG.damageEnemy(s, e, dmg); hit = true; }
+  }
+  return hit;
+};
+TD.DG.damageEnemy = function (s, e, dmg) {
+  var D = TD.CONFIG.dungeon;
+  if (e.kind === 'boss') {
+    if (e.stun <= 0 || e.stunHits >= D.bossHitsPerStun) { TD.DG.emit(s, 'bossBlock', {}); return; }   // הבוס פגיע רק כשהוא המום (עד 2 פגיעות בכל הלם)
+    e.stunHits = (e.stunHits || 0) + 1; e.hp -= dmg; s.stats.bossHits++; TD.DG.emit(s, 'bossHit', { hp: e.hp });
+    if (e.hp <= 0) { e.dead = Infinity; TD.DG.addScore(s, D.score.boss); TD.DG.emit(s, 'bossDead', {}); TD.DG.openBossExit(s); }
+    return;
+  }
+  TD.DG.killEnemy(s, e, false);
+};
+TD.DG.killEnemy = function (s, e, hunted) {
+  var D = TD.CONFIG.dungeon;
+  e.dead = D.enemyRespawn; s.stats.enemies++;
+  var pts = hunted ? D.score.hunt[Math.min(s.chain, D.score.hunt.length - 1)] : D.score.enemy;
+  if (hunted) s.chain++;
+  TD.DG.addScore(s, pts);
+  TD.DG.emit(s, 'enemyDead', { x: e.x, y: e.y, pts: pts });
+};
+TD.DG.openBossExit = function (s) {
+  for (var y = 0; y < s.H; y++) for (var x = 0; x < s.W; x++) if (s.tiles[y][x] === '=') s.tiles[y][x] = '_';
+};
+TD.DG.bossAlive = function (s) { return s.enemies.some(function (e) { return e.kind === 'boss' && e.dead !== Infinity; }); };
+
+/* ---------- סיום ---------- */
+TD.DG.finish = function (s) {
+  if (s.over) return;
+  var D = TD.CONFIG.dungeon;
+  s.over = true; s.won = true; s.timeBonus = Math.max(0, Math.round((s.par - s.t) * D.score.perSecond));
+  s.score += s.timeBonus;
+  if (!s.hurt) s.score = Math.round(s.score * D.score.noHurtMult);
+  s.stars = 1 + (s.coinsLeft === 0 ? 1 : 0) + (s.t <= s.par && !s.hurt ? 1 : 0);
+  TD.DG.emit(s, 'win', { score: s.score, stars: s.stars });
+};
+
+/* ---------- AI אויבים ---------- */
+TD.DG.bfsDir = function (s, from, goal, who) {
+  // מחזיר את הכיוון הראשון במסלול הקצר ביותר מ-from אל goal (או null)
+  if (from.x === goal.x && from.y === goal.y) return null;
+  var W = s.W, seen = new Array(W * s.H), q = [from.x + from.y * W], first = {};
+  seen[q[0]] = 1;
+  for (var qi = 0; qi < q.length && qi < 2000; qi++) {
+    var cur = q[qi], cx = cur % W, cy = (cur - cx) / W;
+    for (var k in DIRS) {
+      var d = DIRS[k], nx = cx + d.x, ny = cy + d.y, ni = nx + ny * W;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= s.H || seen[ni] || TD.DG.solid(s, nx, ny, who)) continue;
+      seen[ni] = 1; first[ni] = qi === 0 ? k : first[cur];
+      if (nx === goal.x && ny === goal.y) return first[ni];
+      q.push(ni);
+    }
+  }
+  return null;
+};
+TD.DG.openDirs = function (s, m) {
+  var out = [];
+  for (var k in DIRS) if (!TD.DG.solid(s, m.tx + DIRS[k].x, m.ty + DIRS[k].y, 'enemy')) out.push(k);
+  return out;
+};
+TD.DG.inSight = function (s, e, maxD) {
+  var p = s.player, px = Math.round(p.x), py = Math.round(p.y);
+  if (px !== e.tx && py !== e.ty) return null;
+  var dx = Math.sign(px - e.tx), dy = Math.sign(py - e.ty), n = Math.abs(px - e.tx) + Math.abs(py - e.ty);
+  if (n > maxD) return null;
+  for (var i = 1; i < n; i++) if (TD.DG.solid(s, e.tx + dx * i, e.ty + dy * i, 'enemy')) return null;
+  return dirOf(dx, dy);
+};
+TD.DG.enemyChoose = function (s, e) {
+  var p = s.player, pt = { x: Math.round(p.x), y: Math.round(p.y) }, opts = TD.DG.openDirs(s, e);
+  if (!opts.length) return null;
+  var back = e.dir ? dirOf(-DIRS[e.dir].x, -DIRS[e.dir].y) : null;
+  var fwd = opts.filter(function (k) { return k !== back; }); if (!fwd.length) fwd = opts;
+  if (s.power > 0 && e.kind !== 'boss') {                       // בורחים מהצייד
+    var best = null, bd = -1;
+    fwd.forEach(function (k) { var nx = e.tx + DIRS[k].x, ny = e.ty + DIRS[k].y, dd = Math.abs(nx - pt.x) + Math.abs(ny - pt.y); if (dd > bd) { bd = dd; best = k; } });
+    return best;
+  }
+  if (e.kind === 'chaser') return TD.DG.bfsDir(s, e, pt, 'enemy') || fwd[0];
+  if (e.kind === 'ambusher') {
+    var f = DIRS[p.dir || p.face] || DIRS.right, tgt = { x: pt.x + f.x * 4, y: pt.y + f.y * 4 };
+    tgt.x = TD.clamp(tgt.x, 1, s.W - 2); tgt.y = TD.clamp(tgt.y, 1, s.H - 2);
+    if (Math.abs(e.tx - pt.x) + Math.abs(e.ty - pt.y) <= 3 || TD.DG.solid(s, tgt.x, tgt.y, 'enemy')) tgt = pt;
+    return TD.DG.bfsDir(s, e, tgt, 'enemy') || fwd[Math.floor(s.rng() * fwd.length)];
+  }
+  if (e.kind === 'patrol') {
+    var see = TD.DG.inSight(s, e, 6);
+    if (see) { e.alert = 2.5; return see; }
+    if (e.alert > 0) return TD.DG.bfsDir(s, e, pt, 'enemy') || fwd[0];
+    if (opts.indexOf(e.patrolDir) < 0 || (fwd.length > 1 && s.rng() < 0.2)) e.patrolDir = fwd[Math.floor(s.rng() * fwd.length)];
+    return e.patrolDir;
+  }
+  if (e.kind === 'random') return s.rng() < 0.3 ? (TD.DG.bfsDir(s, e, pt, 'enemy') || fwd[0]) : fwd[Math.floor(s.rng() * fwd.length)];
+  if (e.kind === 'boss') return TD.DG.bfsDir(s, e, pt, 'enemy') || fwd[0];
+  return fwd[0];
+};
+
+TD.DG.updateBoss = function (s, e, dt) {
+  var D = TD.CONFIG.dungeon, p = s.player;
+  if (e.stun > 0) { e.stun -= dt; return; }
+  if (e.charge) {                                                // הסתערות בקו ישר עד הקיר → הלם
+    var d = DIRS[e.charge], nx = e.x + d.x * D.chargeSpeed * dt, ny = e.y + d.y * D.chargeSpeed * dt;
+    var cx = d.x > 0 ? Math.ceil(nx) : Math.floor(nx), cy = d.y > 0 ? Math.ceil(ny) : Math.floor(ny);
+    if (d.x === 0) cx = Math.round(nx); if (d.y === 0) cy = Math.round(ny);
+    if (TD.DG.solid(s, cx, cy, 'enemy')) {
+      e.x = Math.round(e.x); e.y = Math.round(e.y); e.tx = e.x; e.ty = e.y; e.fx = e.x; e.fy = e.y; e.prog = 1; e.dir = null;
+      e.charge = null; e.stun = D.bossStun; e.stunHits = 0; TD.DG.emit(s, 'bossStun', {});
+      return;
+    }
+    e.x = nx; e.y = ny; e.tx = Math.round(nx); e.ty = Math.round(ny); e.fx = e.tx; e.fy = e.ty; e.prog = 1;
+    return;
+  }
+  if (e.windup > 0) {                                            // התראה לפני הסתערות — זמן לזוז מהקו
+    e.windup -= dt;
+    if (e.windup <= 0) { e.windup = 0; e.charge = e.chargeDir; }
+    return;
+  }
+  e.fire -= dt;
+  TD.DG.stepMover(s, e, dt, D.bossSpeed, function (m) {         // החלטה במרכז משבצת: לראות את השחקן בקו → להתכונן להסתער
+    var see = TD.DG.inSight(s, m, 30);
+    if (see && m.fire <= 0) { m.windup = D.bossWindup; m.chargeDir = see; m.fire = 2.5; TD.DG.emit(s, 'bossCharge', { dir: see }); return null; }
+    return TD.DG.enemyChoose(s, m);
+  }, 'enemy');
+};
+
+/* ---------- עדכון ---------- */
+TD.DG.update = function (s, dt) {
+  if (!s || s.over || s.paused) return;
+  var D = TD.CONFIG.dungeon, p = s.player, i;
+  s.t += dt;
+  p.inv = Math.max(0, p.inv - dt); p.dash = Math.max(0, p.dash - dt); p.dashCd = Math.max(0, p.dashCd - dt);
+  p.atkCd = Math.max(0, p.atkCd - dt); p.swing = Math.max(0, (p.swing || 0) - dt);
+  p.energy = Math.min(D.energyMax, p.energy + D.energyRegen * dt);
+  s.power = Math.max(0, s.power - dt); if (!s.power) s.chain = 0;
+
+  // שחקן
+  var spd = p.dashMove > 0 ? (D.dashTiles / D.dashTime) : D.speed;
+  if (p.dashMove > 0) p.dashMove -= dt;
+  TD.DG.stepMover(s, p, dt, spd, function (m) {
+    var want = m.input;
+    if (want && !TD.DG.solid(s, m.tx + DIRS[want].x, m.ty + DIRS[want].y, 'player')) return want;
+    if (want && TD.DG.boulderAt(s, m.tx + DIRS[want].x, m.ty + DIRS[want].y)) return want;     // דחיפה
+    if (want && m.dir && !TD.DG.solid(s, m.tx + DIRS[m.dir].x, m.ty + DIRS[m.dir].y, 'player')) return m.dir;   // ממשיך עד שאפשר לפנות
+    return null;
+  }, 'player');
+  if (s.over) return;
+  var px = Math.round(p.x), py = Math.round(p.y), pt = TD.DG.tile(s, px, py);
+
+  // רצפה מתמוטטת
+  for (var key in s.crumble) {
+    s.crumble[key] -= dt;
+    if (s.crumble[key] <= 0) {
+      var xy = key.split(','), cx = +xy[0], cy = +xy[1];
+      delete s.crumble[key];
+      s.tiles[cy][cx] = 'O'; TD.DG.emit(s, 'collapse', { x: cx, y: cy });
+      if (px === cx && py === cy && p.dash <= 0) TD.DG.fall(s);
+    }
+  }
+  // דקרים / אש / גז
+  if (pt === '^' && TD.DG.spikesUp(s, px, py)) { if (TD.DG.hurt(s, 'spikes')) { } }
+  if (pt === 'F' && TD.DG.fireOn(s, px, py)) TD.DG.hurt(s, 'fire');
+  if (pt === 'g') { s.gasT += dt; if (s.gasT >= D.gasTick) { s.gasT = 0; TD.DG.hurt(s, 'gas'); } } else s.gasT = Math.max(0, s.gasT - dt * 2);
+  // "כמעט נפגע" — עבר מלכודת רגע לפני שנסגרה
+  if ((pt === '^' && TD.DG.spikesWarn(s, px, py)) || (pt === 'F' && TD.DG.fireWarn(s, px, py))) {
+    var k2 = px + ',' + py;
+    if (s.lastNear !== k2) { s.lastNear = k2; s.stats.nearMiss++; TD.DG.addScore(s, D.score.nearMiss); TD.DG.emit(s, 'nearMiss', { x: px, y: py }); }
+  }
+
+  // משגרי חיצים
+  for (i = 0; i < s.launchers.length; i++) {
+    var L = s.launchers[i], ph = (s.t / D.arrowPeriod + L.phase) % 1, prev = ((s.t - dt) / D.arrowPeriod + L.phase) % 1;
+    if (ph < prev) { var dd = DIRS[L.dir]; s.arrows.push({ x: L.x + dd.x * 0.6, y: L.y + dd.y * 0.6, vx: dd.x, vy: dd.y }); }
+  }
+  for (i = s.arrows.length - 1; i >= 0; i--) {
+    var a = s.arrows[i];
+    a.x += a.vx * D.arrowSpeed * dt; a.y += a.vy * D.arrowSpeed * dt;
+    var ax = Math.round(a.x), ay = Math.round(a.y);
+    if (TD.DG.solid(s, ax, ay, 'arrow') && !(Math.abs(a.x - ax) > 0.45 || Math.abs(a.y - ay) > 0.45)) { s.arrows.splice(i, 1); continue; }
+    if (Math.abs(a.x - p.x) < 0.45 && Math.abs(a.y - p.y) < 0.45) { if (TD.DG.hurt(s, 'arrow')) { s.arrows.splice(i, 1); continue; } }
+  }
+  // מסורים
+  for (i = 0; i < s.saws.length; i++) {
+    var z = s.saws[i], nx2 = z.x + z.vx * D.sawSpeed * dt, ny2 = z.y + z.vy * D.sawSpeed * dt;
+    var ex = z.vx > 0 ? Math.ceil(nx2) : z.vx < 0 ? Math.floor(nx2) : Math.round(nx2), ey = z.vy > 0 ? Math.ceil(ny2) : z.vy < 0 ? Math.floor(ny2) : Math.round(ny2);
+    var along = z.vx ? nx2 : ny2;
+    if (along < z.min || along > z.max || TD.DG.solid(s, ex, ey, 'saw') || TD.DG.tile(s, ex, ey) === 'D') { z.vx = -z.vx; z.vy = -z.vy; } else { z.x = nx2; z.y = ny2; }
+    if (Math.abs(z.x - p.x) < 0.6 && Math.abs(z.y - p.y) < 0.6) TD.DG.hurt(s, 'saw');
+  }
+  // יריות השחקן
+  for (i = s.shots.length - 1; i >= 0; i--) {
+    var sh = s.shots[i];
+    sh.x += sh.vx * D.shotSpeed * dt; sh.y += sh.vy * D.shotSpeed * dt; sh.life -= dt;
+    var sx = Math.round(sh.x), sy = Math.round(sh.y), boom = false;
+    if (TD.DG.tile(s, sx, sy) === '?' || TD.DG.tile(s, sx, sy) === 'M') { TD.DG.hitTile(s, sx, sy); boom = true; }
+    else if (TD.DG.solid(s, sx, sy, 'shot') || sh.life <= 0) boom = true;
+    else if (TD.DG.hitNear(s, sh.x, sh.y, sh.kind === 'magic' ? 0.6 : 0.5, 1)) boom = true;
+    if (boom) {
+      if (sh.kind === 'magic') TD.DG.hitNear(s, sh.x - sh.vx * 0.3, sh.y - sh.vy * 0.3, 1.4, 1);
+      s.shots.splice(i, 1); TD.DG.emit(s, 'shotHit', { x: sh.x, y: sh.y, kind: sh.kind });
+    }
+  }
+  // אויבים
+  for (i = 0; i < s.enemies.length; i++) {
+    var e = s.enemies[i];
+    if (e.dead) {
+      if (e.dead === Infinity) continue;
+      e.dead -= dt;
+      if (e.dead <= 0) { e.dead = 0; e.tx = e.home.x; e.ty = e.home.y; e.x = e.tx; e.y = e.ty; e.prog = 1; e.dir = null; }
+      continue;
+    }
+    e.alert = Math.max(0, (e.alert || 0) - dt);
+    if (e.kind === 'boss') TD.DG.updateBoss(s, e, dt);
+    else TD.DG.stepMover(s, e, dt, s.power > 0 ? D.scaredSpeed : (e.kind === 'random' ? D.enemySpeed * 1.1 : D.enemySpeed), function (m) { return TD.DG.enemyChoose(s, m); }, 'enemy');
+    if (Math.abs(e.x - p.x) < 0.62 && Math.abs(e.y - p.y) < 0.62 && !(e.kind === 'boss' && e.stun > 0)) {
+      if (s.power > 0 && e.kind !== 'boss') TD.DG.killEnemy(s, e, true);
+      else TD.DG.hurt(s, e.kind);
+    }
+  }
+};
+
+/* ---------- זמן יעד: לפי המסלול הקצר ביותר (מפתחות → דלתות → יציאה) ---------- */
+TD.DG.solve = function (lv) {
+  // בודק שאפשר לגמור את השלב: מגיעים ליציאה, דלתות נפתחות רק עם מפתח שנאסף קודם.
+  // מחזיר {ok, steps, coinsReachable, coins}
+  var rows = lv.map, H = rows.length, W = rows[0].length, start = null, exit = null, coins = 0;
+  for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) { var c = rows[y][x]; if (c === 'S') start = { x: x, y: y }; if (c === 'X') exit = { x: x, y: y }; if (c === '.') coins++; }
+  if (!start || !exit) return { ok: false, why: 'no start/exit' };
+  var hasBoss = /H/.test(rows.join(''));
+  var wall = function (c, gatesOpen) { return '#<>nu?O'.indexOf(c) >= 0 || (c === '=' && !gatesOpen) || c === 'B'; };
+  var reach = function (open, gatesOpen) {
+    var seen = {}, q = [start], dist = {}; seen[start.x + ',' + start.y] = 1; dist[start.x + ',' + start.y] = 0;
+    for (var i = 0; i < q.length; i++) {
+      var cur = q[i];
+      for (var k in DIRS) {
+        var nx = cur.x + DIRS[k].x, ny = cur.y + DIRS[k].y, key = nx + ',' + ny;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || seen[key]) continue;
+        var ch = rows[ny][nx];
+        if (wall(ch, gatesOpen) || (ch === 'D' && !open[key])) continue;
+        seen[key] = 1; dist[key] = dist[cur.x + ',' + cur.y] + 1; q.push({ x: nx, y: ny });
+      }
+    }
+    return { seen: seen, dist: dist };
+  };
+  // פותחים דלתות לפי מפתחות שבהישג יד (חמדני, כל מפתח פותח דלת אחת שגובלת באזור)
+  var open = {}, used = 0, gatesOpen = !hasBoss && /L/.test(rows.join('')), r;
+  for (var iter = 0; iter < 20; iter++) {
+    r = reach(open, gatesOpen);
+    var keys = 0, doors = [];
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+      if (rows[y][x] === 'K' && r.seen[x + ',' + y]) keys++;
+      if (rows[y][x] === 'D' && !open[x + ',' + y]) for (var k2 in DIRS) if (r.seen[(x + DIRS[k2].x) + ',' + (y + DIRS[k2].y)]) { doors.push(x + ',' + y); break; }
+    }
+    if (keys - used <= 0 || !doors.length) break;
+    open[doors[0]] = 1; used++;
+  }
+  if (hasBoss) r = reach(open, true);      // אחרי הבוס השערים נפתחים
+  var coinsReach = 0;
+  for (y = 0; y < H; y++) for (x = 0; x < W; x++) if (rows[y][x] === '.' && r.seen[x + ',' + y]) coinsReach++;
+  var ok = !!r.seen[exit.x + ',' + exit.y];
+  return { ok: ok, steps: ok ? r.dist[exit.x + ',' + exit.y] : null, coins: coins, coinsReachable: coinsReach, reachable: Object.keys(r.seen).length };
+};
+TD.DG.parTime = function (s) {
+  var sol = TD.DG.solve(s.level), tiles = sol.ok ? sol.steps : 40;
+  // זמן יעד = מסלול + איסוף חלק מהמטבעות + מרווח
+  return Math.round(tiles / TD.CONFIG.dungeon.speed * 2.2 + s.coinsTotal / TD.CONFIG.dungeon.speed * 0.9 + 12 + (s.enemies.some(function (e) { return e.kind === 'boss'; }) ? 25 : 0));
+};
+
+/* =====================================================================
+ * מקטע 57 — DUNGEON LEVELS: 3 פרקים × 10 שלבים + המבוך היומי
+ * - שלבים שנבנו ביד: מפה בטקסט (21×11) — אפשר לערוך ישירות. מקרא הסימנים במקטע 56.
+ * - שאר השלבים: מחולל מבוכים עם seed קבוע (אותו שלב תמיד, לכל השחקנים).
+ * - שלב 10 בכל פרק: זירת בוס — הבוס מסתער בקו ישר, נתקע בקיר ואז פגיע.
+ * ===================================================================== */
+TD.DG.W = 21; TD.DG.H = 11;
+
+/* ---------- שלבים שנבנו ביד ---------- */
+TD.DG.HAND = {
+  '1-1': { name: 'הירידה הראשונה', map: [
+    '#####################',
+    '#S........#.........#',
+    '#.#######.#.#######.#',
+    '#.#.....#...#.....#.#',
+    '#.#.###.#####.###.#.#',
+    '#...#T#.......#T#...#',
+    '#.#.#.#.##### #.#.#.#',
+    '#.#...#...#...#...#.#',
+    '#.#######.#.#######.#',
+    '#.........#........X#',
+    '#####################'] },
+  '1-2': { name: 'דקרים ומפתח', map: [
+    '#####################',
+    '#S...^...#.....#...K#',
+    '#.#####.##.###.#.####',
+    '#.#...#.^..#.#...#..#',
+    '#.#.#.######.#####..#',
+    '#...#........^......#',
+    '###.#####.######.####',
+    '#...#.T.#.#....#....#',
+    '#.###.#.#.#.##.####D#',
+    '#.....#...^..#.....X#',
+    '#####################'] },
+  '1-3': { name: 'הרוח הרודפת', map: [
+    '#####################',
+    '#S..................#',
+    '#.###.#######.#####.#',
+    '#.#*#.#.....#.#...#.#',
+    '#.#.#.#.###.#.#.#.#.#',
+    '#.....#..G..#...#...#',
+    '#.###.#.###.#.#.###.#',
+    '#.#.....#.......#.#.#',
+    '#.#.###.#.#####.#.#.#',
+    '#...#.........*....X#',
+    '#####################'] },
+  '1-5': { name: 'אבן על בור', map: [
+    '#####################',
+    '#S.......#..........#',
+    '#.######.#.########.#',
+    '#.#....#.#.#......#.#',
+    '#.#.##.#...#.####.#.#',
+    '#...#..B..O..#T.#...#',
+    '###.#.####.###..###.#',
+    '#...#......#...^....#',
+    '#.####.#####.######.#',
+    '#..............#...X#',
+    '#####################'] },
+  '1-7': { name: 'השערים והמנוף', map: [
+    '#####################',
+    '#S.....#.....=....T.#',
+    '#.####.#.###.#.####.#',
+    '#.#..#...#...#.#..#.#',
+    '#.#L.#####.###.#.##.#',
+    '#.#.....^.....=.....#',
+    '#.#####.#####.#####.#',
+    '#.....#.#.G.#.#.....#',
+    '#.###.#.#...#.#.###.#',
+    '#...#.....>.....#..X#',
+    '#####################'] }
+};
+
+/* ---------- זירות בוס (שער היציאה נפתח כשהבוס מובס) ---------- */
+TD.DG.BOSS = {
+  1: { name: 'המינוטאור', map: [
+    '#####################',
+    '#S.................T#',
+    '#...................#',
+    '#..##.....#.....##..#',
+    '#...................#',
+    '#.........H.........#',
+    '#...................#',
+    '#..##.....#.....##..#',
+    '#...................#',
+    '#T................=X#',
+    '#####################'] },
+  2: { name: 'דרקון הלבה', map: [
+    '#####################',
+    '#S......F.....F....T#',
+    '#..##.........#.##..#',
+    '#...................#',
+    '#.#....F.......F..#.#',
+    '#.........H.........#',
+    '#.#....F.......F..#.#',
+    '#...................#',
+    '#..##.#.......#.##..#',
+    '#T......F.....F...=X#',
+    '#####################'] },
+  3: { name: 'רובוט השמירה', map: [
+    '#####################',
+    '#S.......^.^.......T#',
+    '#..#...........#....#',
+    '#....##.....##......#',
+    '#^.................^#',
+    '#.........H.........#',
+    '#^.................^#',
+    '#....##.....##......#',
+    '#..#...........#....#',
+    '#T.......^.^......=X#',
+    '#####################'] }
+};
+
+/* ---------- מחולל מבוכים ---------- */
+TD.DG.generate = function (seed, P) {
+  for (var attempt = 0; attempt < 40; attempt++) {
+    var lv = TD.DG.genOnce(seed + attempt * 7919, P);
+    if (lv) { var sol = TD.DG.solve(lv); if (sol.ok && sol.coinsReachable === sol.coins) return lv; }
+  }
+  return TD.DG.genOnce(seed, { loops: 0.5 });    // לא אמור לקרות — מבוך פשוט
+};
+TD.DG.genOnce = function (seed, P) {
+  var rng = TD.makeRng(seed), W = TD.DG.W, H = TD.DG.H, g = [], x, y, i, k;
+  var R = function (n) { return Math.floor(rng() * n); };
+  for (y = 0; y < H; y++) { g.push([]); for (x = 0; x < W; x++) g[y].push('#'); }
+  // 1. מבוך בסיסי (backtracker על תאים אי-זוגיים)
+  var st = [[1, 1]]; g[1][1] = '.';
+  var D4 = [[2, 0], [-2, 0], [0, 2], [0, -2]];
+  while (st.length) {
+    var c = st[st.length - 1], opts = [];
+    for (k = 0; k < 4; k++) { var nx = c[0] + D4[k][0], ny = c[1] + D4[k][1]; if (nx > 0 && ny > 0 && nx < W - 1 && ny < H - 1 && g[ny][nx] === '#') opts.push(D4[k]); }
+    if (!opts.length) { st.pop(); continue; }
+    var o = opts[R(opts.length)];
+    g[c[1] + o[1] / 2][c[0] + o[0] / 2] = '.'; g[c[1] + o[1]][c[0] + o[0]] = '.'; st.push([c[0] + o[0], c[1] + o[1]]);
+  }
+  // 2. לולאות (כמו פקמן — יש לאן לברוח)
+  var loops = P.loops == null ? 0.45 : P.loops;
+  for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) {
+    if (g[y][x] !== '#') continue;
+    var h = g[y][x - 1] !== '#' && g[y][x + 1] !== '#' && g[y - 1][x] === '#' && g[y + 1][x] === '#';
+    var v = g[y - 1][x] !== '#' && g[y + 1][x] !== '#' && g[y][x - 1] === '#' && g[y][x + 1] === '#';
+    if ((h || v) && rng() < loops * 0.35) g[y][x] = '.';
+  }
+  var open = function (x, y) { return x > 0 && y > 0 && x < W - 1 && y < H - 1 && g[y][x] !== '#' && '<>nu?'.indexOf(g[y][x]) < 0; };
+  var nb = function (x, y) { var n = []; for (var q = 0; q < 4; q++) { var d = [[1, 0], [-1, 0], [0, 1], [0, -1]][q]; if (open(x + d[0], y + d[1])) n.push(d); } return n; };
+  var bfs = function (sx, sy, block) {
+    var dist = {}, q = [[sx, sy]]; dist[sx + ',' + sy] = 0;
+    for (var qi = 0; qi < q.length; qi++) {
+      var cu = q[qi];
+      nb(cu[0], cu[1]).forEach(function (d) { var key = (cu[0] + d[0]) + ',' + (cu[1] + d[1]); if (dist[key] == null && key !== block) { dist[key] = dist[cu[0] + ',' + cu[1]] + 1; q.push([cu[0] + d[0], cu[1] + d[1]]); } });
+    }
+    return dist;
+  };
+  var cells = []; for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) if (g[y][x] === '.') cells.push([x, y]);
+  var total = cells.length;
+  // 3. התחלה משמאל, יציאה הכי רחוק
+  var sy0 = 1 + 2 * R((H - 1) / 2); g[sy0][1] = 'S';
+  var d0 = bfs(1, sy0), far = null, fd = -1;
+  cells.forEach(function (c) { var dd = d0[c[0] + ',' + c[1]]; if (dd > fd && c[0] > W / 2) { fd = dd; far = c; } });
+  if (!far) return null;
+  g[far[1]][far[0]] = 'X';
+  var key = function (c) { return c[0] + ',' + c[1]; };
+  var reserved = {}; reserved[key([1, sy0])] = 1; reserved[key(far)] = 1;
+  var isArt = function (c) { var dd = bfs(1, sy0, key(c)); var n = 0; for (var q in dd) n++; return n < total - 1; };   // הסרתה מנתקת חלק מהמבוך
+  // מסלול S→X
+  var path = []; (function () {
+    var cur = far, dd = d0;
+    while (cur && dd[key(cur)] > 0) { path.unshift(cur); var best = null; nb(cur[0], cur[1]).forEach(function (d) { var n2 = [cur[0] + d[0], cur[1] + d[1]]; if (dd[key(n2)] === dd[key(cur)] - 1) best = n2; }); cur = best; }
+  })();
+  var deadEnds = cells.filter(function (c) { return nb(c[0], c[1]).length === 1 && !reserved[key(c)]; });
+  var corridors = cells.filter(function (c) { var n = nb(c[0], c[1]); return n.length === 2 && n[0][0] === -n[1][0] && n[0][1] === -n[1][1] && !reserved[key(c)]; });
+  var take = function (list) { if (!list.length) return null; var j = R(list.length), c = list[j]; list.splice(j, 1); return c; };
+  // 4. מפתח ודלת על צוואר בקבוק במסלול
+  for (var dn = 0; dn < (P.doors || 0); dn++) {
+    var cand = path.slice(4, -3).filter(function (c) { return g[c[1]][c[0]] === '.' && nb(c[0], c[1]).length === 2 && isArt(c); });
+    var door = cand.length ? cand[R(cand.length)] : null;
+    if (!door) break;
+    var dk = bfs(1, sy0, key(door)), kc = null, kd = -1;
+    cells.forEach(function (c) { var v2 = dk[key(c)]; if (v2 != null && v2 > kd && g[c[1]][c[0]] === '.' && !reserved[key(c)]) { kd = v2; kc = c; } });
+    if (!kc || kd < 4) break;
+    g[door[1]][door[0]] = 'D'; g[kc[1]][kc[0]] = 'K'; reserved[key(door)] = 1; reserved[key(kc)] = 1;
+  }
+  // 5. אוצרות, מימיק, לפיד קדוש בקצוות מתים
+  deadEnds = deadEnds.filter(function (c) { return g[c[1]][c[0]] === '.'; });
+  for (i = 0; i < (P.chests || 0); i++) { var de = take(deadEnds); if (de) { g[de[1]][de[0]] = rng() < (P.mimic || 0) ? 'M' : 'T'; reserved[key(de)] = 1; } }
+  for (i = 0; i < (P.torches || 0); i++) { var tc = take(deadEnds) || take(corridors); if (tc) { g[tc[1]][tc[0]] = '*'; reserved[key(tc)] = 1; } }
+  // 6. חדר סודי: קצה מת שהכניסה אליו נסתמת בקיר שבור — אוצר מאחוריו
+  for (i = 0; i < (P.secrets || 0); i++) {
+    var sc = deadEnds.filter(function (c) {
+      if (g[c[1]][c[0]] !== '.') return false;
+      var n1 = nb(c[0], c[1]); if (n1.length !== 1) return false;
+      var en = [c[0] + n1[0][0], c[1] + n1[0][1]];
+      return g[en[1]][en[0]] === '.' && nb(en[0], en[1]).length === 2 && !reserved[key(en)];
+    });
+    if (!sc.length) break;
+    var dc = sc[R(sc.length)], n2 = nb(dc[0], dc[1])[0], ent = [dc[0] + n2[0], dc[1] + n2[1]];
+    g[dc[1]][dc[0]] = 'T'; g[ent[1]][ent[0]] = '?'; reserved[key(dc)] = 1; reserved[key(ent)] = 1;
+    deadEnds = deadEnds.filter(function (c) { return key(c) !== key(dc); });
+  }
+  // 7. מלכודות במסדרונות
+  corridors = corridors.filter(function (c) { return g[c[1]][c[0]] === '.' && !reserved[key(c)]; });
+  var nearRes = function (c) { for (var q in reserved) { var a = q.split(','); if (Math.abs(a[0] - c[0]) + Math.abs(a[1] - c[1]) <= 1) return true; } return false; };
+  var placeTrap = function (ch, n, needNotArt) {
+    for (var q = 0; q < n; q++) {
+      for (var tr = 0; tr < 20; tr++) {
+        var c2 = take(corridors); if (!c2) return;
+        if (nearRes(c2) || (needNotArt && isArt(c2))) continue;
+        g[c2[1]][c2[0]] = ch; reserved[key(c2)] = 1; break;
+      }
+    }
+  };
+  placeTrap('^', P.spikes || 0); placeTrap('F', P.fire || 0); placeTrap('~', P.crumble || 0, true);
+  // מסורים: מסדרון ישר באורך 4 לפחות
+  for (i = 0; i < (P.saws || 0); i++) {
+    for (var tz = 0; tz < 30; tz++) {
+      var cz = cells[R(cells.length)]; if (g[cz[1]][cz[0]] !== '.' || nearRes(cz)) continue;
+      var horiz = rng() < 0.5, run = 0;
+      for (var dz = -3; dz <= 3; dz++) { var xx = horiz ? cz[0] + dz : cz[0], yy = horiz ? cz[1] : cz[1] + dz; if (open(xx, yy)) run++; else if (dz < 0) run = 0; else break; }
+      if (run < 5) continue;
+      var pocket = false;                                           // בלי מבוי סתום בתוך מסלול המסור
+      for (dz = -3; dz <= 3; dz++) { xx = horiz ? cz[0] + dz : cz[0]; yy = horiz ? cz[1] : cz[1] + dz; if (open(xx, yy) && nb(xx, yy).length <= 1) pocket = true; }
+      if (pocket) continue;
+      g[cz[1]][cz[0]] = horiz ? 'Z' : 'z'; reserved[key(cz)] = 1; break;
+    }
+  }
+  // משגרי חיצים: קיר בקצה מסדרון ישר
+  for (i = 0; i < (P.arrows || 0); i++) {
+    for (var ta = 0; ta < 40; ta++) {
+      var ca = cells[R(cells.length)], dirs = [[1, 0, '<'], [-1, 0, '>'], [0, 1, 'n'], [0, -1, 'u']], da = dirs[R(4)];
+      var wx = ca[0] + da[0], wy = ca[1] + da[1];
+      if (wx < 1 || wy < 1 || wx > W - 2 || wy > H - 2 || g[wy][wx] !== '#') continue;
+      var len = 0; while (open(ca[0] - da[0] * len, ca[1] - da[1] * len) && len < 8) len++;
+      if (len < 3 || nearRes([wx, wy])) continue;
+      g[wy][wx] = da[2]; break;
+    }
+  }
+  // 8. גז: ענף ללא מוצא עם אוצר בסופו
+  for (i = 0; i < (P.gas || 0); i++) {
+    var gd = deadEnds.filter(function (c) { return g[c[1]][c[0]] === '.'; }); if (!gd.length) break;
+    var gc = gd[R(gd.length)], prev = null, cur = gc, steps = 0;
+    g[gc[1]][gc[0]] = 'T'; reserved[key(gc)] = 1;
+    while (steps < 4) { var nn = nb(cur[0], cur[1]).map(function (d) { return [cur[0] + d[0], cur[1] + d[1]]; }).filter(function (c) { return !prev || key(c) !== key(prev); }); if (nn.length !== 1) break; prev = cur; cur = nn[0]; if (g[cur[1]][cur[0]] !== '.') break; g[cur[1]][cur[0]] = 'g'; steps++; }
+  }
+  // 9. אויבים — רחוק מההתחלה
+  var en = P.enemies || [];
+  for (i = 0; i < en.length; i++) {
+    var ec = cells.filter(function (c) { var dd = d0[key(c)]; return g[c[1]][c[0]] === '.' && dd != null && dd >= 9 && !reserved[key(c)]; });
+    var e1 = ec.length ? ec[R(ec.length)] : null; if (!e1) break;
+    g[e1[1]][e1[0]] = en[i]; reserved[key(e1)] = 1;
+  }
+  return { map: g.map(function (r) { return r.join(''); }), dark: !!P.dark, seed: seed };
+};
+
+/* ---------- הגדרת הפרקים: פרמטרים לכל שלב שאינו בנוי ביד ---------- */
+TD.DG.CHAPTERS = {
+  1: { names: ['הירידה הראשונה', 'דקרים ומפתח', 'הרוח הרודפת', 'מסדרון החיצים', 'אבן על בור', 'האוצר הנסתר', 'השערים והמנוף', 'ריקוד הדקרים', 'מבוך הצללים', 'המינוטאור'],
+    params: [null, null, null,
+      { loops: 0.5, spikes: 2, arrows: 2, chests: 2, enemies: ['R'], doors: 1 },
+      null,
+      { loops: 0.45, spikes: 3, arrows: 1, chests: 2, secrets: 2, mimic: 0.4, enemies: ['G'], torches: 1, doors: 1 },
+      null,
+      { loops: 0.5, spikes: 6, arrows: 2, chests: 2, enemies: ['G', 'W'], torches: 1, doors: 1 },
+      { loops: 0.5, spikes: 4, arrows: 3, chests: 3, secrets: 1, mimic: 0.3, enemies: ['G', 'A', 'R'], torches: 2, doors: 2, dark: true }] },
+  2: { names: ['להבות ראשונות', 'גשר שבור', 'מסורי הלבה', 'אדי הגופרית', 'אש בחושך', 'הכפול', 'השביל הקורס', 'מערת העטלפים', 'לב ההר', 'דרקון הלבה'],
+    params: [
+      { loops: 0.5, fire: 3, chests: 2, enemies: ['R'] },
+      { loops: 0.45, fire: 2, crumble: 4, chests: 2, enemies: ['G'], doors: 1 },
+      { loops: 0.5, fire: 2, saws: 2, chests: 2, enemies: ['G'], torches: 1 },
+      { loops: 0.45, fire: 3, gas: 2, crumble: 2, chests: 2, enemies: ['A', 'R'], doors: 1 },
+      { loops: 0.5, fire: 4, saws: 1, chests: 2, enemies: ['G', 'R'], torches: 1, dark: true },
+      { loops: 0.5, fire: 3, crumble: 3, saws: 2, chests: 3, secrets: 1, mimic: 0.4, enemies: ['G', 'A'], torches: 1, doors: 1 },
+      { loops: 0.4, fire: 4, crumble: 6, chests: 2, enemies: ['G', 'W'], torches: 1, doors: 1 },
+      { loops: 0.55, fire: 3, saws: 2, gas: 1, chests: 3, enemies: ['R', 'R', 'R', 'G'], torches: 2 },
+      { loops: 0.5, fire: 5, crumble: 4, saws: 2, gas: 1, chests: 3, secrets: 1, mimic: 0.3, enemies: ['G', 'A', 'W'], torches: 2, doors: 2, dark: true }] },
+  3: { names: ['שער הכניסה', 'מצלמות ולייזרים', 'כרטיס מגנטי', 'רצפה חשמלית', 'מעבדת הקרינה', 'החשכה', 'מסדרון הטורטים', 'משמרת לילה', 'ליבת המתקן', 'רובוט השמירה'],
+    params: [
+      { loops: 0.5, spikes: 3, arrows: 2, chests: 2, enemies: ['W'] },
+      { loops: 0.5, spikes: 2, saws: 2, arrows: 2, chests: 2, enemies: ['W', 'R'], doors: 1 },
+      { loops: 0.45, spikes: 3, arrows: 3, chests: 2, enemies: ['G', 'W'], doors: 2, torches: 1 },
+      { loops: 0.5, spikes: 7, saws: 1, chests: 2, enemies: ['A', 'W'], torches: 1 },
+      { loops: 0.45, spikes: 3, gas: 2, saws: 2, chests: 3, secrets: 1, mimic: 0.4, enemies: ['G', 'R'], doors: 1 },
+      { loops: 0.5, spikes: 4, arrows: 3, chests: 2, enemies: ['G', 'W', 'R'], torches: 1, dark: true },
+      { loops: 0.5, spikes: 3, arrows: 5, saws: 2, chests: 3, enemies: ['A', 'W'], torches: 1, doors: 1 },
+      { loops: 0.5, spikes: 4, saws: 2, crumble: 3, chests: 3, secrets: 1, enemies: ['G', 'A', 'W', 'R'], torches: 2, dark: true },
+      { loops: 0.5, spikes: 5, arrows: 4, saws: 3, crumble: 3, gas: 1, chests: 3, secrets: 1, mimic: 0.3, enemies: ['G', 'A', 'W', 'W'], torches: 2, doors: 2 }] }
+};
+
+TD.DG.levelCache = {};
+TD.DG.getLevel = function (ch, n) {      // n = 1..10
+  var id = ch + '-' + n;
+  if (TD.DG.levelCache[id]) return TD.DG.levelCache[id];
+  var C = TD.DG.CHAPTERS[ch], lv;
+  if (n === 10) lv = { map: TD.DG.BOSS[ch].map.slice(), boss: true };
+  else if (TD.DG.HAND[id]) lv = { map: TD.DG.HAND[id].map.slice(), dark: !!TD.DG.HAND[id].dark };
+  else lv = TD.DG.generate(1000 * ch + 37 * n + 11, C.params[n - 1]);
+  lv.id = id; lv.chapter = ch; lv.n = n; lv.name = C.names[n - 1]; lv.seed = lv.seed || (1000 * ch + n);
+  TD.DG.levelCache[id] = lv;
+  return lv;
+};
+
+/* ---------- המבוך היומי: אותו מבוך לכולם באותו יום ---------- */
+TD.DG.dayKey = function (date) {
+  var d = date || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+};
+TD.DG.daily = function (dayKey) {
+  var seed = 0; for (var i = 0; i < dayKey.length; i++) seed = (seed * 31 + dayKey.charCodeAt(i)) >>> 0;
+  var rng = TD.makeRng(seed), ch = 1 + Math.floor(rng() * 3), pick = function (a) { return a[Math.floor(rng() * a.length)]; };
+  var P = { loops: 0.45 + rng() * 0.15, chests: 3, secrets: 1, mimic: 0.3, torches: 2, doors: 1 + Math.floor(rng() * 2),
+    spikes: ch !== 2 ? 3 + Math.floor(rng() * 3) : 0, fire: ch === 2 ? 3 + Math.floor(rng() * 3) : 0, arrows: ch !== 2 ? 2 + Math.floor(rng() * 2) : 0,
+    crumble: Math.floor(rng() * 4), saws: Math.floor(rng() * 3), gas: Math.floor(rng() * 2), dark: rng() < 0.3,
+    enemies: [pick(['G', 'A']), pick(['W', 'R', 'G']), pick(['R', 'A', 'W'])] };
+  var lv = TD.DG.generate(seed, P);
+  lv.id = 'daily-' + dayKey; lv.chapter = ch; lv.n = 0; lv.name = 'המבוך היומי'; lv.daily = dayKey;
+  return lv;
+};
+
+/* =====================================================================
  * מקטע 58 — SAVE (v3.3): נקודת שמירה — המשחק נשמר כל עוד לא נפסלת
  * - נשמר בין גלים (בהפסקה): זהב, דמות, מגדל, חיילים, ביצורים, עמדות, מחקר, לחשים, כוחות...
  * - יציאה באמצע גל → חוזרים לתחילת אותו גל (נקודת השמירה האחרונה)
@@ -4310,6 +5229,391 @@ TD.Render = (function () {
 })();
 
 /* =====================================================================
+ * מקטע 66 — DUNGEON RENDER (v4.0): ציור מבוכי המגדל
+ * מבט מלמעלה, כל המבוך על המסך. חושך + פנס סביב השחקן, ומשבצות שכבר ראית נשארות בזיכרון (מעומעמות).
+ * שלושה פרקים = שלוש תפאורות: קטקומבות / מערות אש / מתקן סודי.
+ * ===================================================================== */
+TD.DGRender = (function () {
+  var R = {}, DIRS = TD.DG.DIRS, fog = null, fogCtx = null;
+  var THEME = {
+    1: { floor: ['#4a4258', '#4e465d'], wall: '#1f1a2b', face: '#5e5175', edge: '#8a7ca3', bg: '#0b0912', light: '255,214,150', foe: 'ghost' },
+    2: { floor: ['#4d3027', '#52342a'], wall: '#1f0d08', face: '#83402a', edge: '#c0643a', bg: '#120604', light: '255,170,110', foe: 'imp' },
+    3: { floor: ['#3a444f', '#3e4954'], wall: '#12181e', face: '#4f5e6c', edge: '#7fd8ff', bg: '#05080b', light: '190,235,255', foe: 'drone' }
+  };
+  var FOE_COL = { chaser: '#ff4d4d', ambusher: '#ff8de0', patrol: '#ffa64d', random: '#4de1ff' };
+  var WEAPON_COL = { sword: '#9fc4ff', bow: '#8ee07a', staff: '#c79bff' };
+  R.layout = function (cw, ch, s) {
+    var top = 50, bottom = 8, W = s ? s.W : 21, H = s ? s.H : 11, side = Math.min(112, cw * 0.13);
+    var ts = Math.max(12, Math.min(64, Math.floor(Math.min((cw - side * 2) / W, (ch - top - bottom) / H))));
+    return { ts: ts, ox: Math.round((cw - W * ts) / 2), oy: Math.round(top + (ch - top - bottom - H * ts) / 2), cw: cw, ch: ch };
+  };
+  function hash(x, y) { var h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+  function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function isWallish(t) { return t === '#' || t === '?' || t === '<' || t === '>' || t === 'n' || t === 'u'; }
+
+  /* ---------- משבצות ---------- */
+  function drawFloor(c, s, th, x, y, px, py, ts) {
+    c.fillStyle = th.floor[(x + y) & 1]; c.fillRect(px, py, ts, ts);
+    var h = hash(x, y);
+    if (h < 0.25) { c.fillStyle = 'rgba(255,255,255,0.035)'; c.fillRect(px + ts * 0.15, py + ts * 0.2, ts * 0.35, ts * 0.25); }
+    if (s.chapter === 3) { c.strokeStyle = 'rgba(127,216,255,0.06)'; c.lineWidth = 1; c.strokeRect(px + 0.5, py + 0.5, ts - 1, ts - 1); }
+    if (s.chapter === 2 && h > 0.85) { c.fillStyle = 'rgba(255,90,20,0.12)'; c.fillRect(px + ts * 0.6, py + ts * 0.55, ts * 0.25, ts * 0.08); }
+  }
+  function drawWall(c, s, th, x, y, px, py, ts) {
+    var below = TD.DG.tile(s, x, y + 1), face = !isWallish(below) && y < s.H - 1, fh = ts * 0.34;
+    c.fillStyle = th.wall; c.fillRect(px, py, ts, ts);
+    // קצוות מוארים לכיוון רצפה פתוחה
+    c.fillStyle = th.edge; c.globalAlpha = 0.35;
+    if (!isWallish(TD.DG.tile(s, x - 1, y)) && x > 0) c.fillRect(px, py, 2, ts);
+    if (!isWallish(TD.DG.tile(s, x + 1, y)) && x < s.W - 1) c.fillRect(px + ts - 2, py, 2, ts);
+    if (!isWallish(TD.DG.tile(s, x, y - 1)) && y > 0) c.fillRect(px, py, ts, 2);
+    c.globalAlpha = 1;
+    if (face) {
+      c.fillStyle = th.face; c.fillRect(px, py + ts - fh, ts, fh);
+      c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(px, py + ts - fh, ts, 1.5);
+      c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = 1; c.beginPath();
+      if (s.chapter === 3) { c.moveTo(px, py + ts - fh * 0.5); c.lineTo(px + ts, py + ts - fh * 0.5); }
+      else { var o = (x & 1) ? ts * 0.5 : ts * 0.15; c.moveTo(px, py + ts - fh * 0.5); c.lineTo(px + ts, py + ts - fh * 0.5); c.moveTo(px + o, py + ts - fh); c.lineTo(px + o, py + ts - fh * 0.5); c.moveTo(px + o + ts * 0.3, py + ts - fh * 0.5); c.lineTo(px + o + ts * 0.3, py + ts); }
+      c.stroke();
+      if (s.chapter === 3 && (x % 3 === 0)) { c.fillStyle = 'rgba(127,216,255,0.5)'; c.fillRect(px + ts * 0.4, py + ts - fh * 0.8, ts * 0.2, 2); }
+      if (s.chapter === 2 && hash(x, y) > 0.6) { c.fillStyle = 'rgba(255,120,40,0.45)'; c.fillRect(px + ts * hash(y, x) * 0.8, py + ts - fh, 1.5, fh); }
+    }
+    // ממשיכים את הצל של הקיר על הרצפה שמתחתיו
+  }
+  function drawTile(c, s, th, x, y, ts, ox, oy, T) {
+    var t = s.tiles[y][x], px = ox + x * ts, py = oy + y * ts, cx = px + ts / 2, cy = py + ts / 2;
+    if (isWallish(t)) {
+      drawWall(c, s, th, x, y, px, py, ts);
+      if (t === '?') { c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(cx - ts * 0.2, py + ts * 0.2); c.lineTo(cx, cy - ts * 0.05); c.lineTo(cx - ts * 0.08, cy + ts * 0.15); c.lineTo(cx + ts * 0.12, py + ts * 0.58); c.stroke(); }
+      if ('<>nu'.indexOf(t) >= 0) {
+        var L = null; for (var i = 0; i < s.launchers.length; i++) if (s.launchers[i].x === x && s.launchers[i].y === y) L = s.launchers[i];
+        var warn = L && TD.DG.launcherWarn(s, L), d = DIRS[{ '<': 'left', '>': 'right', n: 'up', u: 'down' }[t]];
+        c.fillStyle = warn ? (Math.floor(T * 16) % 2 ? '#ff5a3a' : '#ffd36b') : '#1a1420';
+        c.beginPath(); c.arc(cx + d.x * ts * 0.36, cy + d.y * ts * 0.36, ts * 0.13, 0, Math.PI * 2); c.fill();
+        c.fillStyle = s.chapter === 3 ? '#7fd8ff' : '#c9b38a'; c.fillRect(cx - ts * 0.18, cy - ts * 0.18, ts * 0.36, ts * 0.36);
+        c.fillStyle = '#111'; c.fillRect(cx - ts * 0.08 + d.x * ts * 0.08, cy - ts * 0.08 + d.y * ts * 0.08, ts * 0.16, ts * 0.16);
+      }
+      return;
+    }
+    drawFloor(c, s, th, x, y, px, py, ts);
+    switch (t) {
+      case '.':
+        var pulse = 0.75 + 0.25 * Math.sin(T * 4 + x + y);
+        c.fillStyle = 'rgba(255,215,90,' + (0.25 * pulse) + ')'; c.beginPath(); c.arc(cx, cy, ts * 0.2, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ffd75a'; c.beginPath(); c.arc(cx, cy, ts * 0.1, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#fff6c8'; c.fillRect(cx - ts * 0.04, cy - ts * 0.06, ts * 0.04, ts * 0.04); break;
+      case 'X':
+        for (var k = 3; k >= 1; k--) { c.strokeStyle = 'rgba(' + (s.chapter === 3 ? '127,216,255' : '140,255,190') + ',' + (0.25 * k) + ')'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, ts * (0.12 + 0.1 * k) * (1 + 0.08 * Math.sin(T * 3 + k)), T * k, T * k + 4.5); c.stroke(); }
+        c.fillStyle = 'rgba(160,255,200,0.6)'; c.beginPath(); c.arc(cx, cy, ts * 0.1, 0, Math.PI * 2); c.fill(); break;
+      case 'K':
+        c.save(); c.translate(cx, cy + Math.sin(T * 3) * ts * 0.05); c.rotate(-0.6);
+        c.fillStyle = s.chapter === 3 ? '#7fd8ff' : '#ffd75a';
+        if (s.chapter === 3) { rr(c, -ts * 0.22, -ts * 0.14, ts * 0.44, ts * 0.28, 3); c.fill(); c.fillStyle = '#123'; c.fillRect(-ts * 0.15, -ts * 0.04, ts * 0.3, ts * 0.06); }
+        else { c.beginPath(); c.arc(-ts * 0.12, 0, ts * 0.11, 0, Math.PI * 2); c.fill(); c.fillRect(-ts * 0.04, -ts * 0.035, ts * 0.32, ts * 0.07); c.fillRect(ts * 0.18, 0, ts * 0.05, ts * 0.1); c.fillStyle = th.floor[0]; c.beginPath(); c.arc(-ts * 0.12, 0, ts * 0.045, 0, Math.PI * 2); c.fill(); }
+        c.restore(); break;
+      case 'D':
+        c.fillStyle = s.chapter === 3 ? '#5d6a77' : '#7a4b25'; c.fillRect(px + 2, py + 1, ts - 4, ts - 2);
+        c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1; for (var q = 1; q < 4; q++) { c.beginPath(); c.moveTo(px + ts * q / 4, py + 2); c.lineTo(px + ts * q / 4, py + ts - 2); c.stroke(); }
+        c.fillStyle = s.chapter === 3 ? '#ff5a5a' : '#ffd75a'; c.beginPath(); c.arc(cx, cy, ts * 0.11, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#111'; c.fillRect(cx - ts * 0.025, cy - ts * 0.02, ts * 0.05, ts * 0.12); break;
+      case '^':
+        var up = TD.DG.spikesUp(s, x, y), warnS = TD.DG.spikesWarn(s, x, y);
+        c.fillStyle = 'rgba(0,0,0,0.25)'; for (var a = 0; a < 3; a++) for (var b = 0; b < 3; b++) { c.beginPath(); c.arc(px + ts * (0.22 + a * 0.28), py + ts * (0.22 + b * 0.28), ts * 0.05, 0, Math.PI * 2); c.fill(); }
+        if (warnS) { c.fillStyle = 'rgba(255,60,40,0.22)'; c.fillRect(px, py, ts, ts); }
+        if (up) {
+          c.fillStyle = s.chapter === 3 ? '#9fe8ff' : '#d8d8e0';
+          for (a = 0; a < 3; a++) for (b = 0; b < 3; b++) { var sx = px + ts * (0.22 + a * 0.28), sy = py + ts * (0.22 + b * 0.28); c.beginPath(); c.moveTo(sx - ts * 0.08, sy + ts * 0.08); c.lineTo(sx, sy - ts * 0.12); c.lineTo(sx + ts * 0.08, sy + ts * 0.08); c.fill(); }
+          if (s.chapter === 3) { c.strokeStyle = 'rgba(127,216,255,0.7)'; c.lineWidth = 1; c.beginPath(); for (a = 0; a < 4; a++) { c.lineTo(px + hash(a, Math.floor(T * 20)) * ts, py + hash(Math.floor(T * 20), a) * ts); } c.stroke(); }
+        }
+        break;
+      case 'F':
+        var on = TD.DG.fireOn(s, x, y), wf = TD.DG.fireWarn(s, x, y);
+        c.fillStyle = '#1a0d08'; c.beginPath(); c.arc(cx, cy, ts * 0.3, 0, Math.PI * 2); c.fill();
+        c.fillStyle = wf ? 'rgba(255,120,40,0.6)' : 'rgba(255,90,20,0.25)'; c.beginPath(); c.arc(cx, cy, ts * 0.18, 0, Math.PI * 2); c.fill();
+        if (on) {
+          for (var f = 0; f < 5; f++) {
+            var fx = cx + Math.sin(T * 9 + f * 2) * ts * 0.18, fh = ts * (0.35 + 0.2 * Math.sin(T * 13 + f));
+            var g = c.createLinearGradient(fx, cy + ts * 0.3, fx, cy + ts * 0.3 - fh * 1.4);
+            g.addColorStop(0, 'rgba(255,240,120,0.95)'); g.addColorStop(0.5, 'rgba(255,120,30,0.85)'); g.addColorStop(1, 'rgba(255,40,0,0)');
+            c.fillStyle = g; c.beginPath(); c.ellipse(fx, cy + ts * 0.1 - fh * 0.35, ts * 0.13, fh * 0.6, 0, 0, Math.PI * 2); c.fill();
+          }
+        }
+        break;
+      case '~':
+        var crum = s.crumble[x + ',' + y], sh = crum ? (Math.random() - 0.5) * ts * 0.08 : 0;
+        c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1.3; c.beginPath();
+        c.moveTo(px + ts * 0.15 + sh, py + ts * 0.3); c.lineTo(cx + sh, cy); c.lineTo(px + ts * 0.8 + sh, py + ts * 0.2);
+        c.moveTo(cx + sh, cy); c.lineTo(cx - ts * 0.1 + sh, py + ts * 0.85); c.moveTo(cx + sh, cy); c.lineTo(px + ts * 0.88 + sh, py + ts * 0.7); c.stroke();
+        if (crum) { c.fillStyle = 'rgba(0,0,0,' + (0.5 * (1 - crum / TD.CONFIG.dungeon.crumbleDelay)) + ')'; c.fillRect(px, py, ts, ts); }
+        break;
+      case 'O':
+        c.fillStyle = '#000'; rr(c, px + 2, py + 2, ts - 4, ts - 4, ts * 0.25); c.fill();
+        var gp = c.createRadialGradient(cx, cy, 1, cx, cy, ts * 0.5); gp.addColorStop(0, 'rgba(0,0,0,1)'); gp.addColorStop(1, s.chapter === 2 ? 'rgba(255,80,20,0.35)' : 'rgba(60,40,80,0.4)');
+        c.fillStyle = gp; rr(c, px + 2, py + 2, ts - 4, ts - 4, ts * 0.25); c.fill(); break;
+      case 'L':
+        c.fillStyle = '#555'; c.fillRect(cx - ts * 0.18, cy + ts * 0.1, ts * 0.36, ts * 0.14);
+        var flip = s.leverOn ? 1 : -1; c.strokeStyle = '#bbb'; c.lineWidth = Math.max(2, ts * 0.07); c.beginPath(); c.moveTo(cx, cy + ts * 0.12); c.lineTo(cx + flip * ts * 0.2, cy - ts * 0.22); c.stroke();
+        c.fillStyle = s.leverOn ? '#5f5' : '#f55'; c.beginPath(); c.arc(cx + flip * ts * 0.2, cy - ts * 0.22, ts * 0.08, 0, Math.PI * 2); c.fill(); break;
+      case '=':
+        c.fillStyle = 'rgba(0,0,0,0.3)'; c.fillRect(px, py, ts, ts);
+        c.fillStyle = s.chapter === 3 ? '#ff5a5a' : '#8d8d99';
+        if (s.chapter === 3) { c.globalAlpha = 0.6 + 0.3 * Math.sin(T * 10); for (var bl = 0; bl < 4; bl++) c.fillRect(px + ts * (0.12 + bl * 0.25), py + 2, 2, ts - 4); c.globalAlpha = 1; }
+        else for (bl = 0; bl < 4; bl++) c.fillRect(px + ts * (0.1 + bl * 0.25), py + 1, ts * 0.07, ts - 2);
+        break;
+      case '_':
+        c.fillStyle = 'rgba(0,0,0,0.25)'; for (bl = 0; bl < 4; bl++) c.fillRect(px + ts * (0.1 + bl * 0.25), py + ts * 0.45, ts * 0.07, ts * 0.1); break;
+      case 'T': case 'M':
+        var bite = t === 'M' && (Math.sin(T * 1.3 + x * 7) > 0.97);
+        c.fillStyle = s.chapter === 3 ? '#4d5a66' : '#8a5a2b'; rr(c, px + ts * 0.15, py + ts * 0.3, ts * 0.7, ts * 0.5, 3); c.fill();
+        c.fillStyle = s.chapter === 3 ? '#6b7a88' : '#a8733a'; rr(c, px + ts * 0.13, py + ts * (bite ? 0.12 : 0.24), ts * 0.74, ts * 0.2, 3); c.fill();
+        c.fillStyle = '#ffd75a'; c.fillRect(cx - ts * 0.05, py + ts * 0.4, ts * 0.1, ts * 0.12);
+        if (bite) { c.fillStyle = '#fff'; for (var tth = 0; tth < 4; tth++) c.fillRect(px + ts * (0.2 + tth * 0.16), py + ts * 0.3, ts * 0.06, ts * 0.06); c.fillStyle = '#c33'; c.fillRect(px + ts * 0.2, py + ts * 0.36, ts * 0.6, ts * 0.04); }
+        break;
+      case '*':
+        var fl = 0.8 + 0.2 * Math.sin(T * 12);
+        c.fillStyle = 'rgba(255,200,80,0.25)'; c.beginPath(); c.arc(cx, cy, ts * 0.42 * fl, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#6b4a2b'; c.fillRect(cx - ts * 0.04, cy - ts * 0.05, ts * 0.08, ts * 0.38);
+        c.fillStyle = '#ffb030'; c.beginPath(); c.ellipse(cx, cy - ts * 0.14, ts * 0.11, ts * 0.18 * fl, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#fff2a0'; c.beginPath(); c.ellipse(cx, cy - ts * 0.1, ts * 0.05, ts * 0.09, 0, 0, Math.PI * 2); c.fill(); break;
+      case 'g':
+        for (var gq = 0; gq < 3; gq++) {
+          var gx = cx + Math.sin(T * 0.9 + gq * 2.1 + x) * ts * 0.22, gy = cy + Math.cos(T * 0.7 + gq * 1.7 + y) * ts * 0.2;
+          c.fillStyle = 'rgba(140,230,80,0.22)'; c.beginPath(); c.arc(gx, gy, ts * 0.32, 0, Math.PI * 2); c.fill();
+        }
+        break;
+    }
+  }
+
+  /* ---------- דמויות ---------- */
+  function drawPlayer(c, s, ts, ox, oy, T) {
+    var p = s.player, px = ox + p.x * ts + ts / 2, py = oy + p.y * ts + ts / 2, r = ts * 0.34;
+    if (p.inv > 0 && Math.floor(T * 14) % 2) return;
+    var d = DIRS[p.face] || DIRS.right, col = WEAPON_COL[s.weapon] || '#9fc4ff';
+    if (p.dash > 0) { c.fillStyle = 'rgba(160,220,255,0.3)'; for (var i = 1; i <= 3; i++) { c.beginPath(); c.arc(px - d.x * ts * 0.3 * i, py - d.y * ts * 0.3 * i, r * (1 - i * 0.2), 0, Math.PI * 2); c.fill(); } }
+    var bob = p.dir ? Math.sin(T * 18) * ts * 0.03 : 0;
+    c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(px, py + r * 0.85, r * 0.8, r * 0.3, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = col; c.beginPath(); c.arc(px, py + bob, r, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.5; c.stroke();
+    // ראש/קסדה
+    c.fillStyle = s.chapter === 3 ? '#4f5d3a' : '#f1c7a0'; c.beginPath(); c.arc(px + d.x * r * 0.15, py + bob - r * 0.15 + d.y * r * 0.15, r * 0.55, 0, Math.PI * 2); c.fill();
+    if (s.chapter === 3) { c.fillStyle = '#3d4a2c'; c.beginPath(); c.arc(px + d.x * r * 0.15, py + bob - r * 0.25 + d.y * r * 0.1, r * 0.58, Math.PI, 0); c.fill(); }
+    c.fillStyle = '#222'; var ex = px + d.x * r * 0.4, ey = py + bob - r * 0.15 + d.y * r * 0.4;
+    if (d.y < 0) { /* גב */ } else { c.beginPath(); c.arc(ex - (d.x ? 0 : r * 0.18), ey, r * 0.08, 0, Math.PI * 2); c.arc(ex + (d.x ? 0 : r * 0.18), ey, r * 0.08, 0, Math.PI * 2); c.fill(); }
+    // נשק
+    var wx = px + d.x * r * 1.05 + (d.y ? r * 0.6 : 0), wy = py + bob + d.y * r * 1.05 + (d.x ? r * 0.3 : 0);
+    c.save(); c.translate(wx, wy); c.rotate(Math.atan2(d.y, d.x));
+    if (s.weapon === 'sword') {
+      if (p.swing > 0) { c.strokeStyle = 'rgba(255,255,255,' + (p.swing * 3) + ')'; c.lineWidth = ts * 0.12; c.beginPath(); c.arc(-r * 0.6, 0, ts * 0.65, -1.2, 1.2); c.stroke(); }
+      c.fillStyle = '#ddd'; c.fillRect(0, -ts * 0.035, ts * 0.42, ts * 0.07); c.fillStyle = '#a77'; c.fillRect(-ts * 0.06, -ts * 0.09, ts * 0.06, ts * 0.18);
+    } else if (s.weapon === 'bow') {
+      c.strokeStyle = '#8a5a2b'; c.lineWidth = ts * 0.06; c.beginPath(); c.arc(-ts * 0.05, 0, ts * 0.22, -1.3, 1.3); c.stroke();
+      c.strokeStyle = '#eee'; c.lineWidth = 1; c.beginPath(); c.moveTo(-ts * 0.0, -ts * 0.21); c.lineTo(-ts * 0.0, ts * 0.21); c.stroke();
+    } else {
+      c.fillStyle = '#7a4b25'; c.fillRect(-ts * 0.1, -ts * 0.03, ts * 0.4, ts * 0.06);
+      c.fillStyle = 'rgba(199,155,255,' + (0.6 + 0.4 * Math.sin(T * 8)) + ')'; c.beginPath(); c.arc(ts * 0.32, 0, ts * 0.09, 0, Math.PI * 2); c.fill();
+    }
+    c.restore();
+  }
+  function ghost(c, x, y, r, col, d, T, scared) {
+    c.fillStyle = col; c.beginPath(); c.arc(x, y - r * 0.15, r, Math.PI, 0);
+    c.lineTo(x + r, y + r * 0.8);
+    for (var i = 0; i < 4; i++) { var wx = x + r - (i + 0.5) * r / 2; c.lineTo(wx, y + r * (0.55 + 0.25 * Math.sin(T * 12 + i))); c.lineTo(wx - r / 4, y + r * 0.8); }
+    c.closePath(); c.fill();
+    eyes(c, x, y - r * 0.2, r, d, scared);
+  }
+  function eyes(c, x, y, r, d, scared) {
+    if (scared) { c.fillStyle = '#ffd'; c.fillRect(x - r * 0.4, y - r * 0.1, r * 0.2, r * 0.2); c.fillRect(x + r * 0.2, y - r * 0.1, r * 0.2, r * 0.2); return; }
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(x - r * 0.35, y, r * 0.26, 0, Math.PI * 2); c.arc(x + r * 0.35, y, r * 0.26, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#1a2a80'; c.beginPath(); c.arc(x - r * 0.35 + d.x * r * 0.12, y + d.y * r * 0.12, r * 0.13, 0, Math.PI * 2); c.arc(x + r * 0.35 + d.x * r * 0.12, y + d.y * r * 0.12, r * 0.13, 0, Math.PI * 2); c.fill();
+  }
+  function drawEnemy(c, s, e, ts, ox, oy, T, th) {
+    var x = ox + e.x * ts + ts / 2, y = oy + e.y * ts + ts / 2, r = ts * 0.36, d = DIRS[e.dir] || DIRS.down;
+    var scared = s.power > 0, col = scared ? ((s.power < 2 && Math.floor(T * 8) % 2) ? '#eef' : '#3a5cff') : FOE_COL[e.kind];
+    if (th.foe === 'ghost') { ghost(c, x, y, r, col, d, T, scared); return; }
+    if (th.foe === 'imp') {
+      var fl = 1 + 0.08 * Math.sin(T * 14 + e.id);
+      c.fillStyle = col; c.beginPath(); c.moveTo(x, y - r * 1.25 * fl); c.quadraticCurveTo(x + r * 1.2, y - r * 0.2, x + r * 0.8, y + r * 0.7); c.lineTo(x - r * 0.8, y + r * 0.7); c.quadraticCurveTo(x - r * 1.2, y - r * 0.2, x, y - r * 1.25 * fl); c.fill();
+      c.fillStyle = 'rgba(255,240,150,0.5)'; c.beginPath(); c.ellipse(x, y + r * 0.2, r * 0.45, r * 0.4, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#300'; c.beginPath(); c.moveTo(x - r * 0.6, y - r * 0.55); c.lineTo(x - r * 0.85, y - r * 1.05); c.lineTo(x - r * 0.35, y - r * 0.7); c.moveTo(x + r * 0.6, y - r * 0.55); c.lineTo(x + r * 0.85, y - r * 1.05); c.lineTo(x + r * 0.35, y - r * 0.7); c.fill();
+      eyes(c, x, y - r * 0.15, r * 0.85, d, scared); return;
+    }
+    // רחפן שמירה
+    var hov = Math.sin(T * 6 + e.id) * ts * 0.04;
+    c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(x, y + r * 0.9, r * 0.7, r * 0.22, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = scared ? col : '#4b5560'; rr(c, x - r * 0.85, y - r * 0.7 + hov, r * 1.7, r * 1.3, r * 0.35); c.fill();
+    c.fillStyle = col; c.fillRect(x - r * 0.85, y + r * 0.35 + hov, r * 1.7, r * 0.25);
+    c.strokeStyle = '#9aa'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, y - r * 0.7 + hov); c.lineTo(x, y - r * 1.15 + hov); c.stroke();
+    c.fillStyle = Math.floor(T * 4) % 2 ? '#f44' : '#a22'; c.beginPath(); c.arc(x, y - r * 1.15 + hov, r * 0.12, 0, Math.PI * 2); c.fill();
+    c.fillStyle = scared ? '#fff' : '#ff3030'; c.beginPath(); c.arc(x + d.x * r * 0.35, y - r * 0.1 + hov + d.y * r * 0.2, r * 0.25, 0, Math.PI * 2); c.fill();
+  }
+  function drawBoss(c, s, e, ts, ox, oy, T) {
+    var x = ox + e.x * ts + ts / 2, y = oy + e.y * ts + ts / 2, r = ts * 0.62, d = DIRS[e.charge || e.chargeDir || e.dir] || DIRS.down;
+    if (e.windup > 0) {
+      x += (Math.random() - 0.5) * ts * 0.12;
+      // קו אזהרה לכיוון ההסתערות
+      var cd = DIRS[e.chargeDir], n = 1; while (n < 30 && !TD.DG.solid(s, e.tx + cd.x * n, e.ty + cd.y * n, 'enemy')) n++;
+      c.strokeStyle = 'rgba(255,50,30,' + (0.35 + 0.3 * Math.sin(T * 30)) + ')'; c.lineWidth = ts * 0.5; c.setLineDash([ts * 0.3, ts * 0.2]);
+      c.beginPath(); c.moveTo(ox + e.tx * ts + ts / 2, oy + e.ty * ts + ts / 2); c.lineTo(ox + (e.tx + cd.x * (n - 1)) * ts + ts / 2, oy + (e.ty + cd.y * (n - 1)) * ts + ts / 2); c.stroke(); c.setLineDash([]);
+    }
+    c.fillStyle = 'rgba(0,0,0,0.4)'; c.beginPath(); c.ellipse(x, y + r * 0.8, r, r * 0.3, 0, 0, Math.PI * 2); c.fill();
+    if (e.stun > 0) c.globalAlpha = 0.75;
+    if (s.chapter === 1) {        // מינוטאור
+      c.fillStyle = '#7a4a2a'; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#e8dcc0'; c.beginPath(); c.moveTo(x - r * 0.6, y - r * 0.5); c.quadraticCurveTo(x - r * 1.4, y - r * 0.9, x - r * 1.1, y - r * 1.5); c.quadraticCurveTo(x - r * 0.9, y - r * 0.9, x - r * 0.3, y - r * 0.75); c.fill();
+      c.beginPath(); c.moveTo(x + r * 0.6, y - r * 0.5); c.quadraticCurveTo(x + r * 1.4, y - r * 0.9, x + r * 1.1, y - r * 1.5); c.quadraticCurveTo(x + r * 0.9, y - r * 0.9, x + r * 0.3, y - r * 0.75); c.fill();
+      c.fillStyle = '#5a321a'; c.beginPath(); c.ellipse(x + d.x * r * 0.3, y + r * 0.25 + d.y * r * 0.2, r * 0.45, r * 0.32, 0, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#ffd75a'; c.beginPath(); c.arc(x + d.x * r * 0.3, y + r * 0.5 + d.y * r * 0.2, r * 0.14, 0, Math.PI * 2); c.lineWidth = 2; c.strokeStyle = '#ffd75a'; c.stroke();
+    } else if (s.chapter === 2) { // דרקון לבה
+      var flap = Math.sin(T * 8) * 0.4;
+      c.fillStyle = '#8a1a10';
+      c.beginPath(); c.moveTo(x - r * 0.4, y); c.lineTo(x - r * 1.7, y - r * (0.9 + flap)); c.lineTo(x - r * 1.2, y + r * 0.4); c.fill();
+      c.beginPath(); c.moveTo(x + r * 0.4, y); c.lineTo(x + r * 1.7, y - r * (0.9 + flap)); c.lineTo(x + r * 1.2, y + r * 0.4); c.fill();
+      c.fillStyle = '#d0381c'; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#ffb030'; c.beginPath(); c.ellipse(x, y + r * 0.25, r * 0.5, r * 0.55, 0, 0, Math.PI * 2); c.fill();
+      if (e.windup > 0 || e.charge) { c.fillStyle = 'rgba(255,200,60,0.7)'; c.beginPath(); c.arc(x + d.x * r * 1.2, y + d.y * r * 1.2, r * 0.4 * (0.8 + Math.random() * 0.4), 0, Math.PI * 2); c.fill(); }
+    } else {                      // רובוט שמירה
+      c.fillStyle = '#56636f'; rr(c, x - r, y - r * 0.9, r * 2, r * 1.8, r * 0.3); c.fill();
+      c.fillStyle = '#323b44'; c.fillRect(x - r * 1.25, y - r * 0.4, r * 0.3, r * 0.9); c.fillRect(x + r * 0.95, y - r * 0.4, r * 0.3, r * 0.9);
+      c.fillStyle = '#111'; c.fillRect(x - r * 0.7, y - r * 0.5, r * 1.4, r * 0.4);
+      c.fillStyle = e.windup > 0 ? '#ff2020' : '#ff6060'; c.fillRect(x - r * 0.6 + (Math.sin(T * 3) + 1) * r * 0.5, y - r * 0.45, r * 0.25, r * 0.3);
+      c.fillStyle = '#7fd8ff'; c.fillRect(x - r * 0.5, y + r * 0.3, r, r * 0.12);
+    }
+    c.globalAlpha = 1;
+    if (e.windup <= 0 && !e.charge && !(e.stun > 0)) eyes(c, x, y - r * 0.15, r * 0.55, d, false);
+    if (e.stun > 0) {
+      for (var i = 0; i < 3; i++) { var a = T * 4 + i * 2.1; c.fillStyle = '#ffd75a'; c.font = Math.round(ts * 0.35) + 'px sans-serif'; c.textAlign = 'center'; c.fillText('★', x + Math.cos(a) * r, y - r * 1.1 + Math.sin(a) * r * 0.3); }
+      c.strokeStyle = 'rgba(255,255,120,0.8)'; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r * 1.15, 0, Math.PI * 2 * (e.stun / TD.CONFIG.dungeon.bossStun)); c.stroke();
+    }
+    // חיים
+    var max = TD.CONFIG.dungeon.bossHp;
+    for (var h = 0; h < max; h++) { c.fillStyle = h < e.hp ? '#ff4d4d' : 'rgba(255,255,255,0.2)'; c.fillRect(x - max * ts * 0.09 + h * ts * 0.18, y - r * 1.6, ts * 0.14, ts * 0.1); }
+  }
+  function drawSaw(c, z, ts, ox, oy, T) {
+    var x = ox + z.x * ts + ts / 2, y = oy + z.y * ts + ts / 2, r = ts * 0.38;
+    c.save(); c.translate(x, y); c.rotate(T * 14);
+    c.fillStyle = '#c9ced6'; c.beginPath();
+    for (var i = 0; i < 16; i++) { var a = i * Math.PI / 8; c.lineTo(Math.cos(a) * (i % 2 ? r * 0.78 : r), Math.sin(a) * (i % 2 ? r * 0.78 : r)); }
+    c.closePath(); c.fill(); c.fillStyle = '#6a707a'; c.beginPath(); c.arc(0, 0, r * 0.3, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+
+  /* ---------- אפקטים ---------- */
+  R.fx = function (s, type, x, y, opts) {
+    s.fx = s.fx || [];
+    if (s.fx.length > 160) s.fx.splice(0, 40);
+    opts = opts || {};
+    if (type === 'text') s.fx.push({ k: 'text', x: x, y: y, life: 1.1, max: 1.1, txt: opts.txt, col: opts.col || '#ffd75a' });
+    else if (type === 'ring') s.fx.push({ k: 'ring', x: x, y: y, life: 0.5, max: 0.5, col: opts.col || '255,255,255' });
+    else for (var i = 0; i < (opts.n || 8); i++) {
+      var a = Math.random() * Math.PI * 2, v = (opts.v || 2) * (0.4 + Math.random());
+      s.fx.push({ k: 'p', x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5 + Math.random() * 0.4, max: 0.9, col: opts.col || '#ffd75a', r: opts.r || 0.08 });
+    }
+  };
+  function drawFx(c, s, ts, ox, oy, dt) {
+    var list = s.fx || [];
+    for (var i = list.length - 1; i >= 0; i--) {
+      var f = list[i]; f.life -= dt;
+      if (f.life <= 0) { list.splice(i, 1); continue; }
+      var a = f.life / f.max, x = ox + f.x * ts + ts / 2, y = oy + f.y * ts + ts / 2;
+      if (f.k === 'p') { f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= 0.92; f.vy *= 0.92; c.globalAlpha = a; c.fillStyle = f.col; c.beginPath(); c.arc(x, y, ts * f.r, 0, Math.PI * 2); c.fill(); }
+      else if (f.k === 'ring') { c.strokeStyle = 'rgba(' + f.col + ',' + a + ')'; c.lineWidth = 3; c.beginPath(); c.arc(x, y, ts * (1.4 - a), 0, Math.PI * 2); c.stroke(); }
+      else { c.globalAlpha = Math.min(1, a * 2); c.fillStyle = f.col; c.font = 'bold ' + Math.round(ts * 0.42) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.strokeStyle = 'rgba(0,0,0,0.6)'; c.lineWidth = 3; var ty = y - (1 - a) * ts * 0.9; c.strokeText(f.txt, x, ty); c.fillText(f.txt, x, ty); }
+      c.globalAlpha = 1;
+    }
+  }
+
+  /* ---------- ערפל + פנס ---------- */
+  function drawFog(c, s, L, dpr, T) {
+    var w = Math.round(L.cw * dpr), h = Math.round(L.ch * dpr), ts = L.ts;
+    if (!fog) { fog = document.createElement('canvas'); fogCtx = fog.getContext('2d'); }
+    if (fog.width !== w || fog.height !== h) { fog.width = w; fog.height = h; }
+    var f = fogCtx; f.setTransform(dpr, 0, 0, dpr, 0, 0); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, L.cw, L.ch);
+    for (var y = 0; y < s.H; y++) for (var x = 0; x < s.W; x++) {
+      f.fillStyle = s.seen[x + ',' + y] ? (s.level.boss ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.58)') : 'rgb(4,3,8)';
+      f.fillRect(L.ox + x * ts - 0.5, L.oy + y * ts - 0.5, ts + 1, ts + 1);
+    }
+    var p = s.player, px = L.ox + p.x * ts + ts / 2, py = L.oy + p.y * ts + ts / 2;
+    var rad = TD.DG.lightRadius(s) * ts * (s.power > 0 ? 1.45 : 1) * (1 + 0.03 * Math.sin(T * 9) + 0.02 * Math.sin(T * 23));
+    f.globalCompositeOperation = 'destination-out';
+    var g = f.createRadialGradient(px, py, rad * 0.15, px, py, rad);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.72, 'rgba(0,0,0,0.92)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    f.fillStyle = g; f.beginPath(); f.arc(px, py, rad, 0, Math.PI * 2); f.fill();
+    // אור מלפידים / יציאה / אש
+    for (y = 0; y < s.H; y++) for (x = 0; x < s.W; x++) {
+      var t = s.tiles[y][x], lr = 0;
+      if (t === 'X') lr = 1.3; else if (t === '*') lr = 1.1; else if (t === 'F' && TD.DG.fireOn(s, x, y)) lr = 1.2;
+      if (!lr || !s.seen[x + ',' + y]) continue;
+      var lx = L.ox + x * ts + ts / 2, ly = L.oy + y * ts + ts / 2, g2 = f.createRadialGradient(lx, ly, 1, lx, ly, ts * lr);
+      g2.addColorStop(0, 'rgba(0,0,0,0.8)'); g2.addColorStop(1, 'rgba(0,0,0,0)'); f.fillStyle = g2; f.beginPath(); f.arc(lx, ly, ts * lr, 0, Math.PI * 2); f.fill();
+    }
+    f.globalCompositeOperation = 'source-over';
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(fog, 0, 0); c.restore();
+    // גוון חם של הפנס
+    c.save(); c.globalCompositeOperation = 'lighter';
+    var g3 = c.createRadialGradient(px, py, 1, px, py, rad); g3.addColorStop(0, 'rgba(' + THEME[s.chapter].light + ',0.12)'); g3.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g3; c.beginPath(); c.arc(px, py, rad, 0, Math.PI * 2); c.fill(); c.restore();
+  }
+  function lit(s, x, y) { var p = s.player, r = TD.DG.lightRadius(s) * (s.power > 0 ? 1.45 : 1); return (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) <= r * r; }
+
+  /* ---------- ציור ראשי ---------- */
+  var lastT = 0;
+  R.draw = function (ctx, s, view) {
+    var dpr = view.dpr, cw = ctx.canvas.width / dpr, ch = ctx.canvas.height / dpr, L = R.layout(cw, ch, s), ts = L.ts;
+    var th = THEME[s.chapter] || THEME[1], T = s.t, now = performance.now() / 1000, dt = Math.min(0.05, Math.max(0, now - (lastT || now))); lastT = now;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = th.bg; ctx.fillRect(0, 0, cw, ch);
+    var shake = s.shakeT > 0 ? (s.shakeT -= dt, s.shakeT * 18) : 0;
+    var ox = L.ox + (shake ? (Math.random() - 0.5) * shake : 0), oy = L.oy + (shake ? (Math.random() - 0.5) * shake : 0);
+    ctx.save();
+    for (var y = 0; y < s.H; y++) for (var x = 0; x < s.W; x++) drawTile(ctx, s, th, x, y, ts, ox, oy, T);
+    ctx.strokeStyle = th.edge; ctx.globalAlpha = 0.5; ctx.lineWidth = 2; ctx.strokeRect(ox - 1, oy - 1, s.W * ts + 2, s.H * ts + 2); ctx.globalAlpha = 1;
+    // אבנים
+    for (var i = 0; i < s.boulders.length; i++) {
+      var b = s.boulders[i], bx = ox + b.x * ts + ts / 2, by = oy + b.y * ts + ts / 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(bx, by + ts * 0.3, ts * 0.38, ts * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#8b8b96'; ctx.beginPath(); ctx.arc(bx, by, ts * 0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a8a8b2'; ctx.beginPath(); ctx.arc(bx - ts * 0.1, by - ts * 0.1, ts * 0.18, 0, Math.PI * 2); ctx.fill();
+    }
+    for (i = 0; i < s.saws.length; i++) drawSaw(ctx, s.saws[i], ts, ox, oy, T);
+    // חיצים
+    ctx.lineCap = 'round';
+    for (i = 0; i < s.arrows.length; i++) {
+      var a = s.arrows[i], ax = ox + a.x * ts + ts / 2, ay = oy + a.y * ts + ts / 2;
+      if (s.chapter === 3) { ctx.strokeStyle = '#ff3a3a'; ctx.lineWidth = ts * 0.12; ctx.shadowColor = '#f00'; ctx.shadowBlur = 8; }
+      else { ctx.strokeStyle = '#d9c39a'; ctx.lineWidth = ts * 0.06; }
+      ctx.beginPath(); ctx.moveTo(ax - a.vx * ts * 0.35, ay - a.vy * ts * 0.35); ctx.lineTo(ax + a.vx * ts * 0.3, ay + a.vy * ts * 0.3); ctx.stroke(); ctx.shadowBlur = 0;
+      if (s.chapter !== 3) { ctx.fillStyle = '#ccc'; ctx.beginPath(); ctx.arc(ax + a.vx * ts * 0.3, ay + a.vy * ts * 0.3, ts * 0.06, 0, Math.PI * 2); ctx.fill(); }
+    }
+    ctx.lineCap = 'butt';
+    // אויבים (מתחת לערפל)
+    for (i = 0; i < s.enemies.length; i++) { var e = s.enemies[i]; if (e.dead) continue; if (e.kind === 'boss') drawBoss(ctx, s, e, ts, ox, oy, T); else drawEnemy(ctx, s, e, ts, ox, oy, T, th); }
+    // יריות
+    for (i = 0; i < s.shots.length; i++) {
+      var sh = s.shots[i], sx = ox + sh.x * ts + ts / 2, sy = oy + sh.y * ts + ts / 2;
+      if (sh.kind === 'magic') { ctx.fillStyle = 'rgba(199,155,255,0.35)'; ctx.beginPath(); ctx.arc(sx, sy, ts * 0.28, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#e8d8ff'; ctx.beginPath(); ctx.arc(sx, sy, ts * 0.12, 0, Math.PI * 2); ctx.fill(); }
+      else { ctx.strokeStyle = '#f4e3b5'; ctx.lineWidth = ts * 0.06; ctx.beginPath(); ctx.moveTo(sx - sh.vx * ts * 0.35, sy - sh.vy * ts * 0.35); ctx.lineTo(sx + sh.vx * ts * 0.25, sy + sh.vy * ts * 0.25); ctx.stroke(); }
+    }
+    drawPlayer(ctx, s, ts, ox, oy, T);
+    drawFog(ctx, s, { cw: cw, ch: ch, ts: ts, ox: ox, oy: oy }, dpr, T);
+    // עיניים זוהרות של אויבים בחושך (מעל הערפל) — רואים שמשהו מתקרב
+    for (i = 0; i < s.enemies.length; i++) {
+      e = s.enemies[i]; if (e.dead || lit(s, e.x, e.y)) continue;
+      var dd = Math.abs(e.x - s.player.x) + Math.abs(e.y - s.player.y); if (dd > 9 && e.kind !== 'boss') continue;
+      var gx = ox + e.x * ts + ts / 2, gy = oy + e.y * ts + ts / 2 - ts * 0.08, gr = ts * (e.kind === 'boss' ? 0.1 : 0.06);
+      ctx.fillStyle = s.power > 0 ? 'rgba(120,150,255,0.9)' : 'rgba(255,60,40,' + (0.5 + 0.4 * Math.sin(T * 5 + e.id)) + ')';
+      ctx.beginPath(); ctx.arc(gx - ts * 0.12, gy, gr, 0, Math.PI * 2); ctx.arc(gx + ts * 0.12, gy, gr, 0, Math.PI * 2); ctx.fill();
+    }
+    drawFx(ctx, s, ts, ox, oy, dt);
+    // הבהוב פגיעה / מצב צייד
+    if (s.hurtFlash > 0) { s.hurtFlash -= dt; ctx.fillStyle = 'rgba(255,0,0,' + (s.hurtFlash * 0.6) + ')'; ctx.fillRect(0, 0, cw, ch); }
+    if (s.power > 0) { ctx.strokeStyle = 'rgba(255,190,80,' + (0.3 + 0.2 * Math.sin(T * 10)) + ')'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, cw - 6, ch - 6); }
+    ctx.restore();
+  };
+  R.tileToScreen = function (s, x, y, cw, ch) { var L = R.layout(cw, ch, s); return { x: L.ox + x * L.ts + L.ts / 2, y: L.oy + y * L.ts + L.ts / 2, ts: L.ts }; };
+  return R;
+})();
+
+/* =====================================================================
  * מקטע 70 — UI (ממשק, סאונד, רטט)
  * HUD, כפתורי קנייה מהירה, חלון (שדרוגים/מיומנויות/ביצורים/צבא/חנות/תקיפה),
  * קלפי בונוס, לחיצה על המסך, מסכי סיום. קורא ללוגיקה דרך פונקציות TD בלבד.
@@ -5132,152 +6436,311 @@ TD.UI = (function () {
 })();
 
 /* =====================================================================
- * מקטע 75 — NET (רשת לקרב 2 שחקנים)
- * משתמש ביכולת `room` של Claude: חדר בשם td-<קוד>, נושאים send/stat/lost.
- * הלוגיקה עצמה במקטע 55 — כאן רק העברת הודעות, לובי ובדיקת ניתוק.
- * כדי לעבור לשרת אחר (למשל עבור APK): להחליף את enter/emit/peers בלבד.
+ * מקטע 72 — DUNGEON UI (v4.0): מסכי המבוכים, שליטה, HUD, התקדמות, המבוך היומי
+ * - בחירת פרק ושלב (כוכבים ומנעולים), בחירת נשק, מבוך יומי עם טבלת שיאים
+ * - שליטה: ג'ויסטיק בחצי השמאלי של המסך / החלקה, כפתורי תקיפה ודאש, מקלדת (חצים/WASD, רווח, Shift)
+ * - בלי השפעה על משחק המגדל — ניקוד, כוכבים ושיאים בלבד
  * ===================================================================== */
-TD.Net = (function () {
-  var N = {}, $ = function (id) { return document.getElementById(id); };
-  var room = null, nr = null, unsubs = [], code = null, isHost = false, seed = 0;
-  var myWeapon = null, oppPeer = null, started = false, absentT = 0, avail = 'checking';
-  var ALPHA = 'abcdefghjkmnpqrstuvwxyz23456789';
-  var TOPICS = ['send', 'stat', 'lost'];
-
-  N.init = function () {
-    if (!window.claude || typeof window.claude.use !== 'function') { avail = 'no'; N.refreshStart(); return; }
-    window.claude.use('room').then(function (r) { room = r; avail = r ? 'yes' : 'no'; N.refreshStart(); },
-      function () { avail = 'no'; N.refreshStart(); });
+TD.DGUI = (function () {
+  var G = {}, $ = function (id) { return document.getElementById(id); };
+  var tab = 1, overTimer = 0, hudT = 0, atkHeld = false, atkT = 0, keysDown = {};
+  var WEAP = { sword: { icon: '⚔️', name: 'חרב', desc: 'מכה קרובה, חזקה' }, bow: { icon: '🏹', name: 'קשת', desc: 'חץ לאורך המסדרון' }, staff: { icon: '🔮', name: 'מטה', desc: 'כדור קסם שמתפוצץ' } };
+  var TIPS = {
+    '1-1': ['🗝️ ברוך הבא למבוך', 'אסוף מטבעות והגע לפורטל הירוק'],
+    '1-2': ['🔑 מפתח ודלת', 'דקרים עולים ויורדים — עבור כשהם למטה'],
+    '1-3': ['👻 רוח רודפת!', 'קח את הלפיד 🔥 — ואז אתה הצייד'],
+    '1-4': ['🏹 חיצים מהקיר', 'החור מהבהב לפני ירייה • דאש ⚡ = חסינות לרגע'],
+    '1-5': ['🪨 אבן על בור', 'דחוף את האבן לבור כדי לעבור'],
+    '1-6': ['🧱 קיר סדוק = סוד', 'תקוף קירות סדוקים • היזהר מתיבות שנושכות'],
+    '1-7': ['🕹️ מנוף', 'המנוף פותח וסוגר את השערים'],
+    '1-10': ['🐂 המינוטאור', 'כשהוא נעצר ורועד — זוז מהקו! הוא נתקע בקיר — עכשיו תקוף'],
+    '2-1': ['🔥 להבות', 'האש נדלקת בגלים — חכה לרגע הנכון'],
+    '2-2': ['🌋 רצפה קורסת', 'אל תעצור על אבנים סדוקות'],
+    '2-3': ['⚙️ מסורים', 'מסור נע הלוך וחזור — דאש דרכו או חכה בפינה'],
+    '2-4': ['☁️ אדים רעילים', 'אל תישאר בענן הירוק — האוצר שווה את זה?'],
+    '2-10': ['🐉 דרקון הלבה', 'אותו טריק: תן לו להסתער לקיר ותקוף כשהוא המום'],
+    '3-1': ['🛰️ המתקן הסודי', 'לייזרים, רחפני שמירה וכרטיס מגנטי'],
+    '3-10': ['🤖 רובוט השמירה', 'הוא ננעל עליך — זוז מהקו ותקוף כשהוא תקוע']
   };
 
-  N.refreshStart = function () {
-    var b = $('btnPvp'), n = $('pvpNote');
-    if (!b) return;
-    b.disabled = avail !== 'yes';
-    n.textContent = avail === 'yes' ? 'שחקו אחד נגד השני משני טלפונים'
-      : avail === 'checking' ? 'בודק אפשרות לקרב 2 שחקנים…'
-        : 'קרב 2 שחקנים עובד כשהמשחק פתוח בתוך Claude';
-  };
-
-  function status(t) { $('lobbyStatus').textContent = t; }
-  function others() {
-    if (!nr) return [];
-    return nr.peers().filter(function (p) { return !p.sameTab && p.kind === 'viewer'; });
+  /* ---------- התקדמות (מקומי) ---------- */
+  function prog() {
+    var p = TD.storage.get('dg', null);
+    if (!p || typeof p !== 'object') p = {};
+    p.stars = p.stars || {}; p.best = p.best || {}; p.weapon = WEAP[p.weapon] ? p.weapon : 'sword'; p.daily = p.daily || {};
+    return p;
   }
-
-  N.openLobby = function () {
-    if (avail !== 'yes') return;
-    TD.UI.show('screenStart', false); TD.UI.show('lobby', true);
-    TD.UI.show('lobbyStepCode', true); TD.UI.show('lobbyRoom', false);
-    $('codeInput').value = '';
-    status('צור חדר ושלח לחבר את הקוד, או הקלד קוד שקיבלת');
+  function saveProg(p) { TD.storage.set('dg', p); }
+  G.progress = prog;
+  G.unlocked = function (ch, n, p) {
+    p = p || prog();
+    if (ch > 1 && !p.stars[(ch - 1) + '-10']) return false;      // פרק נפתח אחרי הבוס של הפרק הקודם
+    return n === 1 || !!p.stars[ch + '-' + (n - 1)];
   };
+  G.totalStars = function (p) { p = p || prog(); var t = 0; for (var k in p.stars) t += p.stars[k] || 0; return t; };
 
-  N.create = function () {
-    code = ''; for (var i = 0; i < 4; i++) code += ALPHA[Math.floor(Math.random() * ALPHA.length)];
-    isHost = true; seed = Math.floor(Math.random() * 1e9);
-    enter();
-  };
-
-  N.joinCode = function () {
-    var c = ($('codeInput').value || '').trim().toLowerCase();
-    if (!/^[a-z0-9]{4}$/.test(c)) { status('הקוד הוא 4 אותיות/ספרות באנגלית'); return; }
-    code = c; isHost = false; enter();
-  };
-
-  function enter() {
-    status('מתחבר לחדר…');
-    room.join('td-' + code).then(function (r) {
-      nr = r;
-      unsubs.push(nr.onPeers(function () { renderLobby(); maybeStart(); }));
-      TOPICS.forEach(function (t) {
-        unsubs.push(nr.on(t, function (m) {
-          if (m.sameTab) return;
-          if (oppPeer && m.peer !== oppPeer) return;      // צופה שלישי — מתעלמים
-          if (TD.game && TD.game.pvp) TD.pvpReceive(TD.game, m.topic, m.data);
-        }));
-      });
-      nr.presence({ host: isHost, seed: isHost ? seed : null, ready: false, weapon: null }).catch(function () { });
-      TD.UI.show('lobbyStepCode', false); TD.UI.show('lobbyRoom', true);
-      $('roomCode').textContent = code.toUpperCase();
-      buildWeaponButtons();
-      renderLobby();
-    }, function (e) {
-      status(e && e.code === 'not_permitted' ? 'אין הרשאה לחדרים כאן — בקש מבעל המשחק לשתף איתך עם הרשאת "יכול להשתמש"' : 'החיבור נכשל, נסה שוב');
+  /* ---------- מסך בחירה ---------- */
+  G.openHub = function () {
+    var p = prog();
+    if (tab > 1 && !G.unlocked(tab, 1, p)) tab = 1;
+    U().show('screenStart', false); U().show('dgOver', false); U().show('dgBoard', false); U().show('dgHub', true);
+    // נשק
+    var wb = $('dgWeapons'); wb.innerHTML = '';
+    Object.keys(WEAP).forEach(function (id) {
+      var b = document.createElement('button'); b.className = 'act dgw' + (p.weapon === id ? ' on' : '');
+      b.innerHTML = '<span class="ic"></span><span></span><small></small>';
+      b.children[0].textContent = WEAP[id].icon; b.children[1].textContent = WEAP[id].name; b.children[2].textContent = WEAP[id].desc;
+      b.onclick = function () { var q = prog(); q.weapon = id; saveProg(q); G.openHub(); };
+      wb.appendChild(b);
     });
-  }
-
-  function buildWeaponButtons() {
-    var box = $('lobbyWeapons'); box.innerHTML = '';
-    var W = TD.CONFIG.weapons;
-    Object.keys(W).forEach(function (id) {
-      var b = document.createElement('button');
-      b.className = 'act lobbyw'; b.textContent = W[id].icon + ' ' + W[id].name;
-      b.onclick = function () {
-        myWeapon = id;
-        Array.prototype.forEach.call(box.children, function (x) { x.classList.toggle('hot', x === b); });
-        nr.presence({ ready: true, weapon: id }).catch(function () { });
-        renderLobby(); maybeStart();
-      };
-      box.appendChild(b);
+    // פרקים
+    var tb = $('dgTabs'); tb.innerHTML = '';
+    [1, 2, 3].forEach(function (ch) {
+      var open = G.unlocked(ch, 1, p), b = document.createElement('button');
+      b.className = 'act' + (ch === tab ? ' on' : '') + (open ? '' : ' off');
+      var st = 0; for (var n = 1; n <= 10; n++) st += p.stars[ch + '-' + n] || 0;
+      b.textContent = (open ? '' : '🔒 ') + TD.CONFIG.dungeon.themes[ch].icon + ' ' + TD.CONFIG.dungeon.themes[ch].name + ' • ' + st + '/30⭐';
+      b.onclick = function () { if (!open) { U().toast('🔒 נצח את הבוס של פרק ' + (ch - 1) + ' כדי לפתוח'); return; } tab = ch; G.openHub(); };
+      tb.appendChild(b);
     });
-  }
+    // שלבים
+    var lb = $('dgLevels'); lb.innerHTML = '';
+    for (var n = 1; n <= 10; n++) (function (n) {
+      var id = tab + '-' + n, open = G.unlocked(tab, n, p), stars = p.stars[id] || 0, b = document.createElement('button');
+      b.className = 'dglv' + (open ? '' : ' lock') + (n === 10 ? ' boss' : '');
+      b.innerHTML = '<b></b><span></span><i></i>';
+      b.children[0].textContent = open ? (n === 10 ? '👑' : n) : '🔒';
+      b.children[1].textContent = TD.DG.CHAPTERS[tab].names[n - 1];
+      b.children[2].textContent = open ? '★★★'.slice(0, stars) + '☆☆☆'.slice(0, 3 - stars) : '';
+      if (p.best[id]) b.title = 'שיא: ' + p.best[id];
+      b.onclick = function () { if (!open) { U().toast('🔒 עבור את השלב הקודם'); return; } G.start(TD.DG.getLevel(tab, n)); };
+      lb.appendChild(b);
+    })(n);
+    // יומי
+    var day = TD.DG.dayKey(), d = p.daily[day];
+    $('dgDailyInfo').textContent = d ? 'השיא שלך היום: ' + d + ' נק׳' : 'אותו מבוך לכל השחקנים — מתחלף בחצות';
+    $('dgTotal').textContent = '⭐ ' + G.totalStars(p) + '/90';
+  };
 
-  function renderLobby() {
-    if (!nr || started) return;
-    var o = others();
-    var t = o.length === 0 ? '⏳ ממתין ליריב… שלח לו את הקוד'
-      : o.length > 1 ? '⚠️ יש בחדר יותר משני שחקנים — המשחק יתחיל עם הראשון'
-        : (o[0].presence && o[0].presence.ready ? '✅ היריב מוכן' : '👤 היריב בחדר, בוחר נשק');
-    t += myWeapon ? '  •  אתה מוכן' : '  •  בחר נשק כדי להיות מוכן';
-    $('lobbyPeers').textContent = t;
-  }
+  /* ---------- התחלת שלב ---------- */
+  G.start = function (lv) {
+    var p = prog(), s = TD.DG.load(lv, { weapon: p.weapon });
+    s.fx = []; s.leverOn = false;
+    TD.dungeon = s; overTimer = 0; keysDown = {};
+    ['dgHub', 'dgOver', 'dgPause', 'dgBoard', 'screenStart'].forEach(function (id) { U().show(id, false); });
+    U().show('dgHud', true); document.body.classList.add('dungeon', 'playing');
+    $('dgName').textContent = lv.daily ? '📅 המבוך היומי' : 'פרק ' + lv.chapter + '-' + lv.n + ' • ' + lv.name;
+    $('dgAtk').textContent = WEAP[p.weapon].icon;
+    var tip = !lv.daily && TIPS[lv.id];
+    if (tip) U().banner(tip[0], tip[1]); else U().banner(lv.daily ? '📅 המבוך היומי' : lv.name, lv.boss ? 'קרב בוס!' : 'מצא את היציאה');
+    G.sync(true);
+  };
+  G.exit = function () {
+    TD.dungeon = null; keysDown = {};
+    ['dgHud', 'dgOver', 'dgPause'].forEach(function (id) { U().show(id, false); });
+    document.body.classList.remove('dungeon', 'playing');
+    G.openHub();
+  };
+  G.pause = function (on) { var s = TD.dungeon; if (!s || s.over) return; s.paused = on; U().show('dgPause', on); };
 
-  function maybeStart() {
-    if (started || !nr || !myWeapon) return;
-    var o = others(); if (!o.length) return;
-    var opp = o[0], pr = opp.presence || {};
-    if (!pr.ready) return;
-    var s0 = isHost ? seed : (typeof pr.seed === 'number' ? pr.seed : null);
-    if (s0 == null) {                                     // אף אחד לא מארח — seed מהקוד
-      s0 = 0; for (var i = 0; i < code.length; i++) s0 = (s0 * 31 + code.charCodeAt(i)) >>> 0;
+  /* ---------- HUD ---------- */
+  G.sync = function () {
+    var s = TD.dungeon; if (!s) return;
+    var p = s.player, D = TD.CONFIG.dungeon, h = '';
+    for (var i = 0; i < D.hearts; i++) h += i < p.hearts ? '❤️' : '🖤';
+    $('dgHearts').textContent = h;
+    $('dgEn').style.width = Math.round(100 * p.energy / D.energyMax) + '%';
+    $('dgCoins').textContent = (s.coinsTotal - s.coinsLeft) + '/' + s.coinsTotal;
+    $('dgKeys').textContent = s.keys > 0 ? '🔑' + s.keys : ''; $('dgKeys').classList.toggle('hidden', !(s.keys > 0));
+    $('dgScore').textContent = s.score;
+    var t = Math.floor(s.t), par = s.par;
+    $('dgTime').textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+    $('dgTime').classList.toggle('late', s.t > par);
+    $('dgTimeChip').title = 'זמן יעד ' + par + ' שנ׳';
+    var cd = p.dashCd / D.dashCd;
+    $('dgDash').style.setProperty('--cd', Math.round(cd * 360) + 'deg'); $('dgDash').classList.toggle('off', cd > 0);
+    var type = { sword: 'melee', bow: 'ranged', staff: 'magic' }[s.weapon];
+    $('dgAtk').classList.toggle('off', p.energy < D.attackCost[type]);
+    $('dgPower').classList.toggle('hidden', !(s.power > 0)); if (s.power > 0) $('dgPower').textContent = '🔥 צייד ' + Math.ceil(s.power);
+  };
+
+  /* ---------- אירועים: סאונד, אפקטים, הודעות ---------- */
+  function fx(s, k, x, y, o) { TD.DGRender.fx(s, k, x, y, o); }
+  G.handleEvents = function (s) {
+    var SFX = U().SFX, p = s.player;
+    for (var i = 0; i < s.events.length; i++) {
+      var e = s.events[i], d = e.data;
+      switch (e.type) {
+        case 'allCoins': U().toast('✨ כל המטבעות! +' + TD.CONFIG.dungeon.score.allCoins); SFX.combo(); break;
+        case 'key': SFX.chest(); fx(s, 'text', p.x, p.y, { txt: '🔑' }); break;
+        case 'door': SFX.up(); break;
+        case 'chest': SFX.chest(); fx(s, 'p', d.x, d.y, { n: 14, col: '#ffd75a', v: 3 }); fx(s, 'text', d.x, d.y, { txt: '+' + TD.CONFIG.dungeon.score.chest }); break;
+        case 'secret': SFX.combo(); fx(s, 'p', d.x, d.y, { n: 16, col: '#bba', v: 3 }); fx(s, 'text', d.x, d.y, { txt: '🤫 סוד! +' + TD.CONFIG.dungeon.score.secret, col: '#9ff' }); break;
+        case 'mimic': SFX.hurt(); fx(s, 'text', d.x, d.y, { txt: '🦷 מימיק!', col: '#f66' }); break;
+        case 'mimicKilled': SFX.chest(); fx(s, 'p', d.x, d.y, { n: 18, col: '#ffd75a', v: 3 }); fx(s, 'text', d.x, d.y, { txt: '+' + TD.CONFIG.dungeon.mimicReward }); break;
+        case 'power': SFX.ability(); U().banner('🔥 מצב צייד!', 'עכשיו הם בורחים ממך'); fx(s, 'ring', p.x, p.y, { col: '255,190,80' }); break;
+        case 'lever': s.leverOn = !s.leverOn; SFX.zap(); break;
+        case 'push': break;
+        case 'fill': SFX.up(); fx(s, 'p', d.x, d.y, { n: 10, col: '#999', v: 2 }); break;
+        case 'collapse': fx(s, 'p', d.x, d.y, { n: 10, col: '#7a6a5a', v: 2 }); break;
+        case 'dash': SFX.zap(); break;
+        case 'nearMiss': fx(s, 'text', d.x, d.y, { txt: 'כמעט! +' + TD.CONFIG.dungeon.score.nearMiss, col: '#9ef' }); break;
+        case 'hurt': SFX.hurt(); vibrate(120); s.hurtFlash = 0.35; s.shakeT = 0.25; break;
+        case 'enemyDead': SFX.combo(); fx(s, 'p', d.x, d.y, { n: 10, col: '#fff', v: 2.5 }); fx(s, 'text', d.x, d.y, { txt: '+' + d.pts }); break;
+        case 'shotHit': fx(s, 'p', d.x, d.y, { n: 5, col: d.kind === 'magic' ? '#c79bff' : '#f4e3b5', v: 1.5, r: 0.05 }); break;
+        case 'bossCharge': SFX.alarm(); break;
+        case 'bossStun': SFX.boss(); s.shakeT = 0.4; vibrate(60); break;
+        case 'bossBlock': break;
+        case 'bossHit': SFX.up(); var bs = s.enemies.find(function (q) { return q.kind === 'boss'; }); if (bs) fx(s, 'p', bs.x, bs.y, { n: 12, col: '#ff8', v: 3 }); break;
+        case 'bossDead': SFX.combo(); U().banner('👑 הבוס הובס!', 'השער נפתח — רוץ ליציאה'); s.shakeT = 0.6; break;
+        case 'win': SFX.chest(); break;
+        case 'dead': SFX.over(); break;
+      }
     }
-    oppPeer = opp.peer; started = true; absentT = 0;
-    TD.startGame(myWeapon, { pvp: true, seed: s0 });
+    s.events.length = 0;
+  };
+  function vibrate(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } }
+
+  /* ---------- סיום שלב ---------- */
+  function finish(s) {
+    var p = prog(), lv = s.level, id = lv.id, st = s.won ? s.stars : 0, newBest = false;
+    if (s.won && !lv.daily) {
+      p.stars[id] = Math.max(p.stars[id] || 0, st);
+      if (!p.best[id] || s.score > p.best[id]) { p.best[id] = s.score; newBest = true; }
+    }
+    if (lv.daily && s.won) { var k = lv.daily; if (!p.daily[k] || s.score > p.daily[k]) { p.daily[k] = s.score; newBest = true; } }
+    // ניקוי ימים ישנים
+    var keys = Object.keys(p.daily).sort(); while (keys.length > 14) delete p.daily[keys.shift()];
+    saveProg(p);
+    $('dgOverTitle').textContent = s.won ? (lv.daily ? '📅 עברת את המבוך היומי!' : '🏆 עברת את השלב!') : '💀 נפלת במבוך';
+    $('dgStars').textContent = s.won ? '★★★'.slice(0, st) + '☆☆☆'.slice(0, 3 - st) : '';
+    var rows = [['ניקוד', s.score + (newBest ? ' 🆕' : '')], ['זמן', Math.round(s.t) + ' / ' + s.par + ' שנ׳'], ['מטבעות', s.stats.coins + '/' + s.coinsTotal],
+      ['תיבות', s.stats.chests], ['סודות', s.stats.secrets], ['אויבים', s.stats.enemies], ['פגיעות', s.hurt]];
+    if (s.won && s.timeBonus) rows.splice(1, 0, ['בונוס זמן', '+' + s.timeBonus]);
+    if (s.won && !s.hurt) rows.push(['בלי פגיעה', '×' + TD.CONFIG.dungeon.score.noHurtMult]);
+    var box = $('dgStats'); box.innerHTML = '';
+    rows.forEach(function (r) { var a = document.createElement('span'), b = document.createElement('b'); a.textContent = r[0]; b.textContent = r[1]; box.appendChild(a); box.appendChild(b); });
+    $('dgStarHelp').textContent = s.won ? '⭐ עברת  ⭐ כל המטבעות  ⭐ בזמן ובלי פגיעה' : 'נסה שוב — המלכודות חוזרות באותו קצב';
+    var next = !lv.daily && s.won && lv.n < 10 ? TD.DG.getLevel(lv.chapter, lv.n + 1) : (!lv.daily && s.won && lv.n === 10 && lv.chapter < 3 ? TD.DG.getLevel(lv.chapter + 1, 1) : null);
+    $('dgNext').classList.toggle('hidden', !next);
+    $('dgNext').onclick = function () { if (next) { tab = next.chapter; G.start(next); } };
+    $('dgRetry').onclick = function () { G.start(lv); };
+    // מבוך יומי — טבלת שיאים
+    $('dgDailyRow').classList.toggle('hidden', !(lv.daily && s.won));
+    if (lv.daily && s.won) {
+      var nm = TD.Social.getName();
+      $('dgNameRow').classList.toggle('hidden', !!nm);
+      $('dgRank').textContent = nm ? 'שולח לטבלה...' : 'הכנס כינוי כדי להיכנס לטבלת המבוך היומי';
+      if (nm) submitDaily(s);
+      $('dgSubmit').onclick = function () {
+        var n = TD.Social.setName($('dgNameInput').value); if (!n) { U().toast('כתוב כינוי (עד 16 תווים)'); return; }
+        $('dgNameRow').classList.add('hidden'); $('dgRank').textContent = 'שולח לטבלה...'; submitDaily(s);
+      };
+    }
+    $('dgShare').onclick = function () {
+      var txt = s.won ? (lv.daily ? '📅 עברתי את המבוך היומי של מגדל האגדות עם ' + s.score + ' נקודות! נסה לנצח אותי:' : '🗝️ עברתי את "' + lv.name + '" במבוכי מגדל האגדות ' + '★★★'.slice(0, st) + ' (' + s.score + ' נק׳)') : '🗝️ המבוכים של מגדל האגדות קשוחים! נסה בעצמך:';
+      TD.Social.share(txt);
+    };
+    U().show('dgHud', false); U().show('dgOver', true);
+    document.body.classList.remove('playing');
+  }
+  function submitDaily(s) {
+    TD.Social.dgSubmit(s).then(function (r) {
+      $('dgRank').textContent = r == null ? '' : r > 0 ? '🏆 מקום ' + r + ' היום!' : 'נשמר — עוד לא בטבלה';
+    }, function () { $('dgRank').textContent = '📴 אין חיבור — השיא נשמר במכשיר'; });
   }
 
-  N.tick = function (dt) {
-    var s = TD.game;
-    if (!started || !nr || !s || !s.pvp) return;
-    var out = TD.pvpDrain(s);
-    for (var i = 0; i < out.length; i++) nr.emit(out[i].topic, out[i].data).catch(function () { });
-    if (s.over) return;
-    var present = nr.peers().some(function (p) { return p.peer === oppPeer; });
-    absentT = present ? 0 : absentT + dt;
-    s.pvp.opp.connected = present;
-    if (absentT > TD.CONFIG.pvp.leaveGrace) TD.pvpOpponentLeft(s);
+  /* ---------- טבלת המבוך היומי ---------- */
+  G.openBoard = function () {
+    U().show('dgHub', false); U().show('dgOver', false); U().show('dgBoard', true);
+    var day = TD.DG.dayKey(), list = $('dgBoardList'); list.innerHTML = ''; $('dgBoardStatus').textContent = 'טוען...';
+    $('dgBoardDay').textContent = '📅 ' + day.split('-').reverse().join('/');
+    TD.Social.dgBoard(day).then(function (b) {
+      $('dgBoardStatus').textContent = b.rows.length ? '' : 'עוד אף אחד לא עבר היום — תהיה הראשון!';
+      b.rows.forEach(function (r, i) {
+        var el = document.createElement('div'); el.className = 'br' + (i < 3 ? ' top' + (i + 1) : '') + (i === b.me ? ' me' : '');
+        el.innerHTML = '<span class="rk"></span><span class="nm"></span><span class="wv"></span><span class="kl"></span>';
+        el.children[0].textContent = i < 3 ? ['🥇', '🥈', '🥉'][i] : (i + 1); el.children[1].textContent = r.name || '?';
+        el.children[2].textContent = r.score; el.children[3].textContent = (WEAP[r.weapon] ? WEAP[r.weapon].icon : '') + ' ' + Math.round(r.secs) + 'ש׳ ' + '★'.repeat(r.stars || 0);
+        list.appendChild(el);
+      });
+    }, function () {
+      var mine = prog().daily[day];
+      $('dgBoardStatus').textContent = '📴 אין חיבור לטבלה' + (mine ? ' — השיא שלך היום: ' + mine : '');
+    });
   };
 
-  N.leave = function () {
-    unsubs.forEach(function (u) { try { u(); } catch (e) { } });
-    unsubs = [];
-    if (nr) nr.leave().catch(function () { });
-    nr = null; started = false; myWeapon = null; oppPeer = null; code = null;
+  /* ---------- שליטה ---------- */
+  function setDir(dir) { var s = TD.dungeon; if (s && !s.over && !s.paused) TD.DG.setInput(s, dir); }
+  function doAttack() { var s = TD.dungeon; if (s && !s.over && !s.paused) TD.DG.attack(s); }
+  function doDash() { var s = TD.dungeon; if (s && !s.over && !s.paused && TD.DG.dash(s)) vibrate(15); }
+  G.bind = function () {
+    $('btnDungeon').onclick = function () { G.openHub(); };
+    $('dgBack').onclick = function () { U().show('dgHub', false); U().buildStart(); U().show('screenStart', true); };
+    $('dgDailyPlay').onclick = function () { G.start(TD.DG.daily(TD.DG.dayKey())); };
+    $('dgDailyBoard').onclick = function () { G.openBoard(); };
+    $('dgBoardBack').onclick = function () { U().show('dgBoard', false); G.openHub(); };
+    $('dgPauseBtn').onclick = function () { G.pause(true); };
+    $('dgResume').onclick = function () { G.pause(false); };
+    $('dgRestart').onclick = function () { var s = TD.dungeon; if (s) G.start(s.level); };
+    $('dgQuit').onclick = function () { G.exit(); };
+    $('dgLevelsBtn').onclick = function () { G.exit(); };
+    $('dgSound').onclick = function () { $('btnSound').onclick(); $('dgSound').textContent = $('btnSound').textContent; };
+    // כפתורי פעולה
+    var atk = $('dgAtk'), dash = $('dgDash');
+    atk.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); atkHeld = true; atkT = 0; doAttack(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { atk.addEventListener(ev, function () { atkHeld = false; }); });
+    dash.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); doDash(); });
+    // ג'ויסטיק דינמי: נוגעים בכל מקום בחצי השמאלי וגוררים
+    var zone = $('dgStick'), knob = $('dgKnob'), base = $('dgBase'), sid = null, o = null;
+    function appPt(e) { return TD.screenToApp(e.clientX, e.clientY); }
+    zone.addEventListener('pointerdown', function (e) {
+      if (!TD.dungeon) return;
+      e.preventDefault(); sid = e.pointerId; o = appPt(e);
+      try { zone.setPointerCapture(sid); } catch (er) { }
+      base.style.left = o.x + 'px'; base.style.top = o.y + 'px'; base.classList.add('on'); knob.style.transform = 'translate(-50%,-50%)';
+    });
+    zone.addEventListener('pointermove', function (e) {
+      if (e.pointerId !== sid || !o) return;
+      var q = appPt(e), dx = q.x - o.x, dy = q.y - o.y, len = Math.sqrt(dx * dx + dy * dy), m = Math.min(len, 42);
+      knob.style.transform = 'translate(calc(-50% + ' + (len ? dx / len * m : 0) + 'px),calc(-50% + ' + (len ? dy / len * m : 0) + 'px))';
+      if (len > 14) setDir(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+      if (len > 70) { o = { x: q.x - dx / len * 70, y: q.y - dy / len * 70 }; base.style.left = o.x + 'px'; base.style.top = o.y + 'px'; }   // הבסיס נגרר אחרי האצבע
+    });
+    function end(e) { if (e.pointerId !== sid) return; sid = null; o = null; base.classList.remove('on'); setDir(null); }
+    zone.addEventListener('pointerup', end); zone.addEventListener('pointercancel', end);
+    // מקלדת
+    var KM = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down', A: 'left', D: 'right', W: 'up', S: 'down' };
+    document.addEventListener('keydown', function (e) {
+      if (!TD.dungeon || (e.target && e.target.tagName === 'INPUT')) return;
+      var k = e.key;
+      if (KM[k]) { e.preventDefault(); keysDown[KM[k]] = Date.now(); setDir(KM[k]); }
+      else if (k === ' ' || k === 'j' || k === 'J' || k === 'Enter') { e.preventDefault(); if (!e.repeat) doAttack(); atkHeld = true; }
+      else if (k === 'Shift' || k === 'k' || k === 'K') { e.preventDefault(); doDash(); }
+      else if (k === 'Escape' || k === 'p' || k === 'P') { G.pause(!TD.dungeon.paused); }
+    });
+    document.addEventListener('keyup', function (e) {
+      if (!TD.dungeon) return;
+      var k = e.key;
+      if (KM[k]) {
+        delete keysDown[KM[k]];
+        var rest = Object.keys(keysDown).sort(function (a, b) { return keysDown[b] - keysDown[a]; });
+        if (TD.dungeon.player.input === KM[k] || rest.length) setDir(rest[0] || null);
+      } else if (k === ' ' || k === 'j' || k === 'J' || k === 'Enter') atkHeld = false;
+    });
+    document.addEventListener('visibilitychange', function () { if (document.hidden && TD.dungeon && !TD.dungeon.over) G.pause(true); });
   };
 
-  N.bind = function () {
-    $('btnPvp').onclick = N.openLobby;
-    $('btnCreate').onclick = N.create;
-    $('btnJoin').onclick = N.joinCode;
-    $('codeInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') N.joinCode(); });
-    $('btnLobbyBack').onclick = function () { N.leave(); TD.UI.show('lobby', false); TD.UI.buildStart(); TD.UI.show('screenStart', true); };
-    $('btnCopyCode').onclick = function () {
-      var t = $('roomCode').textContent;
-      try { navigator.clipboard.writeText(t).then(function () { TD.UI.toast('📋 הקוד הועתק'); }, function () { }); } catch (e) { }
-    };
+  /* ---------- כל פריים ---------- */
+  G.tick = function (s, dt) {
+    if (!s) return;
+    G.handleEvents(s);
+    if (atkHeld && !s.over && !s.paused) { atkT -= dt; if (atkT <= 0) { atkT = 0.12; doAttack(); } }
+    hudT -= dt; if (hudT <= 0) { hudT = 0.1; G.sync(); }
+    if (s.over) { overTimer += dt; if (overTimer > (s.won ? 0.9 : 1.2) && !s.shown) { s.shown = true; finish(s); } }
   };
-
-  return N;
+  function U() { return TD.UI; }
+  return G;
 })();
 
 /* =====================================================================
@@ -5376,6 +6839,57 @@ TD.Social = (function () {
   }
   S.mode = function () { return mode; };
 
+  /* ---------- v4.0: המבוך היומי — טבלה לכל יום ---------- */
+  function sbDgBoard(day) {
+    var q = C().url + '/rest/v1/' + C().dgView + '?select=device,name,score,secs,stars,weapon&day=eq.' + encodeURIComponent(day) +
+      '&order=score.desc,secs.asc&limit=' + C().boardSize;
+    return timeoutFetch(q, { headers: headers({}) }).then(function (r) {
+      if (!r.ok) { var e = new Error('http ' + r.status); e.http = r.status; throw e; }
+      return r.json();
+    });
+  }
+  function sbDgSubmit(row) {
+    return timeoutFetch(C().url + '/rest/v1/' + C().dgTable, { method: 'POST', headers: headers({ Prefer: 'return=minimal' }), body: JSON.stringify(row) })
+      .then(function (r) { if (!r.ok) { var e = new Error('http ' + r.status); e.http = r.status; throw e; } return true; });
+  }
+  function cdDgBoard(day) {
+    return claudeDb.collection('dungeon').limit(1000).get().then(function (snap) {
+      var out = [];
+      snap.docs.forEach(function (d) { var b = d.data() || {}, e = b[day]; if (e && e.score) out.push({ device: d.id, name: S.cleanName(e.name) || '?', score: +e.score || 0, secs: +e.secs || 0, stars: +e.stars || 0, weapon: e.weapon }); });
+      out.sort(function (a, b) { return b.score - a.score || a.secs - b.secs; });
+      return out.slice(0, C().boardSize);
+    });
+  }
+  function cdDgSubmit(row) {
+    var ref = claudeDb.doc('dungeon/' + claudeUid);
+    return ref.get().then(function (snap) {
+      var body = snap.exists ? JSON.parse(JSON.stringify(snap.data())) : {}, cur = body[row.day];
+      if (cur && cur.score >= row.score) return true;
+      var keep = {}; Object.keys(body).sort().slice(-6).forEach(function (k) { keep[k] = body[k]; });   // רק הימים האחרונים
+      keep[row.day] = { name: row.name, score: row.score, secs: row.secs, stars: row.stars, weapon: row.weapon };
+      return ref.set(keep).then(function () { return true; });
+    });
+  }
+  S.dgBoard = function (day) {
+    return withServer(function () { return sbDgBoard(day); }, function () { return cdDgBoard(day); }).then(function (rows) {
+      var me = myKey(), idx = -1;
+      rows.forEach(function (r, i) { if (r.device === me && idx < 0) idx = i; });
+      return { rows: rows, me: idx };
+    });
+  };
+  S.dgRow = function (s) {
+    return { device: S.deviceId(), name: S.getName(), day: s.level.daily, score: Math.max(0, Math.min(99999, s.score | 0)),
+      secs: Math.max(1, Math.min(3600, Math.round(s.t * 10) / 10)), stars: Math.max(1, Math.min(3, s.stars | 0)), weapon: s.weapon, version: TD.VERSION };
+  };
+  // מחזיר את המקום בטבלת היום (1..) או 0
+  S.dgSubmit = function (s) {
+    if (!S.getName() || !s.won || !s.level.daily) return Promise.resolve(null);
+    var row = S.dgRow(s);
+    return withServer(function () { return sbDgSubmit(row); }, function () { return cdDgSubmit(row); })
+      .then(function () { return S.dgBoard(row.day); })
+      .then(function (b) { return b.me + 1; });
+  };
+
   /* ---------- API ---------- */
   // מחזיר {rows:[...], me: index|-1}
   S.board = function (world) {
@@ -5420,7 +6934,7 @@ TD.Social = (function () {
     return '';
   };
   S.shareText = function (s) {
-    var base = s && !s.pvp ? '🏰 הגעתי לגל ' + s.wave + (s.world === 2 ? ' בעולם החיילים' : '') + ' במגדל האגדות! ' + (s.stats.kills | 0) + ' אויבים הובסו. תצליח לעקוף אותי?' :
+    var base = typeof s === 'string' ? s : s && !s.pvp ? '🏰 הגעתי לגל ' + s.wave + (s.world === 2 ? ' בעולם החיילים' : '') + ' במגדל האגדות! ' + (s.stats.kills | 0) + ' אויבים הובסו. תצליח לעקוף אותי?' :
       '🏰 מגדל האגדות — משחק הגנת מגדל לנייד. בוא לנסות לעקוף את השיא שלי!';
     var u = S.shareUrl();
     return u ? base + '\n' + u : base;
@@ -5579,7 +7093,6 @@ TD.Social = (function () {
   TD.game = null;
   var menuState = TD.createState('sword', 7);
 
-  // opts: {pvp:true, seed} לקרב 2 שחקנים — אותו seed לשני הצדדים = אותם גלים
   TD.startGame = function (weaponId, opts) {
     var s = opts && opts.resume ? TD.loadSave() : null;   // v3.3: המשך משחק שמור
     if (!s) s = TD.createState(weaponId, opts && opts.seed != null ? opts.seed : undefined, opts && opts.world);
@@ -5592,13 +7105,19 @@ TD.Social = (function () {
   var last = performance.now();
   function frame(now) {
     var dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now;
-    var s = TD.game;
+    var s = TD.game, dg = TD.dungeon;
     try {
+      if (dg) {                                                   // v4.0: מבוכי המגדל
+        if (!dg.paused) TD.DG.update(dg, dt);
+        TD.DGRender.draw(ctx, dg, view);
+        TD.DGUI.tick(dg, dt);
+        TD.UI.tick(null, dt);
+        requestAnimationFrame(frame); return;
+      }
       if (s && !s.paused) for (var i = 0; i < (s.speed || 1); i++) TD.update(s, dt);
       if (!s) { menuState.t += dt; menuState.hero.anim += dt; menuState.world = TD.skinWorld; }
       TD.Render.draw(ctx, s || menuState, view);
       TD.UI.tick(s, dt);
-      if (TD.Net) TD.Net.tick(dt);
     } catch (err) {
       if (window.console) console.error(err);
     }
@@ -5608,8 +7127,7 @@ TD.Social = (function () {
   TD.Social.initPwa();
   TD.UI.bind();
   TD.UI.bindTap(canvas, view);
-  TD.Net.bind();
-  TD.Net.init();
+  TD.DGUI.bind();
   TD.UI.buildStart();
   requestAnimationFrame(frame);
 })();
