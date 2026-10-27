@@ -229,6 +229,10 @@ body.vland.h500 #installSheet .title{font-size:30px;margin:0}body.vland.h500 #in
 body.vland.h500 #screenStart{gap:8px}
 body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body.vland.h500 #screenStart{justify-content:flex-start;padding-top:10px}body.vland.h500 #screenStart .card{padding-top:8px;padding-bottom:8px}body.vland.h500 #screenStart .card .big{font-size:40px}
 
+/* v3.6 — החלפת נשק */
+#perkCards .card.current{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,211,77,.35)}
+#perkCards .card .ab{color:#c9b6ff;font-size:13px;margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -398,7 +402,7 @@ body.vland.h500 #screenStart .title{font-size:40px;margin:0;line-height:1.1}body
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '3.5.0';
+TD.VERSION = '3.6.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -703,7 +707,7 @@ TD.CONFIG = {
         desc: 'רימונים עם נזק שטח. איטי יותר, אבל מושלם מול קבוצות.',
         ability: { name: 'מטען EMP', icon: '⚡' } },
       'soldiers.types.militia': { name: 'לוחם חי"ר', icon: '🪖', color: '#5a6b3a', desc: 'רץ עם רובה וכידון אל האויבים, נסוג לחובש כשנפצע' },
-      'soldiers.types.archer': { name: 'מקלען', icon: '🔫', color: '#4f5d34', desc: 'עומד מאחורי הדמות ויורה רחוק (430), ניתן לתקוף אותו' },
+      'soldiers.types.archer': { name: 'מקלען', icon: '⛓️', color: '#4f5d34', desc: 'עומד מאחורי הדמות ויורה רחוק (430), ניתן לתקוף אותו' },
       'soldiers.types.towerArcher': { name: 'צלף בבונקר', icon: '🏢', color: '#4a5a3a', desc: 'רואה את כל השדה (גם מעבר לחומה), מוגן מהתקפה ישירה — אבל הצלפים סופגים יחד 35% מכל נזק לבונקר. מקום לכל 5 שלבי בונקר' },
       'soldiers.types.knight': { name: 'לוחם משוריין', icon: '🛡️', color: '#3f4a52', desc: 'מגן בליסטי ושריון כבד — מחזיק את הקו ליד הדמות' },
       'soldiers.types.medic': { name: 'חובש', icon: '🩺', desc: 'מטפל בחיילים סביבו ומחזיר לקרב חיילים שנפלו (לוקח זמן). בלעדיו — חייל שנפל אבוד' },
@@ -711,7 +715,7 @@ TD.CONFIG = {
       'support.chemist': { name: 'מהנדס', icon: '👨‍💻', desc: 'מפתח טכנולוגיות — כל מחקר פותח ציוד או נשק חדש' },
       'defenses.wall': { name: 'חומת בטון', desc: 'חוסמת אויבים. הם חייבים לפרוץ אותה כדי להתקדם' },
       'defenses.spikes': { name: 'גדר תיל', icon: '➰', desc: 'פוגעת בכל אויב רגלי שעומד או עובר עליה' },
-      'defenses.cannon': { name: 'תותח אוטומטי', icon: '🔫', desc: 'יורה פגזים עם נזק שטח, טווח ארוך' },
+      'defenses.cannon': { name: 'תותח אוטומטי', icon: '🎯', desc: 'יורה פגזים עם נזק שטח, טווח ארוך' },
       'defenses.totem': { name: 'מחולל קריו', icon: '🧊', desc: 'מאט אויבים קרובים — יותר זמן לירות בהם' },
       'wallAddons.oil': { name: 'להביור קבוע', icon: '🔥', desc: 'שורף אויבים שתוקפים את החומה' },
       'wallAddons.thorns': { name: 'גדר חשמלית', icon: '⚡', desc: 'מחזירה 35% מנזק קרב פנים לתוקף' },
@@ -740,12 +744,22 @@ TD.CONFIG = {
       'skills.masonry': { name: 'בטון מזוין', desc: '-10% נזק לבונקר ולחומה' },
       'skills.mana': { name: 'סוללה מוגדלת', icon: '🔋', desc: '+25% אנרגיה מקסימלית (ליכולות ולציוד)' },
       'skills.marksman': { name: 'כוונת לייזר' },
-      'perks.dmg': { name: 'תחמושת משופרת', icon: '🔫' }, 'perks.tower': { name: 'יסודות בטון', icon: '🏢', desc: '+25% חיי בונקר ותיקון מלא' },
+      'perks.dmg': { name: 'תחמושת משופרת', icon: '💥' }, 'perks.tower': { name: 'יסודות בטון', icon: '🏢', desc: '+25% חיי בונקר ותיקון מלא' },
       'perks.regen': { name: 'ערכת חובש' }, 'perks.energy': { name: 'כור קטן', icon: '🔋' }, 'perks.chest': { name: 'רחפן סיור', icon: '🛸' },
       'heroPowers.list.vampire': { name: 'ננו-ריפוי', icon: '🧬' }, 'heroPowers.list.bulwark': { name: 'שריון קרמי', icon: '🦺' },
       'heroPowers.list.battery': { name: 'כור נייד', icon: '🔋' },
       'heroPowers.list.engineer': { name: 'מהנדס ראשי', desc: 'רובוטים מהירים פי 2, עמדות +20% נזק' },
       'heroPowers.list.cleave': { desc: 'פוגע ב-2 מטרות נוספות (קומנדו) / כדור נוסף (צלף ומטול)' }
+    }
+  },
+
+  /* ---------- v3.6: ארסנל עולם 2 — החלפת נשק כל weaponEvery גלים, ארגזי אספקה עם נשק-על זמני ---------- */
+  arsenal: {
+    weaponEvery: 10, tempTime: 12, firstCrateWave: 3, crateEveryMin: 3, crateEveryMax: 4, dropDelay: 6, crateLife: 14, dropMaxX: 760, fallSpeed: 190,
+    temp: {
+      minigun: { name: 'מיניגאן', icon: '💥', desc: 'מטר כדורים', type: 'ranged', range: 460, damage: 7, cooldown: 0.11, projSpeed: 1150, leash: 280, projKind: 'arrow' },
+      rpg: { name: 'משגר RPG', icon: '🚀', desc: 'טילים עם פיצוץ רחב', type: 'magic', range: 540, damage: 46, cooldown: 1.0, projSpeed: 640, splash: 95, splashPct: 0.8, leash: 220, projKind: 'rocket' },
+      laser: { name: 'רובה לייזר', icon: '🔆', desc: 'קרן מהירה לכל השדה', type: 'ranged', range: 760, damage: 22, cooldown: 0.32, projSpeed: 2400, leash: 260, projKind: 'laser' }
     }
   },
 
@@ -927,6 +941,7 @@ TD.endWave = function (s) {
   }
   TD.emit(s, 'waveClear', { n: s.wave, bonus: bonus + pvpIncome });
   if (s.wave % C.events.perkEvery === 0) TD.offerPerks(s);
+  if (TD.arsenalOn && TD.arsenalOn(s) && s.wave % C.arsenal.weaponEvery === 0) TD.offerWeapon(s);   // v3.6: עולם 2 — החלפת נשק
   // גל 50 בעולם 1: בחירה — להמשיך כאן או לעבור לעולם 2 (נפתח בכל מקרה)
   if ((s.world || 1) === 1 && s.wave >= C.worlds.unlockWave && !s.worldAsked && !s.pvp) {
     s.worldAsked = true; s.worldChoice = true;
@@ -2061,6 +2076,7 @@ TD.maybeDropChest = function (s, e) {
 TD.collectChest = function (s, c) {
   if (!c || c.taken) return false;
   c.taken = true; c.life = 0;
+  if (c.supply) { TD.burst(s, c.x, c.y - 10, '#9be36b', 18); TD.giveTempWeapon(s, c.supply); return true; }   // v3.6: ארגז אספקה
   s.gold += c.gold; s.stats.goldEarned += c.gold; s.stats.chests++;
   TD.addText(s, c.x, c.y - 40, '+' + c.gold, '#ffd34d', 1.5);
   TD.burst(s, c.x, c.y - 10, '#ffd34d', 18);
@@ -2071,6 +2087,11 @@ TD.collectChest = function (s, c) {
 TD.updateChests = function (s, dt) {
   for (var i = 0; i < s.chests.length; i++) {
     var c = s.chests[i];
+    if (c.falling) {                                // ארגז אספקה צונח במצנח
+      c.y += TD.CONFIG.arsenal.fallSpeed * dt; c.bob += dt;
+      if (c.y >= TD.CONFIG.world.groundY - 8) { c.y = TD.CONFIG.world.groundY - 8; c.falling = false; }
+      continue;
+    }
     c.life -= dt; c.bob += dt;
     if (c.life <= 0 && !c.taken) { c.taken = true; s.stats.chestsMissed++; }
   }
@@ -2371,6 +2392,77 @@ TD.updateSpells = function (s, dt) {
 };
 
 /* =====================================================================
+ * מקטע 48 — ARSENAL (v3.6, עולם 2): החלפת נשק כל 10 גלים + ארגזי אספקה
+ * - כל weaponEvery גלים בעולם 2 — המשחק עוצר ומציע: להישאר עם הנשק או לעבור לאחר
+ * - כל 3–4 גלים צונח ארגז אספקה באמצע הגל. לחיצה עליו → נשק-על זמני לכמה שניות
+ * נתונים במקטע 00: arsenal
+ * ===================================================================== */
+TD.arsenalOn = function (s) { return (s.world || 1) === 2 && !s.pvp; };
+
+/* ---------- החלפת נשק ---------- */
+TD.offerWeapon = function (s) {
+  if (!TD.arsenalOn(s)) return false;
+  s.weaponChoice = true;
+  TD.emit(s, 'weaponChoice', { wave: s.wave });
+  return true;
+};
+TD.chooseWeapon = function (s, id) {
+  if (!s.weaponChoice || !TD.CONFIG.weapons[id]) return false;
+  s.weaponChoice = false;
+  if (id === s.weaponId) { TD.emit(s, 'weaponKeep', { id: id }); return true; }
+  if (s.tempWeapon) TD.endTempWeapon(s, true);
+  s.weaponId = id; s.weapon = TD.CONFIG.weapons[id];
+  s.hero.abilityTimer = 0; s.hero.swing = 0; s.stats.weaponSwaps = (s.stats.weaponSwaps || 0) + 1;
+  TD.recalcHero(s, false);
+  TD.emit(s, 'weaponSwap', { id: id });
+  return true;
+};
+
+/* ---------- נשק-על זמני ---------- */
+TD.giveTempWeapon = function (s, id) {
+  var A = TD.CONFIG.arsenal, d = A.temp[id];
+  if (!d) return false;
+  var base = TD.CONFIG.weapons[s.weaponId], w = {}, k;
+  for (k in base) w[k] = base[k];                  // שומר יכולת, שריון וגניבת חיים של הנשק הקבוע
+  for (k in d) w[k] = d[k];
+  w.temp = id;
+  s.weapon = w;
+  s.tempWeapon = { id: id, time: A.tempTime, max: A.tempTime };
+  s.hero.atkTimer = 0;
+  s.stats.tempWeapons = (s.stats.tempWeapons || 0) + 1;
+  TD.emit(s, 'tempWeapon', { id: id, time: A.tempTime });
+  return true;
+};
+TD.endTempWeapon = function (s, silent) {
+  if (!s.tempWeapon) return;
+  s.tempWeapon = null;
+  s.weapon = TD.CONFIG.weapons[s.weaponId];
+  if (!silent) TD.emit(s, 'tempWeaponEnd', {});
+};
+
+/* ---------- ארגזי אספקה (נוחתים כ"תיבה" מיוחדת — אותה לחיצה אוספת) ---------- */
+TD.dropSupply = function (s) {
+  var A = TD.CONFIG.arsenal, W = TD.CONFIG.world, ids = Object.keys(A.temp);
+  var id = ids[Math.floor(s.rng() * ids.length)];
+  var x = W.heroX + 110 + s.rng() * (A.dropMaxX - W.heroX - 110);
+  s.chests.push({ id: s.nextId++, supply: id, x: x, y: -40, life: A.crateLife, max: A.crateLife, gold: 0, bob: 0, falling: true });
+  s.crateWave = s.wave;
+  s.nextCrateWave = s.wave + A.crateEveryMin + (s.rng() < 0.5 ? 0 : A.crateEveryMax - A.crateEveryMin);
+  TD.emit(s, 'supplyDrop', { id: id });
+};
+
+TD.updateArsenal = function (s, dt) {
+  if (s.tempWeapon) { s.tempWeapon.time -= dt; if (s.tempWeapon.time <= 0) TD.endTempWeapon(s); }
+  if (!TD.arsenalOn(s)) return;
+  var A = TD.CONFIG.arsenal;
+  if (s.nextCrateWave == null) s.nextCrateWave = A.firstCrateWave;
+  if (s.phase === 'wave' && s.crateWave !== s.wave && s.wave >= s.nextCrateWave) {
+    s.crateTimer = (s.crateTimer == null ? A.dropDelay : s.crateTimer) - dt;
+    if (s.crateTimer <= 0) { s.crateTimer = null; TD.dropSupply(s); }
+  } else if (s.phase === 'break') s.crateTimer = null;
+};
+
+/* =====================================================================
  * מקטע 50 — ENGINE (לולאת הלוגיקה)
  * TD.update(state, dt) — מתקדם צעד אחד בזמן. לא מצייר ולא נוגע ב-DOM,
  * ולכן אפשר להריץ אותו גם בבדיקות האוטומטיות ב-Node.
@@ -2380,7 +2472,7 @@ TD.update = function (s, dt) {
   if (!s) return;
   if (s.over) { TD.pvpTick(s, dt); TD.updateFx(s, dt); return; }
   // בחירת קלף בונוס משהה את המשחק — חוץ מקרב 2 שחקנים (היריב ממשיך לשחק)
-  if ((s.perkChoice || s.powerChoice || s.worldChoice) && !s.pvp) { TD.updateFx(s, dt); return; }
+  if ((s.perkChoice || s.powerChoice || s.worldChoice || s.weaponChoice) && !s.pvp) { TD.updateFx(s, dt); return; }
   s.t += dt;
 
   if (s.phase === 'break') {
@@ -2418,6 +2510,7 @@ TD.update = function (s, dt) {
   TD.updateEnemies(s, dt);
   TD.updateProjectiles(s, dt);
   TD.updateEvents(s, dt);
+  TD.updateArsenal(s, dt);
   TD.updateSpells(s, dt);
   TD.updateSupport(s, dt);
   TD.updateCorpses(s, dt);
@@ -2496,7 +2589,7 @@ TD.updateHero = function (s, dt) {
   } else {
     for (var q = 0; q <= st.extraTargets && q < targets.length; q++) {     // עם "מכת רוחב" — חץ נוסף לכל מטרה
       var t0 = targets[q];
-      TD.fire(s, { owner: 'hero', kind: w.type === 'ranged' ? 'arrow' : 'fireball', x: h.x + 16, y: h.y - 44 - q * 6,
+      TD.fire(s, { owner: 'hero', kind: w.projKind || (w.type === 'ranged' ? 'arrow' : 'fireball'), x: h.x + 16, y: h.y - 44 - q * 6,
         target: t0, tx: t0.x, ty: t0.y - t0.def.size, speed: w.projSpeed, damage: hit,
         splash: w.splash || 0, splashPct: w.splashPct || 0 });
     }
@@ -2896,7 +2989,7 @@ TD.SAVE_KEY = 'save1';
 
 // שדות זמניים שלא נשמרים (מתחדשים לבד)
 TD.SAVE_SKIP = { rng: 1, weapon: 1, enemies: 1, projectiles: 1, particles: 1, texts: 1, effects: 1, events: 1, meteors: 1, clouds: 1,
-  chests: 1, spawnQueue: 1, pvp: 1, paused: 1, shake: 1, submitted: 1 };
+  chests: 1, spawnQueue: 1, pvp: 1, paused: 1, shake: 1, submitted: 1, tempWeapon: 1, crateTimer: 1 };
 
 TD.canSave = function (s) { return !!s && !s.pvp && !s.over && s.phase === 'break' && s.wave >= 1; };
 
@@ -3342,10 +3435,18 @@ TD.Render = (function () {
     }
     if (s.buffs && s.buffs.rage > 0) glow(ctx, h.x, G - 34, 46 + Math.sin(h.anim * 8) * 5, 'rgba(255,80,40,0.45)');
     if (s.buffs && s.buffs.haste > 0) for (var hz = 0; hz < 3; hz++) line(ctx, h.x - 22 - hz * 8, G - 50 + hz * 14, h.x - 40 - hz * 8, G - 50 + hz * 14, 'rgba(155,231,255,0.7)', 2);
-    var weapon = W2 ? (w.type === 'melee' ? commandoArm(h.swing) : w.type === 'ranged' ? gunArm('sniper', h.swing, { flash: true }) : gunArm('launcher', h.swing, { flash: true }))
+    var weapon = W2 && w.temp ? (w.temp === 'minigun' ? gunArm('lmg', h.swing, { flash: true, color: '#3a3a3a' }) : w.temp === 'rpg' ? gunArm('launcher', h.swing, { flash: true, color: '#556b2f' }) : gunArm('sniper', h.swing, { color: '#4ad1ff' }))
+      : W2 ? (w.type === 'melee' ? commandoArm(h.swing) : w.type === 'ranged' ? gunArm('sniper', h.swing, { flash: true }) : gunArm('launcher', h.swing, { flash: true }))
       : w.type === 'melee' ? swordArm(h.swing) : w.type === 'ranged' ? bowArm(h.swing, w.color) : staffArm(h.swing, h.anim, w.color);
     // הילה לפי שלב
     if (h.level >= 10) glow(ctx, h.x, G - 30, 40 + Math.sin(h.anim * 3) * 4, h.level >= 20 ? 'rgba(255,215,90,0.35)' : 'rgba(120,200,255,0.25)');
+    if (s.tempWeapon) {                                // v3.6: נשק-על זמני — הילה ושעון
+      var tw = TD.CONFIG.arsenal.temp[s.tempWeapon.id], tk = s.tempWeapon.time / s.tempWeapon.max;
+      glow(ctx, h.x, G - 34, 50 + Math.sin(h.anim * 10) * 4, 'rgba(155,227,107,0.35)');
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(tw.icon + ' ' + Math.ceil(s.tempWeapon.time), h.x, G - 96);
+      bar(ctx, h.x, G - 86, 46, tk, tk < 0.3 ? '#ff6b6b' : '#9be36b');
+    }
     if (W2) humanoid(ctx, h.x, G, { scale: 1.12, tunic: w.tunic, pants: '#3e4a2c', belt: '#2a2a2a', moving: h.moving, walk: h.anim, flash: h.hitFlash > 0, skin: '#e0b48a',
       vest: h.level >= 5 ? '#3a4228' : null, helm: w.type === 'ranged' ? 'cap' : 'combat', helmColor: w.type === 'ranged' ? '#4a5230' : '#4f5d34', goggles: h.level >= 10, weapon: weapon });
     else humanoid(ctx, h.x, G, {
@@ -3681,8 +3782,25 @@ TD.Render = (function () {
   }
 
   /* ---------- תיבות אוצר ---------- */
+  function drawSupplyCrate(ctx, c) {                 // v3.6: ארגז אספקה עם מצנח
+    var x = c.x, y = c.y - 10, k = c.life / c.max, sw = Math.sin(c.bob * 2.5) * (c.falling ? 0.12 : 0);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(sw);
+    if (c.falling) {
+      ctx.beginPath(); ctx.arc(0, -62, 30, Math.PI, 0); ctx.closePath(); ctx.fillStyle = '#e8e2d0'; ctx.fill();
+      for (var st = -2; st <= 2; st++) { ctx.beginPath(); ctx.arc(st * 12, -62, 6, Math.PI, 0); ctx.fillStyle = st % 2 ? '#c23a2a' : '#e8e2d0'; ctx.fill(); }
+      ctx.strokeStyle = 'rgba(60,60,60,0.8)'; ctx.lineWidth = 1;
+      [-28, -10, 10, 28].forEach(function (px) { ctx.beginPath(); ctx.moveTo(px, -62); ctx.lineTo(px * 0.3, -14); ctx.stroke(); });
+    } else glow(ctx, 0, -6, 38, 'rgba(155,227,107,0.55)');
+    ctx.fillStyle = '#4f5d34'; rr(ctx, -15, -16, 30, 24, 3); ctx.fill();
+    ctx.strokeStyle = '#2f3a20'; ctx.lineWidth = 2; ctx.strokeRect(-15, -16, 30, 24);
+    line(ctx, -15, -16, 15, 8, '#2f3a20', 1.5); line(ctx, 15, -16, -15, 8, '#2f3a20', 1.5);
+    ctx.fillStyle = '#ffd34d'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('★', 0, -4);
+    ctx.restore();
+    if (!c.falling) { ctx.beginPath(); ctx.arc(x, y - 4, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.strokeStyle = k < 0.3 ? '#ff6b6b' : '#9be36b'; ctx.lineWidth = 3; ctx.stroke(); }
+  }
   function drawChests(ctx, s) {
     for (var i = 0; i < s.chests.length; i++) {
+      if (s.chests[i].supply) { drawSupplyCrate(ctx, s.chests[i]); continue; }
       var c = s.chests[i], y = c.y - 10 - Math.abs(Math.sin(c.bob * 4)) * 8, k = c.life / c.max;
       glow(ctx, c.x, y, 34, 'rgba(255,215,90,0.55)');
       ctx.fillStyle = '#8a5a2b'; rr(ctx, c.x - 14, y - 10, 28, 20, 4); ctx.fill();
@@ -4049,6 +4167,8 @@ TD.Render = (function () {
         glow(ctx, 0, 0, 10, 'rgba(255,120,30,0.7)'); line(ctx, -16, 0, 4, 0, '#ffb35c', 2.5); break;
       case 'grenade':
         ctx.rotate(p.life * 12); ctx.fillStyle = '#3e4a32'; ctx.beginPath(); ctx.ellipse(0, 0, 6, 4.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#c9a227'; ctx.fillRect(-1, -5, 2, 3); break;
+      case 'laser':
+        line(ctx, -60, 0, 6, 0, 'rgba(120,230,255,0.35)', 7); line(ctx, -60, 0, 6, 0, '#e8fbff', 2.2); break;
       case 'missile': case 'rocket':
         for (var sm = 1; sm <= 3; sm++) { ctx.globalAlpha = 0.35 / sm; circle(ctx, -10 - sm * 7, 0, 3 + sm, '#bbb'); }
         ctx.globalAlpha = 1; glow(ctx, -10, 0, 8, 'rgba(255,150,40,0.9)');
@@ -4731,6 +4851,25 @@ TD.UI = (function () {
     });
     show('perkModal', true);
   };
+  /* v3.6: עולם 2 — כל 10 גלים: להישאר עם הנשק או להחליף */
+  U.showWeapons = function (s) {
+    if (!s.weaponChoice) return;
+    $('perkTitle').textContent = '⚔️ החלפת נשק — גל ' + s.wave;
+    $('perkSub').textContent = 'כל ' + TD.CONFIG.arsenal.weaponEvery + ' גלים אפשר לעבור לנשק אחר או להישאר עם שלך. השלבים, המיומנויות והכוחות נשמרים';
+    var box = $('perkCards'), W = TD.CONFIG.weapons; box.innerHTML = '';
+    Object.keys(W).forEach(function (id) {
+      var w = W[id], c = document.createElement('button'), cur = id === s.weaponId;
+      c.className = 'card perk' + (cur ? ' current' : '');
+      c.innerHTML = '<div class="big"></div><h3></h3><p></p><div class="ab"></div>';
+      c.querySelector('.big').textContent = w.icon;
+      c.querySelector('h3').textContent = cur ? 'להישאר: ' + w.name : w.name;
+      c.querySelector('p').textContent = w.desc;
+      c.querySelector('.ab').textContent = 'יכולת: ' + w.ability.icon + ' ' + w.ability.name;
+      c.onclick = function () { if (TD.chooseWeapon(s, id)) { SFX.up(); show('perkModal', false); U.syncButtons(); } };
+      box.appendChild(c);
+    });
+    show('perkModal', true);
+  };
   U.showPerks = function (s) {
     $('perkTitle').textContent = 'בחר בונוס';
     $('perkSub').textContent = 'כל 5 גלים — בונוס אחד מתוך שלושה';
@@ -4851,6 +4990,10 @@ TD.UI = (function () {
         case 'chestOpen': break;
         case 'combo': toast('🔥 קומבו ' + d.count + '! +' + d.gold + '💰'); SFX.combo(); break;
         case 'perks': U.showPerks(s); break;
+        case 'weaponSwap': banner(TD.CONFIG.weapons[d.id].icon + ' ' + TD.CONFIG.weapons[d.id].name, 'הנשק הוחלף — יכולת: ' + TD.CONFIG.weapons[d.id].ability.name); break;
+        case 'supplyDrop': toast('📦 ארגז אספקה צונח! לחץ עליו לנשק-על זמני'); SFX.chest(); break;
+        case 'tempWeapon': var tw = TD.CONFIG.arsenal.temp[d.id]; banner(tw.icon + ' ' + tw.name + '!', tw.desc + ' — ' + d.time + ' שניות'); SFX.combo(); vibrate([40, 30, 40]); break;
+        case 'tempWeaponEnd': toast('⏱ נשק-העל נגמר — חזרה ל' + TD.CONFIG.weapons[s.weaponId].name); break;
         case 'powers': if (!s.perkChoice && s.powerChoice) U.showPowers(s); break;
         case 'power': toast(TD.CONFIG.heroPowers.list[d.id].icon + ' ' + TD.CONFIG.heroPowers.list[d.id].name); break;
         case 'post': toast((d.level === 1 ? '⚙️ הותקן: ' : '⬆ ') + TD.CONFIG.posts.weapons[d.weapon].name + (d.level > 1 ? ' שלב ' + d.level : '')); break;
@@ -4977,8 +5120,8 @@ TD.UI = (function () {
     if (bannerTimer > 0) { bannerTimer -= dt; if (bannerTimer <= 0) $('banner').classList.remove('show'); }
     if (!s) return;
     U.handleEvents(s);
-    if ($('perkModal').classList.contains('hidden')) { if (s.perkChoice) U.showPerks(s); else if (s.powerChoice) U.showPowers(s); }
-    if (s.worldChoice && !s.perkChoice && !s.powerChoice && $('worldModal').classList.contains('hidden')) show('worldModal', true);
+    if ($('perkModal').classList.contains('hidden')) { if (s.perkChoice) U.showPerks(s); else if (s.powerChoice) U.showPowers(s); else if (s.weaponChoice) U.showWeapons(s); }
+    if (s.worldChoice && !s.perkChoice && !s.powerChoice && !s.weaponChoice && $('worldModal').classList.contains('hidden')) show('worldModal', true);
     saveTimer -= dt;
     if (saveTimer <= 0) { saveTimer = 2; TD.saveGame(s); }      // v3.3: נקודת שמירה כל 2 שנ׳ בהפסקה בין גלים
     hudTimer -= dt;
