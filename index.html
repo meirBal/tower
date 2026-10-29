@@ -320,6 +320,17 @@ body.archer #hud{display:none!important}
 @media (max-height:420px){#arCards .card,#arDevil .card{padding:24px 8px 8px;min-width:130px}#arCards .card .big,#arDevil .card .big{font-size:30px}#arCards .title,#arDevil .title{font-size:24px}#arHub .title{font-size:30px}#arHub .card{padding:8px}}
 .h420 #arCards .card,.h420 #arDevil .card{padding:24px 8px 8px;min-width:130px}.h420 #arCards .card .big{font-size:30px}.h420 #arCards .title,.h420 #arDevil .title{font-size:24px}
 
+/* v4.1.1: כפתור חזרה קבוע בפינה — תמיד נראה, גם כשהמסך נמוך */
+.backtop{position:fixed;top:calc(8px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));z-index:22;flex-direction:row!important;padding:7px 14px!important;font-size:14px!important;min-width:0!important}
+#dgHub,#arHub{padding-top:calc(48px + env(safe-area-inset-top))}
+#dgHub .title,#arHub .title{margin-top:0}
+
+/* v4.1.2: מבוכים נעולים עד גל 50 + מצב בדיקה */
+#btnDungeon.locked{background:rgba(22,20,38,.88)!important;border-color:var(--line)!important;opacity:.8}
+#btnDungeon.locked small{color:var(--dim)}
+.testbadge{background:#2a6b3a;color:#fff;font-weight:800;font-size:12px;border-radius:999px;padding:3px 12px}
+#screenStart .title{-webkit-touch-callout:none}
+
 </style>
 </head>
 <body>
@@ -363,6 +374,7 @@ body.archer #hud{display:none!important}
 <!-- ===== מסך פתיחה ===== -->
 <div id="screenStart" class="screen">
   <h1 class="title">מגדל האגדות</h1>
+  <span class="testbadge hidden" id="testBadge">🧪 מצב בדיקה — הכול פתוח</span>
   <p class="sub">בחר נשק התחלתי — ההחלטה הראשונה שלך בקרב</p>
   <div class="resumerow hidden" id="resumeRow"><button class="primary" id="btnResumeSave">▶ המשך משחק</button><span class="sub" id="resumeInfo"></span></div>
   <div class="cards" id="weaponCards"></div>
@@ -407,6 +419,7 @@ body.archer #hud{display:none!important}
 
 <!-- ===== v4.0 מבוכי המגדל ===== -->
 <div id="dgHub" class="screen hidden">
+  <button class="act backtop" id="dgBackTop" aria-label="חזרה">→ חזרה</button>
   <h1 class="title">🗝️ מבוכי המגדל</h1>
   <p class="sub">מבוכים חשוכים עם פנס • אסוף מטבעות, התחמק ממלכודות, מצא את היציאה <b id="dgTotal"></b></p>
   <div class="dgweapons" id="dgWeapons"></div>
@@ -451,6 +464,7 @@ body.archer #hud{display:none!important}
   <div class="pvpline overactions"><button class="primary hidden" id="dgNext">השלב הבא ▶</button><button class="act" id="dgRetry">🔄 שוב</button><button class="act" id="dgLevelsBtn">🗺️ שלבים</button><button class="act" id="dgShare">📤 שתף</button></div>
 </div>
 <div id="dgBoard" class="screen hidden">
+  <button class="act backtop" id="dgBoardBackTop" aria-label="חזרה">→ חזרה</button>
   <h1 class="title">🏆 המבוך היומי</h1>
   <p class="sub" id="dgBoardDay"></p>
   <div class="board" id="dgBoardList"></div>
@@ -468,6 +482,7 @@ body.archer #hud{display:none!important}
   </div>
 </div>
 <div id="arHub" class="screen hidden">
+  <button class="act backtop" id="arBackTop" aria-label="חזרה">→ חזרה</button>
   <h1 class="title">🏹 משחק הקשת</h1>
   <p class="sub">הרוג את כל המפלצות — השער למעלה נפתח. EXP מלא = קלף חדש. מתים באמצע עולם? מתחילים אותו מחדש</p>
   <div class="cards" id="arWorlds"></div>
@@ -571,7 +586,7 @@ body.archer #hud{display:none!important}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '4.1.0';
+TD.VERSION = '4.1.2';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -960,6 +975,8 @@ TD.CONFIG = {
  * ===================================================================== */
 
 // מחולל אקראי דטרמיניסטי (mulberry32) — מאפשר לבדיקות לשחזר משחק זהה
+// v4.1.2: מה פתוח לשחקן — דגל שמור, או "מצב בדיקה" (לחיצה ארוכה על הכותרת) שפותח הכול
+TD.isOpen = function (name) { return !!(TD.storage && (TD.storage.get(name, false) || TD.storage.get('testAll', false))); };
 TD.makeRng = function (seed) {
   var a = seed >>> 0;
   var f = function () {
@@ -6688,7 +6705,7 @@ TD.UI = (function () {
 
   /* ---------- מסך פתיחה ---------- */
   U.buildStart = function () {
-    TD.applySkin(U.selectedWorld === 2 && TD.storage.get('world2', false) ? 2 : 1); U.applyWorldLabels();   // v3.4: הנשקים לפי העולם שנבחר
+    TD.applySkin(U.selectedWorld === 2 && TD.isOpen('world2') ? 2 : 1); U.applyWorldLabels();   // v3.4: הנשקים לפי העולם שנבחר
     var box = $('weaponCards'); box.innerHTML = '';
     var W = TD.CONFIG.weapons;
     Object.keys(W).forEach(function (id) {
@@ -6702,9 +6719,14 @@ TD.UI = (function () {
       c.onclick = function () { if (U.weaponPick) U.weaponPick(id); else TD.startGame(id, { world: U.selectedWorld || 1 }); };
       box.appendChild(c);
     });
-    var w2 = TD.storage.get('world2', false);
-    $('worldPick').classList.toggle('hidden', !w2 && !TD.storage.get('world3', false));
-    $('btnWorld3').classList.toggle('hidden', !TD.storage.get('world3', false));   // v4.1: משחק הקשת
+    var w2 = TD.isOpen('world2');
+    $('worldPick').classList.toggle('hidden', !w2 && !TD.isOpen('world3'));
+    $('btnWorld3').classList.toggle('hidden', !TD.isOpen('world3'));   // v4.1: משחק הקשת
+    // v4.1.2: המבוכים נפתחים למי שסיים את עולם 1 (גל 50) — עד אז כפתור נעול
+    var dgOpen = TD.isOpen('world2');
+    $('btnDungeon').classList.toggle('locked', !dgOpen);
+    $('btnDungeon').innerHTML = dgOpen ? '🗝️ מבוכים <small>חדש!</small>' : '🔒 מבוכים <small>נפתח בגל 50</small>';
+    $('testBadge').classList.toggle('hidden', !TD.storage.get('testAll', false));
     if (!w2) U.selectedWorld = 1;
     Array.prototype.forEach.call(document.querySelectorAll('#worldPick [data-world]'), function (b) { b.classList.toggle('on', +b.getAttribute('data-world') === (U.selectedWorld || 1)); });
     var sv = TD.saveInfo();                                   // v3.3: משחק שמור
@@ -6755,6 +6777,20 @@ TD.UI = (function () {
     $('btnWorldStay').onclick = function () { var s = TD.game; if (s) TD.continueWorld(s); show('worldModal', false); };
     $('btnWorldGo').onclick = function () { var s = TD.game; show('worldModal', false); if (s) { var w = s.weaponId; U.toMenu(); U.selectedWorld = 2; TD.startGame(w, { world: 2 }); } };
     $('btnWorld3').onclick = function () { TD.ARUI.openHub(); };
+    // מצב בדיקה: לחיצה ארוכה (2 שנ׳) על הכותרת במסך הפתיחה — פותח/סוגר הכול (מבוכים, עולם 2, משחק הקשת וכל עולמותיו)
+    (function () {
+      var t = $('screenStart').querySelector('.title'), timer = null;
+      function cancel() { if (timer) { clearTimeout(timer); timer = null; } }
+      t.addEventListener('pointerdown', function () {
+        cancel();
+        timer = setTimeout(function () {
+          timer = null; var on = !TD.storage.get('testAll', false); TD.storage.set('testAll', on);
+          toast(on ? '🧪 מצב בדיקה: הכול פתוח' : '🧪 מצב בדיקה כבוי'); vibrate(80); U.buildStart();
+        }, 2000);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { t.addEventListener(ev, cancel); });
+      t.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    })();
     Array.prototype.forEach.call(document.querySelectorAll('#worldPick [data-world]'), function (b) {
       b.onclick = function () { U.selectedWorld = +b.getAttribute('data-world'); U.buildStart(); };
     });
@@ -7695,10 +7731,11 @@ TD.DGUI = (function () {
   function doAttack() { var s = TD.dungeon; if (s && !s.over && !s.paused) TD.DG.attack(s); }
   function doDash() { var s = TD.dungeon; if (s && !s.over && !s.paused && TD.DG.dash(s)) vibrate(15); }
   G.bind = function () {
-    $('btnDungeon').onclick = function () { G.openHub(); };
-    $('dgBack').onclick = function () { U().show('dgHub', false); U().buildStart(); U().show('screenStart', true); };
+    $('btnDungeon').onclick = function () { if (!TD.isOpen('world2')) { U().toast('🔒 המבוכים נפתחים כשמגיעים לגל 50 בעולם 1'); return; } G.openHub(); };
+    $('dgBack').onclick = $('dgBackTop').onclick = function () { U().show('dgHub', false); U().buildStart(); U().show('screenStart', true); };
     $('dgDailyPlay').onclick = function () { G.start(TD.DG.daily(TD.DG.dayKey())); };
     $('dgDailyBoard').onclick = function () { G.openBoard(); };
+    $('dgBoardBackTop').onclick = function () { $('dgBoardBack').onclick(); };
     $('dgBoardBack').onclick = function () { U().show('dgBoard', false); G.openHub(); };
     $('dgPauseBtn').onclick = function () { G.pause(true); };
     $('dgResume').onclick = function () { G.pause(false); };
@@ -7779,7 +7816,7 @@ TD.ARUI = (function () {
   function prog() { var p = TD.storage.get('ar', null); if (!p || typeof p !== 'object') p = {}; p.done = p.done || {}; p.best = p.best || {}; return p; }
   function saveProg(p) { TD.storage.set('ar', p); }
   G.progress = prog;
-  G.unlocked = function (w, p) { p = p || prog(); return w === 1 || !!p.done[w - 1]; };
+  G.unlocked = function (w, p) { p = p || prog(); return w === 1 || !!p.done[w - 1] || !!TD.storage.get('testAll', false); };
   G.saveRun = function (run) { TD.storage.set('ar_run', JSON.parse(JSON.stringify(run))); };
   G.loadRun = function () { var r = TD.storage.get('ar_run', null); return r && r.world && r.items && r.items.weapon ? r : null; };
   G.clearRun = function () { TD.storage.set('ar_run', null); };
@@ -7937,7 +7974,7 @@ TD.ARUI = (function () {
 
   /* ---------- שליטה ---------- */
   G.bind = function () {
-    $('arBack').onclick = function () { U().show('arHub', false); U().buildStart(); U().show('screenStart', true); };
+    $('arBack').onclick = $('arBackTop').onclick = function () { U().show('arHub', false); U().buildStart(); U().show('screenStart', true); };
     $('arPauseBtn').onclick = function () { G.pause(true); };
     $('arResume').onclick = function () { G.pause(false); };
     $('arQuit').onclick = function () { G.exit(); };
