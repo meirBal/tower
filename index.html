@@ -586,7 +586,7 @@ body.archer #hud{display:none!important}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '4.2.0';
+TD.VERSION = '4.3.0';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -3061,8 +3061,8 @@ TD.crowdAt = function (s, x, r) {
  * ===================================================================== */
 TD.AR = TD.AR || {};
 TD.CONFIG.archer = {
-  stageExpHp: 1.03, stageExpDmg: 1.012,
-  W: 15, H: 9, gateX: 7, stagesPerWorld: 50, bossEvery: 10, worlds: 3,
+  stageExpHp: 1.045, stageExpDmg: 1.012,
+  W: 15, H: 13, gateX: 7, stagesPerWorld: 50, bossEvery: 10, worlds: 3,   // v4.3: חדר גבוה יותר מהמסך — המצלמה עוקבת (כמו Archero)
   hero: { r: 0.32, speed: 3.6, hp: 120, shield: 20, shieldDelay: 3, shieldRegen: 8, inv: 0.6, perLevelDmg: 0.05, perLevelHp: 6 },
   exp: { base: 10, growth: 1.2 },
   heartChance: 0.04, heartHeal: 0.15, devilChance: 0.2, devilFrom: 3,
@@ -3164,7 +3164,7 @@ TD.AR.recalc = function (s) {
 TD.AR.load = function (run) {
   var A = TD.CONFIG.archer;
   var s = { run: run, world: run.world, stage: run.stage, W: A.W, H: A.H, t: 0, events: [], over: false, won: false, paused: false,
-    phase: 'fight', gateOpen: false, enemies: [], bullets: [], shots: [], orbs: [], drops: [], nextId: 1, input: { x: 0, y: 0 },
+    phase: 'fight', gateOpen: false, enemies: [], bullets: [], shots: [], orbs: [], drops: [], marks: [], nextId: 1, input: { x: 0, y: 0 },
     fireCd: 0.1, cards: null, devil: null, pendingLevels: 0, stats: { kills: 0, dmg: 0, taken: 0 }, boss: false };
   s.rng = TD.makeRng((run.seed + run.world * 7919 + run.stage * 104729) >>> 0);
   var room = TD.AR.makeRoom(s);
@@ -3226,6 +3226,7 @@ TD.AR.fire = function (s, tgt) {
 /* ---------- נזק לאויבים ---------- */
 TD.AR.damageEnemy = function (s, e, dmg, crit) {
   if (e.dead) return;
+  if (e.shieldT > 0) { TD.AR.emit(s, 'immune', { x: e.x, y: e.y }); return; }   // בוס במעבר שלב — חסין לרגע
   e.hp -= dmg; e.flash = 0.12; s.stats.dmg += dmg;
   TD.AR.emit(s, 'hit', { x: e.x, y: e.y, dmg: Math.round(dmg), crit: !!crit });
   if (e.hp <= 0) TD.AR.killEnemy(s, e);
@@ -3239,6 +3240,7 @@ TD.AR.killEnemy = function (s, e) {
   for (var i = 0; i < Math.min(gems, 12); i++) s.drops.push({ kind: 'gem', x: e.x + (s.rng() - 0.5) * 0.6, y: e.y + (s.rng() - 0.5) * 0.6, v: each, t: 0 });
   if (!e.boss && s.rng() < A.heartChance) s.drops.push({ kind: 'heart', x: e.x, y: e.y, t: 0 });
   if (e.split && !e.small) TD.AR.splitSlime(s, e);
+  if (e.boss && e.bossType === 1 && !e.small && TD.AR.BOSSES[1].split) TD.AR.bossSplit(s, e);
 };
 TD.AR.gainExp = function (s, v) {
   var run = s.run; run.exp += v;
@@ -3361,6 +3363,13 @@ TD.AR.update = function (s, dt) {
     if (b.life <= 0 || TD.AR.wallAt(s, b.x, b.y)) { s.bullets.splice(i, 1); continue; }
     if (TD.AR.dist(b, h) < h.r + b.r) { TD.AR.hurtHero(s, b.dmg, 'bullet'); s.bullets.splice(i, 1); if (s.over) return; }
   }
+  // דקרים ברצפה (פוגעים רק בדמות)
+  if (TD.AR.tile(s, h.x, h.y) === '^' && TD.AR.spikesUp(s, h.x, h.y)) { TD.AR.hurtHero(s, 8 * TD.AR.scale(s).dmg, 'spikes'); if (s.over) return; }
+  // גשם מטאורים של הבוס
+  for (i = s.marks.length - 1; i >= 0; i--) {
+    var mk = s.marks[i]; mk.t -= dt;
+    if (mk.t <= 0) { TD.AR.emit(s, 'boom', { x: mk.x, y: mk.y, r: mk.r, meteor: true }); if (TD.AR.dist(mk, h) < mk.r + h.r * 0.4) { TD.AR.hurtHero(s, mk.dmg, 'meteor'); if (s.over) return; } s.marks.splice(i, 1); }
+  }
   // כדורי לייזר → פס לייזר
   for (i = s.orbs.length - 1; i >= 0; i--) {
     var L = s.orbs[i]; L.t += dt;
@@ -3392,7 +3401,7 @@ TD.AR.update = function (s, dt) {
   if (s.pendingLevels > 0 && s.phase !== 'levelup') { TD.AR.openCards(s); return; }
   // החדר נוקה → השער נפתח
   if (!s.cleared && !s.enemies.length && !s.queue.length) {
-    s.cleared = true; s.gateOpen = true; s.phase = 'clear'; s.bullets = []; s.orbs = [];
+    s.cleared = true; s.gateOpen = true; s.phase = 'clear'; s.bullets = []; s.orbs = []; s.marks = [];
     TD.AR.emit(s, 'cleared', { stage: s.stage });
     TD.AR.maybeDevil(s);
   }
@@ -3570,37 +3579,52 @@ TD.AR.maybeDevil = function (s) {
 
 /* ---------- חדרים ---------- */
 TD.AR.makeRoom = function (s) {
-  var A = TD.CONFIG.archer, W = A.W, H = A.H, boss = s.stage % A.bossEvery === 0;
+  // v4.3: חדרים גדולים בסגנון Archero — תבניות מעוצבות (סימטריות), אגמים/לבה, מסדרונות, איים ומלכודות דקרים
+  var A = TD.CONFIG.archer, W = A.W, H = A.H, boss = s.stage % A.bossEvery === 0, gx = A.gateX;
   s.boss = boss;
-  for (var tries = 0; tries < 30; tries++) {
-    var g = [];
-    for (var y = 0; y < H; y++) { g.push([]); for (var x = 0; x < W; x++) g[y].push(x === 0 || y === 0 || x === W - 1 || y === H - 1 ? '#' : ' '); }
-    g[0][A.gateX] = 'G';
-    var keep = function (x, y) { return (Math.abs(x - A.gateX) <= 1 && y <= 2) || (Math.abs(x - A.gateX) <= 1 && y >= H - 3); };
-    var pitCh = s.world === 1 ? 0.25 : s.world === 2 ? 0.4 : 0.5;
-    var shapes = [[[0, 0]], [[0, 0], [1, 0]], [[0, 0], [0, 1]], [[0, 0], [1, 0], [0, 1], [1, 1]], [[0, 0], [1, 0], [2, 0]], [[0, 0], [0, 1], [1, 1]]];
-    var k = boss ? 2 : 2 + Math.floor(s.rng() * 4);
-    for (var c = 0; c < k; c++) {
-      var sh = shapes[Math.floor(s.rng() * shapes.length)], ox = 1 + Math.floor(s.rng() * 6), oy = 1 + Math.floor(s.rng() * (H - 3)), ch = s.rng() < pitCh ? 'O' : '#';
-      if (boss) { sh = [[0, 0]]; ch = '#'; }
-      sh.forEach(function (p) {
-        var x1 = ox + p[0], y1 = oy + p[1];
-        [[x1, y1], [W - 1 - x1, y1]].forEach(function (q) { if (q[0] > 0 && q[0] < W - 1 && q[1] > 0 && q[1] < H - 1 && !keep(q[0], q[1])) g[q[1]][q[0]] = ch; });
-      });
+  var R = function (n) { return Math.floor(s.rng() * n); };
+  for (var tries = 0; tries < 40; tries++) {
+    var g = [], x, y;
+    for (y = 0; y < H; y++) { g.push([]); for (x = 0; x < W; x++) g[y].push(x === 0 || y === 0 || x === W - 1 || y === H - 1 ? '#' : ' '); }
+    g[0][gx] = 'G';
+    var keep = function (x, y) { return (Math.abs(x - gx) <= 1 && y <= 2) || (Math.abs(x - gx) <= 1 && y >= H - 3); };
+    var put = function (x, y, ch) { [[x, y], [W - 1 - x, y]].forEach(function (q) { if (q[0] > 0 && q[0] < W - 1 && q[1] > 0 && q[1] < H - 1 && !keep(q[0], q[1])) g[q[1]][q[0]] = ch; }); };
+    var rect = function (x0, y0, w, h, ch) { for (var yy = y0; yy < y0 + h; yy++) for (var xx = x0; xx < x0 + w; xx++) put(xx, yy, ch); };
+    var wet = s.world === 1 ? 0.45 : s.world === 2 ? 0.55 : 0.6, liquid = function () { return s.rng() < wet ? 'O' : '#'; };
+    if (boss) { [[3, 3], [3, H - 5], [5, 6]].forEach(function (p) { put(p[0], p[1], '#'); }); }
+    else {
+      var tpl = R(10), L = liquid();
+      if (tpl === 0) { for (y = 3; y < H - 3; y += 3) for (x = 2; x < 7; x += 3) put(x, y, '#'); }                                   // עמודים
+      else if (tpl === 1) { rect(5, Math.floor(H / 2) - 1, 2, 3, 'O'); put(gx, Math.floor(H / 2), 'O'); put(3, 3, '#'); put(3, H - 4, '#'); }   // אגם באמצע
+      else if (tpl === 2) { for (y = 3; y < H - 3; y++) if (y !== Math.floor(H / 2)) put(4, y, L); }                                    // שני מסדרונות
+      else if (tpl === 3) { for (x = 3; x <= gx - 1; x++) put(x, 4, '#'); put(3, 5, '#'); put(3, 6, '#'); rect(5, H - 5, 2, 1, L); }   // U הפוך
+      else if (tpl === 4) { for (var k = 0; k < 4; k++) rect(1 + R(5), 2 + R(H - 5), 2, 2, 'O'); }                                     // איים
+      else if (tpl === 5) { for (x = 4; x <= gx; x++) put(x, Math.floor(H / 2), '#'); for (y = 3; y <= H - 4; y++) if (Math.abs(y - Math.floor(H / 2)) > 1) put(gx - 3, y, '#'); }   // צלב
+      else if (tpl === 6) { for (x = 1; x <= 4; x++) put(x, 4, L); for (x = 4; x <= gx - 1; x++) put(x, H - 5, L); }                 // זיגזג
+      else if (tpl === 7) { rect(2, 2, 2, 2, L); rect(2, H - 4, 2, 2, L); rect(5, Math.floor(H / 2), 1, 1, '#'); }                       // פינות
+      else if (tpl === 8) { var ry = 4 + R(H - 8); for (x = 1; x <= gx; x++) if (x !== 3) put(x, ry, 'O'); }                            // נהר עם גשרים
+      else { for (y = 2; y < H - 3; y += 2) for (x = 2 + (y % 4 === 0 ? 1 : 0); x < gx; x += 3) put(x, y, '#'); }                         // לוח שחמט
+      for (var c = 0, extra = R(3); c < extra; c++) put(1 + R(6), 2 + R(H - 4), liquid());
     }
-    // כל הרצפה מחוברת
-    var seen = {}, q = [[A.gateX, H - 2]], cnt = 0, floor = 0;
-    seen[A.gateX + ',' + (H - 2)] = 1;
+    // מלכודות דקרים (נכנסות בהדרגה)
+    var spikes = boss ? (s.world > 1 ? 4 : 0) : Math.min(10, Math.floor(Math.max(0, s.stage - 3) / 6) + (s.world - 1) * 2 + (s.stage > 3 ? R(3) : 0));
+    for (var sp = 0, guard = 0; sp < spikes && guard < 80; guard++) { var sx = 1 + R(gx), sy = 2 + R(H - 4); if (g[sy][sx] === ' ' && !keep(sx, sy)) { put(sx, sy, '^'); sp += 2; } }
+    // כל הרצפה מחוברת (דקרים = רצפה)
+    var walk = function (ch) { return ch === ' ' || ch === '^'; };
+    var seen = {}, q = [[gx, H - 2]], cnt = 0, floor = 0;
+    seen[gx + ',' + (H - 2)] = 1;
     for (var i = 0; i < q.length; i++) {
       cnt++;
-      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var nx = q[i][0] + d[0], ny = q[i][1] + d[1]; if (!seen[nx + ',' + ny] && g[ny] && g[ny][nx] === ' ') { seen[nx + ',' + ny] = 1; q.push([nx, ny]); } });
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var nx = q[i][0] + d[0], ny = q[i][1] + d[1]; if (!seen[nx + ',' + ny] && g[ny] && walk(g[ny][nx])) { seen[nx + ',' + ny] = 1; q.push([nx, ny]); } });
     }
-    for (y = 0; y < H; y++) for (x = 0; x < W; x++) if (g[y][x] === ' ') floor++;
-    if (cnt === floor && seen[A.gateX + ',1']) return { tiles: g };
+    for (y = 0; y < H; y++) for (x = 0; x < W; x++) if (walk(g[y][x])) floor++;
+    if (cnt === floor && seen[gx + ',1']) return { tiles: g };
   }
   var e = []; for (y = 0; y < H; y++) { e.push([]); for (x = 0; x < W; x++) e[y].push(x === 0 || y === 0 || x === W - 1 || y === H - 1 ? '#' : ' '); }
-  e[0][A.gateX] = 'G'; return { tiles: e };
+  e[0][gx] = 'G'; return { tiles: e };
 };
+TD.AR.spikesUp = function (s, x, y) { var ph = (s.t + ((Math.floor(x) * 7 + Math.floor(y) * 3) % 5) * 0.37) % 2.6; return ph < 1.0; };
+TD.AR.spikesWarn = function (s, x, y) { var ph = (s.t + ((Math.floor(x) * 7 + Math.floor(y) * 3) % 5) * 0.37) % 2.6; return ph > 2.15; };
 
 /* ---------- מפלצות ---------- */
 TD.AR.ENEMIES = {
@@ -3616,12 +3640,15 @@ TD.AR.ENEMIES = {
 TD.AR.UNLOCK = { bat: 1, archer: 2, slime: 4, skeleton: 6, mage: 8, laser: 11, charger: 14 };
 // v4.2: האויבים חכמים יותר ככל שהשלב עולה (0–6)
 TD.AR.tier = function (s) { return Math.min(4, Math.floor((s.stage - 1) / 10)) + Math.round((s.world - 1) * Math.min(1, (s.stage - 1) / 15)); };
+// v4.3: בוסים קשים בהרבה — מתקפות חדשות (ספירלה, גשם מטאורים, הסתערות משולשת, צלב לייזר, השתגרות), זעם מתחת ל-50%,
+// ובוס העולם עם 3 שלבים (ב-66% וב-33%: הפסקה קצרה, גל הדף וזימון, ומתקפות חדשות ומהירות יותר)
 TD.AR.BOSSES = {
-  1: { name: 'מלך הג׳לי', moves: ['charge', 'summon', 'charge', 'ring'] },
-  2: { name: 'המכשף הגדול', moves: ['ring', 'spread', 'ring', 'summon'] },
-  3: { name: 'עין הלייזר', moves: ['laser', 'ring', 'laser', 'spread'] },
-  4: { name: 'החיה המסתערת', moves: ['charge', 'spread', 'charge', 'laser'] },
-  5: { name: 'שליט העולם', moves: ['ring', 'laser', 'charge', 'summon', 'spread', 'laser'] }
+  1: { name: 'מלך הג׳לי', hp: 0.85, moves: ['charge', 'rain', 'summon', 'charge', 'ring'], split: true },
+  2: { name: 'המכשף הגדול', hp: 2.3, moves: ['ring', 'spiral', 'blink', 'spread', 'rain', 'summon'] },
+  3: { name: 'עין הלייזר', hp: 3.1, moves: ['laser', 'ring', 'laserX', 'spiral', 'blink', 'laser'] },
+  4: { name: 'החיה המסתערת', hp: 3.2, moves: ['triple', 'spread', 'rain', 'triple', 'ring'] },
+  5: { name: 'שליט העולם', hp: 7.0, moves: ['ring', 'laser', 'charge', 'summon', 'spread'],
+    phase2: ['spiral', 'rain', 'triple', 'laserX', 'ring', 'summon'], phase3: ['spiral', 'laserX', 'rain', 'triple', 'blink', 'spiral', 'ring', 'summon'] }
 };
 TD.AR.scale = function (s) {
   var A = TD.CONFIG.archer, wm = A.worldMul[s.world] || A.worldMul[3];
@@ -3653,19 +3680,20 @@ TD.AR.spawnGroup = function (s, kinds) {
 TD.AR.spawnWave = function (s) {
   s.queue = []; s.queueT = 1;
   if (s.boss) {
-    var A = TD.CONFIG.archer, b = TD.AR.makeEnemy(s, 'boss', A.gateX + 0.5, 2.5), bi = Math.min(5, s.stage / A.bossEvery);
-    b.boss = true; b.bossType = bi; b.name = TD.AR.BOSSES[bi].name; b.moves = TD.AR.BOSSES[bi].moves; b.mi = 0; b.moveT = 1.5;
-    var bm = [0, 0.7, 1.0, 1.25, 1.5, 2.2][bi]; b.hp *= bm; b.maxHp = b.hp;
+    var A = TD.CONFIG.archer, b = TD.AR.makeEnemy(s, 'boss', A.gateX + 0.5, Math.round(A.H * 0.35) + 0.5), bi = Math.min(5, s.stage / A.bossEvery);
+    var BD = TD.AR.BOSSES[bi];
+    b.boss = true; b.bossType = bi; b.name = BD.name; b.moves = BD.moves; b.mi = 0; b.moveT = 1.5; b.phase = 1;
+    var dm = [0, 0.8, 1.0, 1.1, 1.2, 1.3][bi]; b.hp *= BD.hp; b.maxHp = b.hp; b.dmg *= dm; b.contact *= dm;
     s.enemies.push(b);
     return;
   }
   var avail = Object.keys(TD.AR.UNLOCK).filter(function (k) { return s.stage >= (s.world > 1 ? Math.ceil(TD.AR.UNLOCK[k] * 0.5) : TD.AR.UNLOCK[k]); });
-  var n = Math.min(14, 4 + Math.floor(s.stage / 4) + (s.world - 1)), list = [];
+  var n = Math.min(18, 5 + Math.floor(s.stage / 3.5) + (s.world - 1)), list = [];
   for (var i = 0; i < n; i++) {
     var newest = avail.filter(function (k) { return s.world === 1 && TD.AR.UNLOCK[k] === Math.max.apply(null, avail.map(function (q) { return TD.AR.UNLOCK[q]; })) && s.stage - TD.AR.UNLOCK[k] < 3; });
     list.push(i === 0 && newest.length ? newest[0] : avail[Math.floor(s.rng() * avail.length)]);
   }
-  var first = Math.max(2, Math.ceil(n * 0.6));
+  var first = Math.max(3, Math.ceil(n * 0.5));
   TD.AR.spawnGroup(s, list.slice(0, first));
   var rest = list.slice(first);
   while (rest.length) s.queue.push(rest.splice(0, 3));
@@ -3759,7 +3787,7 @@ TD.AR.enemyAI = function (s, e, dt) {
     case 'flank':                                                   // שלד משתכפל: עוקף מהצדדים בזיגזג אקראי ומתקרב עד פגיעה
       var tf = TD.AR.tier(s), fc = TD.AR.flankDir(s, e, dt, 1.6 + 0.2 * tf);
       TD.AR.move(s, e, fc.x * e.speed * dt, fc.y * e.speed * dt, 'enemy'); e.face = Math.atan2(fc.y, fc.x);
-      if (!e.small) {
+      if (!e.small && !e.summoned) {
         e.cloneT = (e.cloneT == null ? 2.5 : e.cloneT) - dt;
         var cap = 2 + tf, cnt = s.enemies.filter(function (q) { return q.kind === 'skeleton' && !q.dead; }).length;
         if (e.cloneT <= 0) { e.cloneT = Math.max(1.4, 5 - 0.6 * tf) * (0.85 + s.rng() * 0.3); if (cnt < cap) TD.AR.cloneSkeleton(s, e); }
@@ -3815,25 +3843,73 @@ TD.AR.enemyAI = function (s, e, dt) {
   }
 };
 TD.AR.bossAI = function (s, e, dt, ang) {
-  var d = TD.AR.ENEMIES.boss, h = s.hero;
+  var d = TD.AR.ENEMIES.boss, h = s.hero, BD = TD.AR.BOSSES[e.bossType] || TD.AR.BOSSES[1], hp = e.hp / e.maxHp;
+  // שלבי בוס העולם
+  if (e.bossType === 5 && !e.small) {
+    var want = hp < 0.33 ? 3 : hp < 0.66 ? 2 : 1;
+    if (want > e.phase) {
+      e.phase = want; e.moves = want === 2 ? BD.phase2 : BD.phase3; e.mi = 0; e.state = 'idle'; e.spiralT = 0; e.charges = 0;
+      e.shieldT = 1.4; e.moveT = 1.6;
+      for (var r0 = 0; r0 < 28; r0++) TD.AR.shoot(s, e, r0 * Math.PI * 2 / 28, d.bullet * 0.75, e.dmg, 0.17);
+      TD.AR.spawnGroup(s, want === 2 ? ['skeleton', 'bat', 'bat'] : ['charger', 'skeleton', 'mage']);
+      TD.AR.emit(s, 'bossPhase', { phase: want, x: e.x, y: e.y });
+    }
+  }
+  if (e.ring2 > 0 && (e.ring2 -= dt) <= 0) { for (var r2 = 0; r2 < 18; r2++) TD.AR.shoot(s, e, (r2 + 0.5) * Math.PI * 2 / 18 + e.t, d.bullet * 0.7, e.dmg, 0.16); }
+  if (e.shieldT > 0) { e.shieldT -= dt; return; }
   if (e.state === 'wind') { e.st -= dt; if (e.st <= 0) { e.state = 'dash'; e.st = 1.3; } return; }
   if (e.state === 'dash') {
-    e.st -= dt; var ox = e.x, oy = e.y; TD.AR.move(s, e, Math.cos(e.cang) * 9 * dt, Math.sin(e.cang) * 9 * dt, 'enemy');
-    if (e.st <= 0 || (e.x === ox && e.y === oy)) { e.state = 'idle'; TD.AR.emit(s, 'thud', { x: e.x, y: e.y, boss: true }); }
+    var ox = e.x, oy = e.y, sp = 9 + (e.phase - 1) * 1.5;
+    if (e.phase >= 2 || (e.bossType === 4 && e.hp < e.maxHp * 0.5)) { var w2 = Math.atan2(h.y - e.y, h.x - e.x), df = Math.atan2(Math.sin(w2 - e.cang), Math.cos(w2 - e.cang)), tr = 1.4 * dt; e.cang += Math.max(-tr, Math.min(tr, df)); }
+    e.st -= dt; TD.AR.move(s, e, Math.cos(e.cang) * sp * dt, Math.sin(e.cang) * sp * dt, 'enemy');
+    if (e.st <= 0 || (e.x === ox && e.y === oy)) {
+      e.state = 'idle'; TD.AR.emit(s, 'thud', { x: e.x, y: e.y, boss: true });
+      if (e.x === ox && e.y === oy) for (var sh = 0; sh < 10; sh++) TD.AR.shoot(s, e, sh * Math.PI / 5, d.bullet * 0.7, e.dmg * 0.8, 0.14);   // נתקע בקיר → רסיסים
+      if (e.charges > 0) { e.charges--; e.state = 'wind'; e.st = 0.38; e.cang = Math.atan2(h.y - e.y, h.x - e.x); TD.AR.emit(s, 'windup', { boss: true }); }
+    }
     return;
   }
-  var c = TD.AR.chaseDir(s, e); if (TD.AR.dist(e, h) > 2.5) TD.AR.move(s, e, c.x * e.speed * dt, c.y * e.speed * dt, 'enemy');
+  if (e.spiralT > 0) {                                         // ספירלת כדורים
+    e.spiralT -= dt; e.spAcc = (e.spAcc || 0) + dt;
+    var arms = e.phase >= 3 ? 4 : e.bossType === 5 || hp < 0.5 ? 3 : 2;
+    while (e.spAcc > 0.1) { e.spAcc -= 0.1; e.spAng = (e.spAng || 0) + 0.31; for (var a = 0; a < arms; a++) TD.AR.shoot(s, e, e.spAng + a * Math.PI * 2 / arms, d.bullet * 0.8, e.dmg, 0.15); }
+    return;
+  }
+  var c = TD.AR.chaseDir(s, e); if (TD.AR.dist(e, h) > 2.5) TD.AR.move(s, e, c.x * e.speed * (1 + 0.15 * (e.phase - 1)) * dt, c.y * e.speed * dt, 'enemy');
   e.face = ang;
   e.moveT -= dt;
   if (e.moveT > 0) return;
-  var mv = e.moves[e.mi++ % e.moves.length], rage = e.hp < e.maxHp * 0.5 ? 1 : 0;
-  e.moveT = (2.2 - rage * 0.5) * (0.9 + s.rng() * 0.2);
+  var mv = e.moves[e.mi++ % e.moves.length], rage = hp < 0.5 ? 1 : 0;
+  var pace = e.bossType === 5 ? [1, 1, 0.75, 0.55][e.phase] : rage ? 0.7 : 1;
+  e.moveT = 1.9 * pace * (0.9 + s.rng() * 0.2);
   TD.AR.emit(s, 'bossMove', { move: mv });
-  if (mv === 'ring') { var n = 12 + rage * 6; for (var i = 0; i < n; i++) TD.AR.shoot(s, e, i * Math.PI * 2 / n + e.t, d.bullet * 0.85, e.dmg, 0.16); }
-  else if (mv === 'spread') { for (var j = 0; j < 5 + rage * 2; j++) TD.AR.shoot(s, e, ang + (j - (4 + rage * 2) / 2) * 0.22, d.bullet, e.dmg, 0.15); }
-  else if (mv === 'laser') { TD.AR.laserPair(s, e); if (rage) TD.AR.laserPair(s, e, Math.PI / 2); }
-  else if (mv === 'charge') { e.state = 'wind'; e.st = 0.7; e.cang = ang; TD.AR.emit(s, 'windup', { boss: true }); }
-  else if (mv === 'summon') { var kinds = s.world === 1 ? ['bat', 'bat'] : ['bat', 'slime', 'archer']; if (s.enemies.length < 7) TD.AR.spawnGroup(s, kinds.slice(0, 2 + rage)); }
+  var big = rage || e.phase > 1 ? 1 : 0;
+  if (mv === 'ring') { var n = 14 + big * 8 + (e.phase >= 3 ? 6 : 0); for (var i = 0; i < n; i++) TD.AR.shoot(s, e, i * Math.PI * 2 / n + e.t, d.bullet * 0.85, e.dmg, 0.16); if (big) e.ring2 = 0.35; }
+  else if (mv === 'spread') { var m = 5 + big * 4; for (var j = 0; j < m; j++) TD.AR.shoot(s, e, ang + (j - (m - 1) / 2) * 0.18, d.bullet * (1 + 0.15 * big), e.dmg, 0.15); }
+  else if (mv === 'laser') { TD.AR.laserPair(s, e); if (big) TD.AR.laserPair(s, e, Math.PI / 2); }
+  else if (mv === 'laserX') { TD.AR.laserPair(s, e); TD.AR.laserPair(s, e, Math.PI / 2); TD.AR.laserPair(s, e, Math.PI / 4); if (e.phase >= 3) TD.AR.laserPair(s, e, -Math.PI / 4); }
+  else if (mv === 'charge') { e.state = 'wind'; e.st = 0.6; e.cang = ang; e.charges = big; TD.AR.emit(s, 'windup', { boss: true }); }
+  else if (mv === 'triple') { e.state = 'wind'; e.st = 0.55; e.cang = ang; e.charges = 2 + big; TD.AR.emit(s, 'windup', { boss: true }); }
+  else if (mv === 'spiral') { e.spiralT = 2.4 + 0.6 * big; e.spAcc = 0; }
+  else if (mv === 'rain') {                                    // גשם מטאורים — עיגולים אדומים על הרצפה, מתפוצצים אחרי רגע
+    var cnt = 6 + big * 4 + (e.phase >= 3 ? 4 : 0);
+    for (var k = 0; k < cnt; k++) { var rx = h.x + (k ? (s.rng() - 0.5) * 5 : 0), ry = h.y + (k ? (s.rng() - 0.5) * 4 : 0); if (!TD.AR.wallAt(s, rx, ry)) s.marks.push({ x: rx, y: ry, r: 0.8, t: 0.95 + k * 0.06, max: 0.95 + k * 0.06, dmg: e.dmg * 1.3 }); }
+  }
+  else if (mv === 'blink') {                                   // השתגרות לצד השני של החדר + טבעת
+    var p = TD.AR.spawnPoint(s, 5); TD.AR.emit(s, 'blink', { x: e.x, y: e.y }); e.x = p.x; e.y = p.y; e.moveT *= 0.6;
+    for (var b2 = 0; b2 < 12; b2++) TD.AR.shoot(s, e, b2 * Math.PI / 6, d.bullet * 0.7, e.dmg, 0.15);
+  }
+  else if (mv === 'summon') { var kinds = s.world === 1 ? ['bat', 'slime', 'bat', 'archer'] : ['skeleton', 'slime', 'archer', 'charger']; if (s.enemies.length < 7 + e.phase) { var before = s.enemies.length; TD.AR.spawnGroup(s, kinds.slice(0, 2 + big + (e.phase >= 3 ? 1 : 0))); for (var sm = before; sm < s.enemies.length; sm++) s.enemies[sm].summoned = true; } }
+};
+TD.AR.bossSplit = function (s, e) {                             // מלך הג׳לי מתפצל לשני נסיכים
+  for (var i = 0; i < 2; i++) {
+    var c = TD.AR.makeEnemy(s, 'boss', e.x + (i ? 0.6 : -0.6), e.y);
+    if (TD.AR.hitsSolid(s, c.x, c.y, 0.5, 'enemy')) { c.x = e.x; c.y = e.y; }
+    c.boss = true; c.small = true; c.bossType = 1; c.name = 'נסיך הג׳לי'; c.moves = ['charge', 'ring', 'rain']; c.mi = i; c.moveT = 1 + i; c.phase = 1;
+    c.r = 0.5; c.hp = c.maxHp = e.maxHp * 0.3; c.exp = e.exp * 0.3; c.dmg = e.dmg; c.contact = e.contact * 0.8; c.spawnT = 0.3;
+    s.enemies.push(c);
+  }
+  TD.AR.emit(s, 'bossSplit', { x: e.x, y: e.y });
 };
 
 /* =====================================================================
@@ -6513,9 +6589,18 @@ TD.ARRender = (function () {
     2: { bg: '#071019', grass: ['#cfe4f0', '#d9ecf6', '#c4dcea'], dirt: '#a9c8da', top: ['#e9f8ff', '#9ccbe4'], face: '#5d8eac', faceHi: '#8fbfda', pitA: '#06182a', pitB: '#0f3a5c', pitEdge: '#f2fbff', amb: 'snow', tint: '#dff6ff', bat: ['#2c6f9a', '#7fd0f5'], bullet: ['#e9fbff', '#5fc8ff'] },
     3: { bg: '#120404', grass: ['#3a2220', '#3f2522', '#351e1b'], dirt: '#1c0d0b', top: ['#4a1d18', '#210907'], face: '#4c140d', faceHi: '#7a2a18', pitA: '#ff7a1a', pitB: '#b31d00', pitEdge: '#2a0d08', amb: 'ember', tint: '#ffb27a', bat: ['#8a1a12', '#e0442c'], bullet: ['#ffe08a', '#ff3a1a'] }
   };
-  R.layout = function (cw, ch) {
-    var A = TD.CONFIG.archer, top = 48, ts = Math.max(14, Math.min(72, Math.floor(Math.min((cw - 24) / A.W, (ch - top - 10) / A.H))));
-    return { ts: ts, ox: Math.round((cw - A.W * ts) / 2), oy: Math.round(top + (ch - top - 10 - A.H * ts) / 2) };
+  // v4.3: החדר גבוה מהמסך — המצלמה עוקבת אחרי הדמות בגובה (כמו Archero)
+  var cam = { y: null };
+  R.layout = function (cw, ch, s) {
+    var A = TD.CONFIG.archer, top = 48, visH = ch - top - 8, ts = Math.max(14, Math.min(72, Math.floor(Math.min((cw - 24) / A.W, visH / 8.6))));
+    var roomH = A.H * ts, ox = Math.round((cw - A.W * ts) / 2), oy;
+    if (roomH <= visH) oy = Math.round(top + (visH - roomH) / 2);
+    else {
+      var want = s ? s.hero.y * ts - visH * 0.55 : 0; want = Math.max(-ts * 0.6, Math.min(roomH - visH + 4, want));
+      cam.y = cam.y == null || !s ? want : cam.y + (want - cam.y) * 0.12;
+      oy = Math.round(top - cam.y);
+    }
+    return { ts: ts, ox: ox, oy: oy, top: top, visH: visH };
   };
   function hash(x, y, k) { var h = (x * 374761393 + y * 668265263 + (k || 0) * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
   function circ(c, x, y, r, col) { c.fillStyle = col; c.beginPath(); c.arc(x, y, Math.max(0.1, r), 0, TAU); c.fill(); }
@@ -6562,6 +6647,11 @@ TD.ARRender = (function () {
           c.strokeStyle = 'rgba(255,90,20,0.55)'; c.lineWidth = 1.4; c.beginPath(); var cx0 = px + hash(x, y, 9) * ts, cy0 = py + hash(y, x, 9) * ts; c.moveTo(cx0, cy0);
           for (k = 0; k < 3; k++) { cx0 += (hash(x, k, y) - 0.5) * ts * 0.5; cy0 += (hash(k, y, x) - 0.3) * ts * 0.4; c.lineTo(cx0, cy0); } c.stroke();
         }
+      }
+      if (t === '^') {     // לוח מלכודת דקרים
+        c.fillStyle = s.world === 2 ? '#8fa9ba' : s.world === 3 ? '#3a3236' : '#6a6458'; c.fillRect(px + ts * 0.08, py + ts * 0.08, ts * 0.84, ts * 0.84);
+        c.strokeStyle = 'rgba(0,0,0,0.5)'; c.lineWidth = 1.2; c.strokeRect(px + ts * 0.08, py + ts * 0.08, ts * 0.84, ts * 0.84);
+        for (var hy2 = 0; hy2 < 3; hy2++) for (var hx2 = 0; hx2 < 3; hx2++) circ(c, px + ts * (0.27 + hx2 * 0.23), py + ts * (0.27 + hy2 * 0.23), ts * 0.05, 'rgba(0,0,0,0.6)');
       }
       if (t === 'O') {     // שפת הבור
         c.fillStyle = th.pitEdge; c.fillRect(px + 1, py + 1, ts - 2, ts - 2);
@@ -6906,11 +6996,12 @@ TD.ARRender = (function () {
 
   /* ================= ציור ראשי ================= */
   R.draw = function (ctx, s, view) {
-    var dpr = view.dpr, cw = ctx.canvas.width / dpr, ch = ctx.canvas.height / dpr, L = R.layout(cw, ch), ts = L.ts, th = TH[s.world] || TH[1];
+    var dpr = view.dpr, cw = ctx.canvas.width / dpr, ch = ctx.canvas.height / dpr, L = R.layout(cw, ch, s), ts = L.ts, th = TH[s.world] || TH[1];
     var now = performance.now() / 1000, dt = Math.min(0.05, Math.max(0, now - (lastT || now))); lastT = now;
     var T = s.t, shake = s.shakeT > 0 ? (s.shakeT -= dt, s.shakeT * 16) : 0, ox = L.ox + (shake ? (Math.random() - 0.5) * shake : 0), oy = L.oy + (shake ? (Math.random() - 0.5) * shake : 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = th.bg; ctx.fillRect(0, 0, cw, ch);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, L.top - 6, cw, L.visH + 14); ctx.clip();
     // חדר שמור
     var key = [s.world, s.stage, s.run.seed, ts, dpr].join(':');
     if (cache.key !== key || !cache.cv) { cache.key = key; cache.cv = buildRoom(s, th, ts, dpr); }
@@ -6921,6 +7012,23 @@ TD.ARRender = (function () {
       var px = ox + x * ts + ts / 2, py = oy + y * ts + ts / 2;
       if (s.world === 3) { radial(ctx, px, py, ts * (0.5 + 0.05 * Math.sin(T * 3 + x)), 'rgba(255,200,80,0.9)', 'rgba(255,60,0,0.15)'); circ(ctx, px + Math.sin(T * 1.3 + y) * ts * 0.15, py + Math.cos(T + x) * ts * 0.12, ts * 0.06, 'rgba(255,240,180,0.9)'); }
       else { radial(ctx, px, py, ts * 0.4, th.pitB, th.pitA); ctx.strokeStyle = 'rgba(255,255,255,' + (s.world === 2 ? 0.35 : 0.22) + ')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(px, py, ts * (0.15 + 0.1 * ((T * 0.5 + x * 0.3) % 1)), ts * (0.08 + 0.05 * ((T * 0.5 + x * 0.3) % 1)), 0, 0, TAU); ctx.stroke(); }
+    }
+    // דקרים
+    for (y = 0; y < s.H; y++) for (x = 0; x < s.W; x++) if (s.tiles[y][x] === '^') {
+      var sx0 = ox + x * ts, sy0 = oy + y * ts, upS = TD.AR.spikesUp(s, x, y), wrn = TD.AR.spikesWarn(s, x, y);
+      if (wrn) { ctx.fillStyle = 'rgba(255,60,40,' + (0.2 + 0.2 * Math.sin(T * 30)) + ')'; ctx.fillRect(sx0 + ts * 0.08, sy0 + ts * 0.08, ts * 0.84, ts * 0.84); }
+      if (upS) for (var sy2 = 0; sy2 < 3; sy2++) for (var sx2 = 0; sx2 < 3; sx2++) {
+        var bx3 = sx0 + ts * (0.27 + sx2 * 0.23), by3 = sy0 + ts * (0.3 + sy2 * 0.23);
+        ctx.fillStyle = lgrad(ctx, bx3 - ts * 0.07, 0, bx3 + ts * 0.07, 0, '#f2f4f8', '#7a808a'); ctx.beginPath(); ctx.moveTo(bx3 - ts * 0.07, by3 + ts * 0.04); ctx.lineTo(bx3, by3 - ts * 0.17); ctx.lineTo(bx3 + ts * 0.07, by3 + ts * 0.04); ctx.fill();
+      }
+    }
+    // מטאורים (גשם הבוס) — עיגול מסומן שמתמלא
+    for (i = 0; i < s.marks.length; i++) {
+      var mk = s.marks[i], mx = ox + mk.x * ts, my = oy + mk.y * ts, mr = mk.r * ts, prg = 1 - mk.t / mk.max;
+      ctx.fillStyle = 'rgba(255,40,20,' + (0.12 + prg * 0.25) + ')'; ctx.beginPath(); ctx.ellipse(mx, my, mr, mr * 0.75, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,80,40,0.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(mx, my, mr, mr * 0.75, 0, 0, TAU); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,120,40,0.45)'; ctx.beginPath(); ctx.ellipse(mx, my, mr * prg, mr * 0.75 * prg, 0, 0, TAU); ctx.fill();
+      var fall = (1 - prg) * ts * 4; radial(ctx, mx, my - fall, ts * 0.22, 'rgba(255,230,140,0.95)', 'rgba(255,90,20,0)'); circ(ctx, mx, my - fall, ts * 0.1, '#fff2c0');
     }
     // שער
     var gx = ox + TD.CONFIG.archer.gateX * ts, gy = oy;
@@ -6974,15 +7082,25 @@ TD.ARRender = (function () {
     ctx.save(); ctx.beginPath(); ctx.rect(ox - ts, oy - ts, s.W * ts + ts * 2, s.H * ts + ts * 2); ctx.clip();
     ents.forEach(function (q) { if (q.hero) drawHero(ctx, s, ts, ox, oy, T, th); else drawEnemy(ctx, s, q.e, th, ts, ox, oy, T); });
     ctx.restore();
+    // בוס חסין במעבר שלב
+    s.enemies.forEach(function (e) { if (e.boss && e.shieldT > 0) { var bx4 = ox + e.x * ts, by4 = oy + e.y * ts; ctx.strokeStyle = 'rgba(255,220,120,' + (0.5 + 0.3 * Math.sin(T * 20)) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(bx4, by4, e.r * ts * 1.9, 0, TAU); ctx.stroke(); radial(ctx, bx4, by4, e.r * ts * 2, 'rgba(255,220,120,0.25)', 'rgba(255,220,120,0)'); } });
     for (i = 0; i < s.shots.length; i++) drawShot(ctx, s, s.shots[i], ts, ox, oy, T);
     for (i = 0; i < s.bullets.length; i++) drawBullet(ctx, s.bullets[i], ts, ox, oy, th);
     drawFx(ctx, s, ts, ox, oy, dt);
+    ctx.restore();
+    // מפלצות מחוץ למסך — חצים בקצה
+    s.enemies.forEach(function (e) {
+      var ey = oy + e.y * ts, ex = ox + e.x * ts, up = ey < L.top + 4, dn = ey > L.top + L.visH - 4;
+      if (!up && !dn) return;
+      var ay = up ? L.top + 10 : L.top + L.visH - 6, sgn = up ? -1 : 1;
+      ctx.fillStyle = e.boss ? 'rgba(255,200,60,0.95)' : 'rgba(255,70,60,0.9)'; ctx.beginPath(); ctx.moveTo(ex, ay + sgn * 7); ctx.lineTo(ex - 7, ay - sgn * 3); ctx.lineTo(ex + 7, ay - sgn * 3); ctx.closePath(); ctx.fill(); outline(ctx, 1);
+    });
     ambient(ctx, s, th, L, cw, ch, dt, T);
     vignette(ctx, cw, ch, dpr, s.world === 3 ? 'rgba(40,0,0,0.55)' : s.world === 2 ? 'rgba(0,10,25,0.45)' : 'rgba(0,8,0,0.5)');
     // חיים של הבוס
     var boss = s.enemies.find(function (e) { return e.boss; });
     if (boss) {
-      var bw = Math.min(cw * 0.5, 380), bx0 = (cw - bw) / 2, by0 = oy + 6, pct = Math.max(0, boss.hp / boss.maxHp);
+      var bw = Math.min(cw * 0.5, 380), bx0 = (cw - bw) / 2, by0 = L.top + L.visH - 30, pct = Math.max(0, boss.hp / boss.maxHp);
       ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(bx0 - 3, by0 - 3, bw + 6, 14);
       ctx.fillStyle = lgrad(ctx, bx0, 0, bx0 + bw, 0, '#ff7a5a', '#c0201a'); ctx.fillRect(bx0, by0, bw * pct, 8);
       ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(bx0, by0, bw * pct, 3);
@@ -8292,7 +8410,11 @@ TD.ARUI = (function () {
         case 'devil': SFX.alarm(); U().toast('😈 השטן מחכה בחדר...'); break;
         case 'devilDeal': SFX.boss(); break;
         case 'revive': SFX.ability(); U().banner('👼 קמת לתחייה!', ''); break;
-        case 'boom': fx(s, 'ring', d.x, d.y, { col: '200,140,255', r: d.r }); break;
+        case 'boom': if (d.meteor) { fx(s, 'ring', d.x, d.y, { col: '255,140,40', r: d.r * 1.2 }); fx(s, 'p', d.x, d.y, { n: 10, col: '#ffb347', v: 3 }); fx(s, 'smoke', d.x, d.y, { n: 4, col: '80,60,50' }); s.shakeT = Math.max(s.shakeT || 0, 0.08); } else fx(s, 'ring', d.x, d.y, { col: '200,140,255', r: d.r }); break;
+        case 'bossPhase': U().banner(d.phase === 3 ? '🔥 השלב האחרון!' : '⚠️ שלב ' + d.phase, 'הבוס התעצבן'); SFX.boss(); s.shakeT = 0.7; fx(s, 'ring', d.x, d.y, { col: '255,200,80', r: 3 }); vibrate(200); break;
+        case 'bossSplit': U().banner('👑👑 הוא התפצל!', 'שני נסיכי ג׳לי'); SFX.alarm(); break;
+        case 'blink': fx(s, 'smoke', d.x, d.y, { n: 10, col: '150,90,220' }); SFX.zap(); break;
+        case 'immune': if (Math.random() < 0.2) fx(s, 'text', d.x, d.y - 0.6, { txt: 'חסין!', col: '#ffd75a' }); break;
         case 'windup': if (d.boss) SFX.alarm(); break;
         case 'laser': SFX.zap(); break;
         case 'thud': if (d.boss) s.shakeT = 0.3; break;
@@ -8585,7 +8707,7 @@ TD.Social = (function () {
       return navigator.share(data).then(function () { return 'native'; }, function (e) { return e && e.name === 'AbortError' ? 'cancel' : S.share(s, 'whatsapp'); });
     }
     if (how === 'copy') return S.copy(text).then(function (ok) { return ok ? 'copy' : 'fail'; });
-    try { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); return Promise.resolve('whatsapp'); }
+    try { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener'); return Promise.resolve('whatsapp'); }
     catch (e) { return S.copy(text).then(function (ok) { return ok ? 'copy' : 'fail'; }); }
   };
   S.copy = function (text) {
