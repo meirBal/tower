@@ -586,7 +586,7 @@ body.archer #hud{display:none!important}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '4.3.0';
+TD.VERSION = '4.3.1';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -3120,7 +3120,7 @@ TD.AR.recalc = function (s) {
   var A = TD.CONFIG.archer, run = s.run, H = A.hero, I = TD.AR.ITEMS, R = A.rarities, u = run.ups, dv = run.devil, h = s.hero;
   var w = run.items.weapon, wd = I.weapon[w.type], wm = R[w.rar].mult;
   var st = {
-    dmg: wd.dmg * wm * (1 + H.perLevelDmg * (run.level - 1)), rate: wd.rate, projSpeed: wd.speed, kind: w.type,
+    dmg: wd.dmg * wm * (1 + H.perLevelDmg * (run.level - 1)), rate: wd.rate, projSpeed: wd.speed, kind: w.type, range: wd.range * (1 + 0.2 * (u.range || 0)),
     front: 1 + (u.multishot || 0), diag: u.diagonal || 0, rear: u.rear || 0, side: u.side || 0,
     wallBounce: (u.ricochet || 0) * 2, chain: u.bounce || 0, pierce: (wd.pierce || 0) + (u.pierce || 0),
     crit: 0.05 + 0.12 * (u.crit || 0), splash: wd.splash || 0, burn: u.burn ? 0.35 * u.burn : 0, boomerang: !!u.boomerang,
@@ -3198,11 +3198,13 @@ TD.AR.hurtHero = function (s, dmg, why, contact) {
 TD.AR.healHero = function (s, pct) { var h = s.hero, n = Math.round(h.maxHp * pct); h.hp = Math.min(h.maxHp, h.hp + n); TD.AR.emit(s, 'heal', { n: n, x: h.x, y: h.y }); };
 
 // בחירת מטרה: הקרוב ביותר עם קו ראייה, אחרת הקרוב ביותר
+// v4.3.1: לנשק יש טווח — יורים רק במפלצות שבטווח (מפלצות רחוקות / מחוץ למסך לא נפגעות עד שמתקרבים)
 TD.AR.target = function (s) {
-  var h = s.hero, best = null, bd = 1e9, bestLos = false;
+  var h = s.hero, best = null, bd = 1e9, bestLos = false, R = s.st.range;
   for (var i = 0; i < s.enemies.length; i++) {
-    var e = s.enemies[i]; if (e.dead || e.hidden) continue;
-    var d = TD.AR.dist(h, e), l = TD.AR.los(s, h.x, h.y, e.x, e.y);
+    var e = s.enemies[i]; if (e.dead || e.hidden || e.spawnT > 0) continue;
+    var d = TD.AR.dist(h, e); if (d > R + e.r) continue;
+    var l = TD.AR.los(s, h.x, h.y, e.x, e.y);
     if ((l && !bestLos) || (l === bestLos && d < bd)) { best = e; bd = d; bestLos = l; }
   }
   return best;
@@ -3218,7 +3220,7 @@ TD.AR.fire = function (s, tgt) {
   list.forEach(function (p) {
     var crit = s.rng() < st.crit;
     s.shots.push({ x: h.x + (p.ox || 0) + Math.cos(p.a) * 0.3, y: h.y + (p.oy || 0) + Math.sin(p.a) * 0.3, vx: Math.cos(p.a) * st.projSpeed, vy: Math.sin(p.a) * st.projSpeed,
-      dmg: st.dmg * (crit ? 2 : 1), crit: crit, pierce: st.pierce, wall: st.wallBounce, chain: st.chain, life: 2.4, hit: {}, kind: st.kind, ox: h.x, oy: h.y, back: false });
+      dmg: st.dmg * (crit ? 2 : 1), crit: crit, pierce: st.pierce, wall: st.wallBounce, chain: st.chain, life: st.range / st.projSpeed * 1.15, hit: {}, kind: st.kind, ox: h.x, oy: h.y, back: false });
   });
   TD.AR.emit(s, 'fire', { kind: st.kind, n: list.length });
 };
@@ -3312,7 +3314,7 @@ TD.AR.update = function (s, dt) {
     if (p.back) { var bx = h.x - p.x, by = h.y - p.y, bl = Math.sqrt(bx * bx + by * by) || 1; p.vx = bx / bl * st.projSpeed; p.vy = by / bl * st.projSpeed; if (bl < 0.4) { s.shots.splice(i, 1); continue; } nx = p.x + p.vx * dt; ny = p.y + p.vy * dt; }
     if (!p.back && TD.AR.wallAt(s, nx, ny)) {
       if (p.wall > 0) {
-        p.wall--; var hx = TD.AR.wallAt(s, nx, p.y), hy = TD.AR.wallAt(s, p.x, ny);
+        p.wall--; p.life += 0.35; var hx = TD.AR.wallAt(s, nx, p.y), hy = TD.AR.wallAt(s, p.x, ny);
         if (hx || !hy) p.vx = -p.vx; if (hy || !hx) p.vy = -p.vy; p.hit = {};
         TD.AR.emit(s, 'ricochet', { x: p.x, y: p.y }); continue;
       }
@@ -3442,9 +3444,9 @@ TD.AR.WORLDS = {
 /* ---------- פריטים ---------- */
 TD.AR.ITEMS = {
   weapon: {
-    bow: { name: 'קשת', icon: '🏹', desc: 'חצים מהירים', dmg: 26, rate: 1.5, speed: 11, p1: 'חץ', pN: 'חצים' },
-    staff: { name: 'מטה קסם', icon: '🔮', desc: 'כדורי קסם שמתפוצצים', dmg: 30, rate: 1.05, speed: 8, splash: 0.7, p1: 'כדור', pN: 'כדורים' },
-    shuriken: { name: 'כוכבי נינג׳ה', icon: '✴️', desc: 'מהירים, עוברים דרך אויב', dmg: 15, rate: 2.4, speed: 13, pierce: 1, p1: 'כוכב', pN: 'כוכבים' }
+    bow: { name: 'קשת', icon: '🏹', desc: 'חצים מהירים • טווח ארוך', range: 5.5, dmg: 26, rate: 1.5, speed: 11, p1: 'חץ', pN: 'חצים' },
+    staff: { name: 'מטה קסם', icon: '🔮', desc: 'כדורי קסם שמתפוצצים • טווח בינוני', range: 4.6, dmg: 30, rate: 1.05, speed: 8, splash: 0.7, p1: 'כדור', pN: 'כדורים' },
+    shuriken: { name: 'כוכבי נינג׳ה', icon: '✴️', desc: 'מהירים, עוברים דרך אויב • טווח קצר', range: 4.0, dmg: 15, rate: 2.4, speed: 13, pierce: 1, p1: 'כוכב', pN: 'כוכבים' }
   },
   armor: {
     leather: { name: 'שריון עור', icon: '🦺', desc: 'יותר חיים' },
@@ -3474,6 +3476,7 @@ TD.AR.UPS = {
   rate: { max: 4, icon: '⏩', name: 'יד מהירה', desc: '+20% קצב ירי' },
   crit: { max: 3, icon: '💥', name: 'מכה קריטית', desc: '+12% סיכוי לנזק כפול' },
   power: { max: 5, icon: '🗡️', name: 'עוצמה', desc: '+18% נזק' },
+  range: { max: 2, icon: '🔭', name: 'טווח ארוך', desc: '+20% טווח ירי' },
   burn: { max: 2, icon: '🔥', name: 'חצי אש', desc: 'האויב נשרף אחרי פגיעה' },
   blast: { max: 3, icon: '💣', name: 'פיצוץ גדול', desc: '+40% רדיוס פיצוץ' },
   boomerang: { max: 1, icon: '🪃', name: 'בומרנג', desc: 'הכוכבים חוזרים אליך ופוגעים שוב' },
@@ -3491,7 +3494,7 @@ TD.AR.UPS = {
   stomp: { max: 3, icon: '🦶', name: 'רגליים כבדות', desc: '-12% נזק ממגע' }
 };
 TD.AR.ITEM_UPS = {
-  weapon: { _all: ['multishot', 'diagonal', 'rear', 'side', 'ricochet', 'bounce', 'pierce', 'speed', 'rate', 'crit', 'power'], bow: ['burn'], staff: ['blast'], shuriken: ['boomerang'] },
+  weapon: { _all: ['multishot', 'diagonal', 'rear', 'side', 'ricochet', 'bounce', 'pierce', 'speed', 'rate', 'crit', 'power', 'range'], bow: ['burn'], staff: ['blast'], shuriken: ['boomerang'] },
   armor: { leather: ['vitality', 'regen'], plate: ['ironskin', 'thorns'], aegis: ['bigshield', 'quickshield', 'bubble'] },
   boots: { wind: ['swift', 'runshot'], shadow: ['evasion', 'phase'], iron: ['stomp', 'runshot'] }
 };
@@ -6711,6 +6714,10 @@ TD.ARRender = (function () {
   function drawHero(c, s, ts, ox, oy, T, th) {
     var h = s.hero, x = ox + h.x * ts, y = oy + h.y * ts, r = h.r * ts * 1.3, f = h.face, run = s.run, wt = run.items.weapon.type, R = TD.CONFIG.archer.rarities;
     var dir = Math.cos(f) >= 0 ? 1 : -1, walk = h.moving ? T * 14 : 0, bob = h.moving ? Math.abs(Math.sin(walk)) * r * 0.12 : Math.sin(T * 2.5) * r * 0.03;
+    if (!h.moving && s.st.range && !s.cleared) {          // טווח הירי — עיגול עדין כשעומדים
+      c.strokeStyle = s.world === 2 ? 'rgba(30,70,110,0.3)' : 'rgba(255,255,255,0.24)'; c.setLineDash([7, 7]); c.lineDashOffset = -T * 12; c.lineWidth = 2;
+      c.beginPath(); c.ellipse(x, y + r * 0.3, s.st.range * ts, s.st.range * ts, 0, 0, TAU); c.stroke(); c.setLineDash([]);
+    }
     drawShadow(c, x, y + r * 0.95, r * 0.95, 0.4);
     if (h.inv > 0 && Math.floor(T * 18) % 2) c.globalAlpha = 0.45;
     var armor = run.items.armor, cloth = armor ? R[armor.rar].color : '#2f7a3e', clothD = shade(cloth.length === 7 ? cloth : '#2f7a3e', -0.35);
