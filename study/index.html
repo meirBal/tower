@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14161f">
+<title>מעבדת מבחנים</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { --bg:#14161f; --card:#1d2030; --line:#2c3046; --tx:#e8e9f0; --mut:#9a9db3; --acc:#f2b84b; --ok:#4fc38a; --bad:#ef6b6b; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--tx); font:16px/1.55 system-ui, "Segoe UI", Arial, sans-serif; }
+#app { max-width:680px; margin:0 auto; padding:16px 16px 48px; }
+header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+header h1 { flex:1; font-size:20px; margin:0; }
+h1 { color:var(--acc); }
+h3 { margin:18px 0 6px; color:var(--mut); font-size:14px; font-weight:600; }
+button { font:inherit; color:inherit; border:0; border-radius:10px; padding:10px 14px; cursor:pointer; background:var(--card); }
+button:disabled { opacity:.5; cursor:default; }
+.primary { background:var(--acc); color:#1a1300; font-weight:700; flex:1; }
+.ghost { background:transparent; border:1px solid var(--line); }
+.wide { width:100%; margin-top:10px; }
+.row { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:12px; }
+.course, .topic { display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:8px; text-align:right; border:1px solid var(--line); }
+.course { flex-direction:column; align-items:flex-start; padding:16px; }
+.course span, .topic em { color:var(--mut); font-style:normal; font-size:14px; }
+.q { margin-top:0; }
+.part { display:flex; align-items:center; gap:8px; margin:8px 0; flex-wrap:wrap; }
+.part label { min-width:96px; }
+.part input, .part select, .auth input { background:var(--bg); color:var(--tx); border:1px solid var(--line); border-radius:8px; padding:8px; font:inherit; }
+.part input { width:140px; }
+.part i { font-style:normal; font-size:14px; }
+.part.ok i { color:var(--ok); } .part.bad i { color:var(--bad); }
+.part.ok input { border-color:var(--ok); } .part.bad input { border-color:var(--bad); }
+details { margin-top:12px; border-top:1px solid var(--line); padding-top:8px; }
+summary { color:var(--acc); cursor:pointer; }
+details div { margin-top:8px; line-height:1.9; }
+.auth { display:flex; flex-direction:column; gap:10px; margin-top:10vh; }
+.auth h2 { margin:0; }
+.auth a { color:var(--acc); cursor:pointer; }
+.msg { color:var(--acc); min-height:1em; margin:0; }
+.hint { color:var(--mut); font-size:13px; margin:0; }
+.sheet p { line-height:2; }
+.score { font-size:22px; font-weight:700; text-align:center; color:var(--acc); }
+#clock { font-variant-numeric:tabular-nums; color:var(--acc); }
+</style>
+</head>
+<body>
+<div id="app"><p>טוען…</p></div>
+<script>
+// Question generators. Each generator(o) returns {text, parts:[{label,ans,unit,units}], sol}.
+// o = optional fixed inputs (used by tests to reproduce official exam answers).
+const K = { q: 1.6e-19, e0: 8.85e-14, esi: 11.7, eox: 3.9, ni: 1.5e10, Vt: 0.0259, h: 4.135e-15, c: 2.998e10 };
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const rnd = (min, max, step) => +(min + step * Math.floor(Math.random() * ((max - min) / step + 1))).toFixed(6);
+const sq = Math.sqrt, ln = Math.log, ex = Math.exp, deg = r => r * 180 / Math.PI;
+
+function fmt(x, s = 3) {
+  if (x === 0) return '0';
+  const a = Math.abs(x);
+  if (a >= 1e5 || a < 1e-3) {
+    const e = Math.floor(Math.log10(a)), m = x / 10 ** e;
+    return `${+m.toPrecision(s)}×10<sup>${e}</sup>`;
+  }
+  return String(+x.toPrecision(s));
+}
+const U = (...u) => u; // unit option lists; first is correct
+
+// ---------------- התקני מל"מ ----------------
+const semi = {
+  name: 'התקני מל"מ', code: '50006', minutes: 180,
+  groups: { bjt: 'BJT', mos: 'MOS-FET', opto: 'התקני אור' },
+  topics: {
+    alphaBeta: { group: 'bjt', title: 'α ו-β מתוך יחס זרמים', gen(o = {}) {
+      const mode = o.mode ?? pick(['IEIC', 'IEIB', 'pct']);
+      let a, b, given;
+      if (mode === 'IEIC') { const r = o.r ?? pick([1.0033, 1.004, 1.005, 1.01, 1.0125, 1.02]); a = 1 / r; given = `היחס בין זרם הפולט לזרם הקולט, I<sub>E</sub>/I<sub>C</sub>, הוא ${r}.`; }
+      else if (mode === 'IEIB') { const r = o.r ?? pick([51, 81, 101, 121, 161, 201]); b = r - 1; a = b / (b + 1); given = `היחס בין זרם הפולט לזרם הבסיס, I<sub>E</sub>/I<sub>B</sub>, הוא ${r}.`; }
+      else { const r = o.r ?? pick([95, 97, 98, 98.5, 99, 99.5]); a = r / 100; given = `בפעיל קדמי זרם הקולט הוא ${r}% מזרם הפולט.`; }
+      b = a / (1 - a);
+      return { text: `טרנזיסטור BJT בפעיל קדמי. ${given} חשבו את α ואת β.`,
+        parts: [{ label: 'α', ans: a, unit: '' }, { label: 'β', ans: b, unit: '' }],
+        sol: `α = I<sub>C</sub>/I<sub>E</sub> = <b>${fmt(a, 4)}</b><br>β = α/(1−α) = <b>${fmt(b)}</b>` };
+    } },
+    reverse: { group: 'bjt', title: 'פעיל אחורי: βR, IC, IE', gen(o = {}) {
+      const IB = o.IB ?? pick([20, 30, 40, 50, 60, 80]) * 1e-6;
+      const useA = o.aR !== undefined || (o.bR === undefined && Math.random() < 0.5);
+      const aR = useA ? (o.aR ?? rnd(0.85, 0.93, 0.001)) : null;
+      const bR = useA ? aR / (1 - aR) : (o.bR ?? pick([5, 6, 8, 9, 10, 12]));
+      const IC = (bR + 1) * IB, IE = bR * IB, a = bR / (bR + 1);
+      return { text: `טרנזיסטור NPN בפעיל אחורי. נתון ${useA ? `α<sub>R</sub> = ${aR}` : `β<sub>R</sub> = ${bR}`} ו-I<sub>B</sub> = ${fmt(IB * 1e6)}µA. חשבו ${useA ? 'את β<sub>R</sub>,' : 'את α<sub>R</sub>,'} I<sub>C</sub> ו-I<sub>E</sub>.`,
+        parts: [useA ? { label: 'β<sub>R</sub>', ans: bR, unit: '' } : { label: 'α<sub>R</sub>', ans: a, unit: '' },
+          { label: 'I<sub>C</sub>', ans: IC * 1e3, unit: 'mA', units: U('mA', 'µA', 'A') },
+          { label: 'I<sub>E</sub>', ans: IE * 1e3, unit: 'mA', units: U('mA', 'µA', 'A') }],
+        sol: `בפעיל אחורי התפקידים מתחלפים: הקולט מזריק והפולט אוסף.<br>β<sub>R</sub> = α<sub>R</sub>/(1−α<sub>R</sub>) = <b>${fmt(bR)}</b>${useA ? '' : `, α<sub>R</sub> = β<sub>R</sub>/(β<sub>R</sub>+1) = <b>${fmt(a, 4)}</b>`}<br>I<sub>E</sub> = β<sub>R</sub>·I<sub>B</sub> = <b>${fmt(IE * 1e3)} mA</b><br>I<sub>C</sub> = I<sub>E</sub> + I<sub>B</sub> = (β<sub>R</sub>+1)I<sub>B</sub> = <b>${fmt(IC * 1e3)} mA</b>` };
+    } },
+    baseDoping: { group: 'bjt', title: 'ריכוז סיגים בבסיס', gen(o = {}) {
+      const V = o.V ?? pick([0.65, 0.68, 0.7, 0.72, 0.75, 0.78]);
+      const n = o.n ?? pick([1e15, 3e15, 1e16, 2e16, 5e16]);
+      const Na = K.ni ** 2 / n * ex(V / K.Vt);
+      return { text: `NPN בפעיל קדמי, V<sub>BE</sub> = ${V}V. ריכוז נושאי המיעוט בתחילת הבסיס n<sub>B</sub>(x=0) = ${fmt(n)} cm<sup>-3</sup>. חשבו את ריכוז הסיגים בבסיס N<sub>a</sub>.`,
+        parts: [{ label: 'N<sub>a</sub>', ans: Na, unit: 'cm⁻³', units: U('cm⁻³', 'm⁻³', 'cm⁻²') }],
+        sol: `n<sub>B</sub>(0) = n<sub>B0</sub>·e<sup>V<sub>BE</sub>/V<sub>t</sub></sup> = (n<sub>i</sub>²/N<sub>a</sub>)·e<sup>V<sub>BE</sub>/V<sub>t</sub></sup><br>N<sub>a</sub> = n<sub>i</sub>²·e<sup>${V}/0.0259</sup> / ${fmt(n)} = <b>${fmt(Na)} cm<sup>-3</sup></b>` };
+    } },
+    eiEf: { group: 'mos', title: 'Ei−Ef מתוך ps ב-VFB', gen(o = {}) {
+      const ps = o.ps ?? pick([1e4, 1e5, 2.25e4, 1e15, 5e15, 1e16, 1e17]);
+      const d = K.Vt * ln(ps / K.ni);
+      return { text: `כאשר V<sub>GS</sub> = V<sub>FB</sub> (פסים ישרים) ריכוז החורים בממשק הוא p<sub>s</sub> = ${fmt(ps)} cm<sup>-3</sup>. מה הפער E<sub>i</sub> − E<sub>f</sub> במצע?`,
+        parts: [{ label: 'E<sub>i</sub>−E<sub>f</sub>', ans: d, unit: 'eV', units: U('eV', 'V', 'J') }],
+        sol: `בפסים ישרים אין כיפוף, לכן p<sub>s</sub> = p<sub>0</sub> במצע.<br>p<sub>0</sub> = n<sub>i</sub>e<sup>(E<sub>i</sub>−E<sub>f</sub>)/kT</sup> ⇒ E<sub>i</sub>−E<sub>f</sub> = kT·ln(p<sub>s</sub>/n<sub>i</sub>) = <b>${fmt(d)} eV</b><br>${d > 0 ? 'חיובי ⇒ מצע P' : 'שלילי ⇒ מצע N'}` };
+    } },
+    vt: { group: 'mos', title: 'φf, Qdep ומתח סף VT', gen(o = {}) {
+      const N = o.N ?? pick([1e15, 5e15, 1e16, 2e16, 5e16]);
+      const VFB = o.VFB ?? pick([-0.8, -0.6, -0.5, 0, 0.4, 0.6]);
+      const Cox = (o.Cox ?? pick([50, 78, 80, 100, 120])) * 1e-9;
+      const p = o.type ? o.type === 'n' : Math.random() < 0.7;
+      const pf = K.Vt * ln(N / K.ni), Q = sq(4 * K.e0 * K.esi * K.q * N * pf);
+      const VT = p ? VFB + Q / Cox + 2 * pf : VFB - Q / Cox - 2 * pf;
+      return { text: `${p ? 'NMOS (מצע P' : 'PMOS (מצע N'}, ריכוז ${fmt(N)} cm<sup>-3</sup>), V<sub>FB</sub> = ${VFB}V, C<sub>ox</sub> = ${fmt(Cox * 1e9)} nF/cm². חשבו |φ<sub>f</sub>|, |Q<sub>dep,max</sub>| ו-V<sub>T</sub>.`,
+        parts: [{ label: '|φ<sub>f</sub>|', ans: pf, unit: 'V', units: U('V', 'eV', 'mV') },
+          { label: '|Q<sub>dep,max</sub>|', ans: Q * 1e9, unit: 'nC/cm²', units: U('nC/cm²', 'µC/cm²', 'nF/cm²') },
+          { label: 'V<sub>T</sub>', ans: VT, unit: 'V', units: U('V', 'mV', 'eV') }],
+        sol: `|φ<sub>f</sub>| = V<sub>t</sub>·ln(N/n<sub>i</sub>) = <b>${fmt(pf)} V</b><br>|Q<sub>dep,max</sub>| = √(4ε<sub>0</sub>ε<sub>si</sub>qN|φ<sub>f</sub>|) = <b>${fmt(Q * 1e9)} nC/cm²</b><br>V<sub>T</sub> = V<sub>FB</sub> ${p ? '+' : '−'} |Q<sub>dep</sub>|/C<sub>ox</sub> ${p ? '+' : '−'} 2|φ<sub>f</sub>| = <b>${fmt(VT)} V</b>` };
+    } },
+    tox: { group: 'mos', title: 'tox מתוך Cox', gen(o = {}) {
+      const C = (o.C ?? pick([78, 80, 100, 172.6, 238, 345])) * 1e-9;
+      const t = K.e0 * K.eox / C;
+      return { text: `צפיפות הקיבול של קבל MOS בהצטברות היא ${fmt(C * 1e9)} nF/cm². חשבו את עובי התחמוצת. (באיזה מצב נוסף C<sub>mos</sub> = C<sub>ox</sub>? בהיפוך חזק בתדר נמוך.)`,
+        parts: [{ label: 't<sub>ox</sub>', ans: t * 1e8, unit: 'Å', units: U('Å', 'nm', 'cm') }],
+        sol: `בהצטברות C<sub>mos</sub> = C<sub>ox</sub> = ε<sub>0</sub>ε<sub>ox</sub>/t<sub>ox</sub><br>t<sub>ox</sub> = 8.85×10<sup>-14</sup>·3.9 / ${fmt(C)} = ${fmt(t)} cm = <b>${fmt(t * 1e8)} Å</b>` };
+    } },
+    xd: { group: 'mos', title: 'רוחב מחסור וקיבול Cmos', gen(o = {}) {
+      const N = o.N ?? pick([1e15, 5e15, 1e16, 2e16]);
+      const k = o.k ?? pick([1, 1.5, 2]);
+      const Cox = (o.Cox ?? pick([50, 80, 100])) * 1e-9;
+      const pf = K.Vt * ln(N / K.ni), ps = k * pf;
+      const Xd = sq(2 * K.e0 * K.esi * ps / (K.q * N)), Cs = K.e0 * K.esi / Xd, Cm = Cox * Cs / (Cox + Cs);
+      return { text: `קבל MOS במצע P, N<sub>a</sub> = ${fmt(N)} cm<sup>-3</sup>, C<sub>ox</sub> = ${fmt(Cox * 1e9)} nF/cm². המתח על המל"מ φ<sub>s</sub> = ${k}φ<sub>f</sub>. חשבו X<sub>d</sub>, C<sub>s</sub> ו-C<sub>mos</sub>.`,
+        parts: [{ label: 'X<sub>d</sub>', ans: Xd * 1e7, unit: 'nm', units: U('nm', 'µm', 'Å') },
+          { label: 'C<sub>s</sub>', ans: Cs * 1e9, unit: 'nF/cm²', units: U('nF/cm²', 'µF/cm²', 'pF/cm²') },
+          { label: 'C<sub>mos</sub>', ans: Cm * 1e9, unit: 'nF/cm²', units: U('nF/cm²', 'µF/cm²', 'pF/cm²') }],
+        sol: `φ<sub>f</sub> = ${fmt(pf)}V ⇒ φ<sub>s</sub> = ${fmt(ps)}V<br>X<sub>d</sub> = √(2ε<sub>0</sub>ε<sub>si</sub>φ<sub>s</sub>/(qN<sub>a</sub>)) = <b>${fmt(Xd * 1e7)} nm</b>${k === 2 ? ' (= X<sub>dT</sub>, מקסימלי)' : ''}<br>C<sub>s</sub> = ε<sub>0</sub>ε<sub>si</sub>/X<sub>d</sub> = <b>${fmt(Cs * 1e9)} nF/cm²</b><br>1/C<sub>mos</sub> = 1/C<sub>ox</sub> + 1/C<sub>s</sub> ⇒ <b>${fmt(Cm * 1e9)} nF/cm²</b>` };
+    } },
+    ids: { group: 'mos', title: 'VDS(sat) ו-IDS', gen(o = {}) {
+      const VT = o.VT ?? pick([0.4, 0.493, 0.6, 1, 1.31]);
+      const VGS = o.VGS ?? +(VT + rnd(0.3, 2, 0.1)).toFixed(3);
+      const Kk = o.K ?? pick([1e-3, 2e-3, 5e-4]);
+      const sat = VGS - VT, Imax = 0.5 * Kk * sat ** 2;
+      const VDS = o.VDS ?? +(sat * pick([0.3, 0.5, 0.7])).toFixed(2);
+      const Ilin = Kk * (sat * VDS - VDS ** 2 / 2);
+      return { text: `NMOS עם V<sub>T</sub> = ${VT}V, K = ${fmt(Kk)} A/V², V<sub>GS</sub> = ${VGS}V. חשבו V<sub>DS(sat)</sub>, את הזרם ברוויה, ואת הזרם כאשר V<sub>DS</sub> = ${VDS}V.`,
+        parts: [{ label: 'V<sub>DS(sat)</sub>', ans: sat, unit: 'V', units: U('V', 'mV') },
+          { label: 'I<sub>DS(max)</sub>', ans: Imax * 1e3, unit: 'mA', units: U('mA', 'µA', 'A') },
+          { label: `I<sub>DS</sub> @ ${VDS}V`, ans: Ilin * 1e3, unit: 'mA', units: U('mA', 'µA', 'A') }],
+        sol: `V<sub>DS(sat)</sub> = V<sub>GS</sub>−V<sub>T</sub> = <b>${fmt(sat)} V</b> (נקודת הצביטה)<br>רוויה: I = ½K(V<sub>GS</sub>−V<sub>T</sub>)² = <b>${fmt(Imax * 1e3)} mA</b><br>V<sub>DS</sub> < V<sub>DS(sat)</sub> ⇒ תחום ליניארי: I = K[(V<sub>GS</sub>−V<sub>T</sub>)V<sub>DS</sub> − V<sub>DS</sub>²/2] = <b>${fmt(Ilin * 1e3)} mA</b>` };
+    } },
+    absorb: { group: 'opto', title: 'מקדם בליעה', gen(o = {}) {
+      if ((o.mode ?? pick(['findA', 'findPct'])) === 'findA') {
+        const f = o.f ?? pick([40, 50, 60, 70, 80]), d = o.d ?? pick([0.28, 0.5, 1, 2]);
+        const a = -ln(1 - f / 100) / (d * 1e-4);
+        return { text: `${f}% מעוצמת ההארה נבלע בשכבה בעובי ${d} µm. חשבו את מקדם הבליעה α.`,
+          parts: [{ label: 'α', ans: a, unit: 'cm⁻¹', units: U('cm⁻¹', 'm⁻¹', 'µm⁻¹') }],
+          sol: `I(d)/I<sub>0</sub> = e<sup>−αd</sup> = ${1 - f / 100}<br>α = −ln(${1 - f / 100}) / (${d}×10<sup>-4</sup> cm) = <b>${fmt(a)} cm<sup>-1</sup></b><br>שימו לב: ${f}% <u>נבלע</u> ⇒ עובר ${100 - f}%.` };
+      }
+      const a = o.a ?? pick([5e3, 1e4, 5e4, 8e4]), d = o.d ?? pick([0.5, 1, 2]);
+      const pct = (1 - ex(-a * d * 1e-4)) * 100;
+      return { text: `מקדם הבליעה α = ${fmt(a)} cm<sup>-1</sup>. איזה אחוז מעוצמת האור נבלע בשכבה בעובי ${d} µm?`,
+        parts: [{ label: 'נבלע', ans: pct, unit: '%', units: U('%') }],
+        sol: `נבלע = 1 − e<sup>−αd</sup> = 1 − e<sup>−${fmt(a * d * 1e-4)}</sup> = <b>${fmt(pct)}%</b>` };
+    } },
+    eg: { group: 'opto', title: 'Eg ↔ תדר / אורך גל', gen(o = {}) {
+      const byF = o.f !== undefined || (o.lam === undefined && Math.random() < 0.5);
+      const f = byF ? (o.f ?? pick([300, 400, 450, 600, 650])) * 1e12 : null;
+      const lam = byF ? K.c / f * 1e4 : (o.lam ?? pick([100, 450, 520, 680, 870, 1100])) / 1000; // µm
+      const E = 1.24 / lam;
+      return { text: byF ? `התקן פולט אור בתדר ${f / 1e12} THz. חשבו את אורך הגל ואת E<sub>g</sub>.` : `LED פולט אור באורך גל ${fmt(lam * 1000)} nm. חשבו את E<sub>g</sub> של הסריג.`,
+        parts: [...(byF ? [{ label: 'λ', ans: lam, unit: 'µm', units: U('µm', 'nm', 'cm') }] : []), { label: 'E<sub>g</sub>', ans: E, unit: 'eV', units: U('eV', 'J', 'V') }],
+        sol: `${byF ? `λ = c/ν = 2.998×10<sup>10</sup>/${fmt(f)} = <b>${fmt(lam)} µm</b><br>` : ''}E[eV] = 1.24/λ[µm] = <b>${fmt(E)} eV</b>${byF ? ` (או hν = 4.135×10<sup>-15</sup>·${fmt(f)})` : ''}<br>לגלאי: כל חומר עם E<sub>g</sub> ≤ ${fmt(E)} eV יגיב לקרינה הזו.` };
+    } },
+    solar: { group: 'opto', title: 'תא שמש: Isc ↔ Voc', gen(o = {}) {
+      const Is = o.Is ?? pick([1e-12, 3e-12, 5e-12, 1e-11]);
+      if ((o.mode ?? pick(['isc', 'voc'])) === 'isc') {
+        const Voc = o.Voc ?? pick([0.55, 0.58, 0.6, 0.62, 0.65]), I = Is * (ex(Voc / K.Vt) - 1);
+        return { text: `תא שמש בטמפ' החדר: V<sub>oc</sub> = ${Voc}V, I<sub>s</sub> = ${fmt(Is)} A. חשבו את I<sub>sc</sub>.`,
+          parts: [{ label: 'I<sub>sc</sub>', ans: I * 1e3, unit: 'mA', units: U('mA', 'A', 'µA') }],
+          sol: `במעגל פתוח I = 0 ⇒ I<sub>L</sub> = I<sub>s</sub>(e<sup>V<sub>oc</sub>/V<sub>t</sub></sup> − 1)<br>בקצר I<sub>sc</sub> = I<sub>L</sub> = <b>${fmt(I * 1e3)} mA</b>` };
+      }
+      const IL = (o.IL ?? pick([20, 50, 60, 70, 100])) * 1e-3, Voc = K.Vt * ln(IL / Is + 1);
+      return { text: `תא שמש בטמפ' החדר מפתח I<sub>L</sub> = ${fmt(IL * 1e3)} mA, I<sub>s</sub> = ${fmt(Is)} A. חשבו V<sub>oc</sub>.`,
+        parts: [{ label: 'V<sub>oc</sub>', ans: Voc, unit: 'V', units: U('V', 'mV') }],
+        sol: `V<sub>oc</sub> = V<sub>t</sub>·ln(I<sub>L</sub>/I<sub>s</sub> + 1) = <b>${fmt(Voc)} V</b>` };
+    } },
+    crit: { group: 'opto', title: 'זווית קריטית וניצולת', gen(o = {}) {
+      const n1 = o.n1 ?? pick([3.3, 3.5, 3.6, 3.66]), n2 = o.n2 ?? pick([1, 1, 1.5]);
+      const th = Math.asin(n2 / n1), eta = (1 - Math.cos(th)) / 2 * 100;
+      return { text: `LED ממל"מ עם מקדם שבירה ${n1} נמצא בתווך עם מקדם שבירה ${n2}. חשבו את הזווית הקריטית ואת ניצולת הזווית הקריטית.`,
+        parts: [{ label: 'θ<sub>c</sub>', ans: deg(th), unit: '°', units: U('°', 'rad') }, { label: 'η<sub>c</sub>', ans: eta, unit: '%', units: U('%') }],
+        sol: `sinθ<sub>c</sub> = n<sub>2</sub>/n<sub>1</sub> ⇒ θ<sub>c</sub> = <b>${fmt(deg(th))}°</b><br>η<sub>c</sub> = ½(1 − cosθ<sub>c</sub>) = <b>${fmt(eta)}%</b><br>מקדם שבירה גבוה יותר ⇒ θ<sub>c</sub> קטנה ⇒ ניצולת נמוכה.` };
+    } },
+  },
+  sheet: `<h3>קבועים</h3><p>q=1.6×10⁻¹⁹C · ε₀=8.85×10⁻¹⁴F/cm · ε<sub>si</sub>=11.7 · ε<sub>ox</sub>=3.9 · n<sub>i</sub>=1.5×10¹⁰cm⁻³ · V<sub>t</sub>=0.0259V · h=4.135×10⁻¹⁵eV·s</p>
+<h3>ריכוזים</h3><p>p₀n₀=n<sub>i</sub>² · p₀=n<sub>i</sub>e<sup>(Ei−Ef)/kT</sup> · φ<sub>f</sub>=V<sub>t</sub>ln(N<sub>a</sub>/n<sub>i</sub>) · L=√(Dτ)</p>
+<h3>BJT</h3><p>I<sub>E</sub>=I<sub>C</sub>+I<sub>B</sub> · α=I<sub>C</sub>/I<sub>E</sub> · β=I<sub>C</sub>/I<sub>B</sub>=α/(1−α) · α≈γα<sub>T</sub><br>n<sub>pB</sub>(0)=n<sub>pB0</sub>e<sup>V<sub>BE</sub>/V<sub>t</sub></sup> · n<sub>pB0</sub>=n<sub>i</sub>²/N<sub>aB</sub> · α<sub>T</sub>=1−½(X<sub>B</sub>/L<sub>n</sub>)²<br>I<sub>nE</sub>=qAD<sub>nB</sub>n<sub>pB</sub>(0)/X<sub>B</sub> · פעיל אחורי: מחליפים אינדקס E↔C</p>
+<h3>MOS</h3><p>C<sub>ox</sub>=ε₀ε<sub>ox</sub>/t<sub>ox</sub> · Q<sub>dep,max</sub>=−√(4ε₀ε<sub>si</sub>qN<sub>a</sub>φ<sub>f</sub>) · X<sub>dT</sub>=√(4ε₀ε<sub>si</sub>φ<sub>f</sub>/qN<sub>a</sub>)<br>V<sub>T</sub>=V<sub>FB</sub>−Q<sub>dep</sub>/C<sub>ox</sub>+2φ<sub>f</sub> · 1/C<sub>mos</sub>=1/C<sub>ox</sub>+1/C<sub>s</sub><br>ליניארי: I=K[(V<sub>GS</sub>−V<sub>T</sub>)V<sub>DS</sub>−V<sub>DS</sub>²/2] · רוויה: I=½K(V<sub>GS</sub>−V<sub>T</sub>)², K=μC<sub>ox</sub>W/L</p>
+<h3>אור</h3><p>I=I<sub>0</sub>e<sup>−αx</sup> · E[eV]=1.24/λ[µm] · λ=c/ν · I=I<sub>L</sub>−I<sub>s</sub>(e<sup>V/V<sub>t</sub></sup>−1) · sinθ<sub>c</sub>=n₂/n₁</p>`,
+};
+
+// ---------------- המרת אנרגיה א ----------------
+const energy = {
+  name: 'המרת אנרגיה א', code: '50012', minutes: 180,
+  groups: { tr: 'שנאים', im: 'מנוע השראה', dc: 'DC וסינכרוני' },
+  topics: {
+    parallel: { group: 'tr', title: 'שנאים במקביל – חלוקת עומס', gen(o = {}) {
+      const S1 = o.S1 ?? pick([50, 100, 160, 250]), v1 = o.v1 ?? pick([4.5, 5, 5.5, 6]);
+      const S2 = o.S2 ?? pick([40, 63, 100, 160]), v2 = o.v2 ?? pick([5, 5.5, 6, 6.5]);
+      const P = o.P ?? Math.round((S1 + S2) * pick([0.6, 0.7, 0.8])), cos = o.cos ?? pick([0.8, 0.85, 0.9]);
+      const ST = P / cos, D = S1 / v1 + S2 / v2, Sa = ST * S1 / (v1 * D), Sb = ST * S2 / (v2 * D);
+      return { text: `שני שנאים במקביל: S<sub>n1</sub> = ${S1} kVA, v<sub>sc1</sub> = ${v1}%; S<sub>n2</sub> = ${S2} kVA, v<sub>sc2</sub> = ${v2}%. העומס P = ${P} kW, cosφ = ${cos}. מה ההספק של כל שנאי? האם אחד מהם בעומס יתר?`,
+        parts: [{ label: 'S<sub>1</sub>', ans: Sa, unit: 'kVA', units: U('kVA', 'kW', 'kVAr') }, { label: 'S<sub>2</sub>', ans: Sb, unit: 'kVA', units: U('kVA', 'kW', 'kVAr') }],
+        sol: `S<sub>T</sub> = P/cosφ = ${fmt(ST)} kVA<br>S<sub>α</sub> = S<sub>T</sub>S<sub>n.α</sub> / (v<sub>sc.α</sub>[S<sub>n.α</sub>/v<sub>sc.α</sub> + S<sub>n.β</sub>/v<sub>sc.β</sub>])<br>S<sub>1</sub> = <b>${fmt(Sa)} kVA</b> ${Sa > S1 ? '⚠ מעל הנומינלי' : ''}<br>S<sub>2</sub> = <b>${fmt(Sb)} kVA</b> ${Sb > S2 ? '⚠ מעל הנומינלי' : ''}<br>השנאי עם v<sub>sc</sub> הנמוך לוקח חלק יחסי גדול יותר.` };
+    } },
+    regulation: { group: 'tr', title: 'שנאי: ויסות מתח ונצילות', gen(o = {}) {
+      const Sn = o.Sn ?? pick([30, 100, 250, 1000]), vsc = o.vsc ?? pick([3, 4, 5, 6]);
+      const Pcu = o.Pcu ?? +(Sn * pick([0.012, 0.015, 0.02])).toFixed(2), PFe = o.PFe ?? +(Pcu * pick([0.3, 0.4, 0.5])).toFixed(2);
+      const b = o.b ?? pick([0.5, 0.75, 1]), cos = o.cos ?? pick([0.8, 0.9, 1]), sin = sq(1 - cos ** 2);
+      const vr = Pcu / Sn * 100, vx = sq(vsc ** 2 - vr ** 2), dv = b * (vr * cos + vx * sin);
+      const eta = b * Sn * cos / (b * Sn * cos + PFe + b ** 2 * Pcu) * 100, bopt = sq(PFe / Pcu);
+      return { text: `שנאי S<sub>n</sub> = ${Sn} kVA, v<sub>sc</sub> = ${vsc}%, ΔP<sub>Cu.n</sub> = ${Pcu} kW, ΔP<sub>Fe</sub> = ${PFe} kW. עומס β = ${b}, cosφ = ${cos} (השראי). חשבו v<sub>r</sub>%, Δv%, נצילות ו-β<sub>opt</sub>.`,
+        parts: [{ label: 'v<sub>r</sub>', ans: vr, unit: '%', units: U('%') }, { label: 'Δv', ans: dv, unit: '%', units: U('%') }, { label: 'η', ans: eta, unit: '%', units: U('%') }, { label: 'β<sub>opt</sub>', ans: bopt, unit: '' }],
+        sol: `v<sub>r</sub>% = ΔP<sub>Cu.n</sub>/S<sub>n</sub>·100 = <b>${fmt(vr)}%</b>, v<sub>x</sub>% = √(v<sub>sc</sub>²−v<sub>r</sub>²) = ${fmt(vx)}%<br>Δv% = β(v<sub>r</sub>cosφ + v<sub>x</sub>sinφ) = <b>${fmt(dv)}%</b><br>η = βS<sub>n</sub>cosφ/(βS<sub>n</sub>cosφ+ΔP<sub>Fe</sub>+β²ΔP<sub>Cu</sub>) = <b>${fmt(eta)}%</b><br>β<sub>opt</sub> = √(ΔP<sub>Fe</sub>/ΔP<sub>Cu.n</sub>) = <b>${fmt(bopt)}</b>` };
+    } },
+    equiv: { group: 'tr', title: 'שנאי חד-פאזי: זרם ריקם ו-vsc', gen(o = {}) {
+      const Sn = (o.Sn ?? pick([10, 20, 30, 50])) * 1e3, V1 = o.V1 ?? pick([2400, 6000, 1000]);
+      const R = o.R ?? +rnd(1, 5, 0.01).toFixed(2), X = o.X ?? +rnd(4, 12, 0.01).toFixed(2);
+      const Rc = o.Rc ?? pick([15000, 19500, 25000]), Xp = o.Xp ?? pick([3000, 4962, 6000]);
+      const I1 = Sn / V1, vsc = I1 * sq(R ** 2 + X ** 2) / V1 * 100, I0 = V1 * sq(1 / Rc ** 2 + 1 / Xp ** 2);
+      return { text: `שנאי חד-פאזי S<sub>n</sub> = ${Sn / 1e3} kVA, V<sub>1n</sub> = ${V1}V. R<sub>1</sub>+R'<sub>2</sub> = ${R}Ω, X<sub>1</sub>+X'<sub>2</sub> = ${X}Ω, R<sub>C</sub> = ${Rc}Ω, X<sub>φ</sub> = ${Xp}Ω. חשבו את זרם הריקם ואת מתח הקצר (מותר מעגל תמורה L).`,
+        parts: [{ label: 'I<sub>o.c</sub>', ans: I0, unit: 'A', units: U('A', 'mA', 'kA') }, { label: 'v<sub>s.c</sub>', ans: vsc, unit: '%', units: U('%') }],
+        sol: `I<sub>o.c</sub> = V<sub>1</sub>·√(1/R<sub>C</sub>² + 1/X<sub>φ</sub>²) = <b>${fmt(I0)} A</b><br>I<sub>1n</sub> = S<sub>n</sub>/V<sub>1n</sub> = ${fmt(I1)} A, |Z<sub>sc</sub>| = ${fmt(sq(R ** 2 + X ** 2))} Ω<br>v<sub>s.c</sub>% = I<sub>1n</sub>|Z<sub>sc</sub>|/V<sub>1n</sub>·100 = <b>${fmt(vsc)}%</b>` };
+    } },
+    induction: { group: 'im', title: 'מנוע השראה: Mn, Mmax, scr', gen(o = {}) {
+      const f = 50, ns = o.ns ?? pick([3000, 1500, 1000, 750]);
+      const n = o.n ?? Math.round(ns * (1 - pick([0.02, 0.03, 0.04, 0.05, 0.06])));
+      const P = o.P ?? pick([4, 7.5, 11, 22, 82]), lam = o.lam ?? pick([2, 2.2, 2.5, 3]);
+      const s = (ns - n) / ns, Mn = P * 1e3 / (n * 2 * Math.PI / 60), Mm = lam * Mn, scr = s * (lam + sq(lam ** 2 - 1)), ncr = ns * (1 - scr);
+      return { text: `מנוע השראה תלת-פאזי: P<sub>n</sub> = ${P} kW, n<sub>n</sub> = ${n} rpm, f = ${f} Hz, λ = M<sub>max</sub>/M<sub>n</sub> = ${lam}. חשבו s<sub>n</sub>, M<sub>n</sub>, M<sub>max</sub>, s<sub>cr</sub> ו-n<sub>cr</sub>.`,
+        parts: [{ label: 's<sub>n</sub>', ans: s, unit: '' }, { label: 'M<sub>n</sub>', ans: Mn, unit: 'N·m', units: U('N·m', 'W', 'kN·m') }, { label: 'M<sub>max</sub>', ans: Mm, unit: 'N·m', units: U('N·m', 'W', 'kN·m') }, { label: 's<sub>cr</sub>', ans: scr, unit: '' }, { label: 'n<sub>cr</sub>', ans: ncr, unit: 'rpm', units: U('rpm', 'rad/s') }],
+        sol: `n<sub>s</sub> = 60f/p = ${ns} rpm (הקרוב מעל n<sub>n</sub>) ⇒ s<sub>n</sub> = (n<sub>s</sub>−n)/n<sub>s</sub> = <b>${fmt(s)}</b><br>M<sub>n</sub> = P<sub>n</sub>/ω<sub>n</sub> = <b>${fmt(Mn)} N·m</b>, M<sub>max</sub> = λM<sub>n</sub> = <b>${fmt(Mm)} N·m</b><br>s<sub>cr</sub> = s<sub>n</sub>(λ+√(λ²−1)) = <b>${fmt(scr)}</b>, n<sub>cr</sub> = n<sub>s</sub>(1−s<sub>cr</sub>) = <b>${fmt(ncr)} rpm</b>` };
+    } },
+    inductionLoad: { group: 'im', title: 'מנוע השראה: מהירות בעומס חלקי', gen(o = {}) {
+      const ns = o.ns ?? pick([1500, 1000, 3000]), n = o.n ?? Math.round(ns * (1 - pick([0.03, 0.04, 0.05])));
+      const lam = o.lam ?? pick([2, 2.5, 3]), k = o.k ?? pick([0.5, 0.75, 1.2]);
+      const sn = (ns - n) / ns, scr = sn * (lam + sq(lam ** 2 - 1)), r = lam / k, s = scr * (r - sq(r ** 2 - 1)), nn = ns * (1 - s);
+      return { text: `מנוע השראה: n<sub>s</sub> = ${ns} rpm, n<sub>n</sub> = ${n} rpm, λ = ${lam}. העומס M<sub>L</sub> = ${k}M<sub>n</sub>. מה מהירות הסיבובים? (נוסחת קלוס)`,
+        parts: [{ label: 's', ans: s, unit: '' }, { label: 'n', ans: nn, unit: 'rpm', units: U('rpm', 'rad/s') }],
+        sol: `s<sub>cr</sub> = s<sub>n</sub>(λ+√(λ²−1)) = ${fmt(scr)}<br>M = 2M<sub>max</sub>/(s/s<sub>cr</sub>+s<sub>cr</sub>/s), M<sub>max</sub>/M = ${fmt(r)}<br>s = s<sub>cr</sub>(r − √(r²−1)) = <b>${fmt(s)}</b> ⇒ n = <b>${fmt(nn, 4)} rpm</b>` };
+    } },
+    dcSelf: { group: 'dc', title: 'גנרטור DC בעירור עצמי (מקבילי)', gen(o = {}) {
+      const Ra = o.Ra ?? pick([0.3, 0.5, 0.8]), A = o.A ?? pick([150, 200, 250]), RL = o.RL ?? pick([8, 10, 12, 20]), V = o.V ?? pick([300, 350, 400]);
+      const IL = V / RL, c = V + Ra * IL, disc = A ** 2 - 4 * Ra * c;
+      if (disc < 0) return this.gen(o);
+      const x = (A - sq(disc)) / (2 * Ra), If = x * x, Rf = V / If, Ia = If + IL, E = A * x;
+      return { text: `גנרטור DC בעירור עצמי מקבילי: R<sub>a</sub> = ${Ra}Ω, E = ${A}√I<sub>f</sub>, R<sub>L</sub> = ${RL}Ω, V<sub>o</sub> = ${V}V. חשבו R<sub>f</sub>, I<sub>f</sub>, I<sub>a</sub> ו-E.`,
+        parts: [{ label: 'R<sub>f</sub>', ans: Rf, unit: 'Ω', units: U('Ω', 'kΩ') }, { label: 'I<sub>f</sub>', ans: If, unit: 'A', units: U('A', 'mA') }, { label: 'I<sub>a</sub>', ans: Ia, unit: 'A', units: U('A', 'mA') }, { label: 'E', ans: E, unit: 'V', units: U('V', 'kV') }],
+        sol: `I<sub>L</sub> = V/R<sub>L</sub> = ${fmt(IL)} A, I<sub>a</sub> = I<sub>f</sub> + I<sub>L</sub>, E = V + I<sub>a</sub>R<sub>a</sub><br>${A}√I<sub>f</sub> = ${V} + ${Ra}(I<sub>f</sub>+${fmt(IL)}) ⇒ משוואה ריבועית ב-√I<sub>f</sub>, לוקחים את השורש הקטן<br>I<sub>f</sub> = <b>${fmt(If)} A</b>, R<sub>f</sub> = V/I<sub>f</sub> = <b>${fmt(Rf)} Ω</b>, I<sub>a</sub> = <b>${fmt(Ia)} A</b>, E = <b>${fmt(E)} V</b>` };
+    } },
+    synch: { group: 'dc', title: 'גנרטור סינכרוני: Eph ו-δ', gen(o = {}) {
+      const P = (o.P ?? pick([20, 25, 40, 50])) * 1e3, VL = o.VL ?? pick([380, 400]), cos = o.cos ?? pick([0.8, 0.85, 0.9]), X = o.X ?? pick([2, 3, 4]);
+      const Vph = VL / sq(3), I = P / (sq(3) * VL * cos), sin = sq(1 - cos ** 2);
+      const re = Vph + X * I * sin, im = X * I * cos, E = sq(re ** 2 + im ** 2), d = deg(Math.atan2(im, re));
+      return { text: `גנרטור סינכרוני תלת-פאזי בכוכב מזין עומס P = ${P / 1e3} kW, V<sub>line</sub> = ${VL}V, cosφ = ${cos} (השראי), X = ${X}Ω. חשבו I<sub>ph</sub>, E<sub>ph</sub> וזווית העומס δ.`,
+        parts: [{ label: 'I<sub>ph</sub>', ans: I, unit: 'A', units: U('A', 'kA') }, { label: 'E<sub>ph</sub>', ans: E, unit: 'V', units: U('V', 'kV') }, { label: 'δ', ans: d, unit: '°', units: U('°', 'rad') }],
+        sol: `V<sub>ph</sub> = ${VL}/√3 = ${fmt(Vph)} V, I<sub>ph</sub> = P/(√3V<sub>L</sub>cosφ) = <b>${fmt(I)} A</b><br>Ẽ = Ṽ + jXĨ, Ĩ = I∠−${fmt(deg(Math.acos(cos)))}°<br>Ẽ = ${fmt(re)} + j${fmt(im)} ⇒ E<sub>ph</sub> = <b>${fmt(E)} V</b>, δ = <b>${fmt(d)}°</b>` };
+    } },
+  },
+  sheet: `<h3>שנאי</h3><p>R'<sub>2</sub>=R<sub>2</sub>a² · a=w<sub>1</sub>/w<sub>2</sub> · v<sub>r</sub>%=ΔP<sub>Cu.n</sub>/S<sub>n</sub>·100 · v<sub>sc</sub>%=√(v<sub>r</sub>²+v<sub>x</sub>²)<br>Δv%=β(v<sub>r</sub>cosφ+v<sub>x</sub>sinφ) · η=βS<sub>n</sub>cosφ/(βS<sub>n</sub>cosφ+ΔP<sub>Fe</sub>+β²ΔP<sub>Cu.n</sub>) · β<sub>opt</sub>=√(ΔP<sub>Fe</sub>/ΔP<sub>Cu.n</sub>)<br>S<sub>β</sub>/S<sub>α</sub>=S<sub>n.β</sub>v<sub>sc.α</sub>/(S<sub>n.α</sub>v<sub>sc.β</sub>) · S<sub>α</sub>=S<sub>T</sub>S<sub>n.α</sub>/(v<sub>sc.α</sub>[S<sub>n.α</sub>/v<sub>sc.α</sub>+S<sub>n.β</sub>/v<sub>sc.β</sub>])</p>
+<h3>מנוע השראה</h3><p>n<sub>s</sub>=60f/p · s=(n<sub>s</sub>−n)/n<sub>s</sub> · P<sub>g</sub>=Mω<sub>s</sub>=3I'<sub>2</sub>²R'<sub>2</sub>/s · P<sub>mech</sub>=P<sub>g</sub>(1−s) · ΔP<sub>Cu2</sub>=sP<sub>g</sub><br>M<sub>max</sub>=3V<sub>ph</sub>²/(4ω<sub>s</sub>x'<sub>2</sub>) · s<sub>cr</sub>=R'<sub>2</sub>/(2x'<sub>2</sub>)… · M≈2M<sub>max</sub>/(s/s<sub>cr</sub>+s<sub>cr</sub>/s) · s<sub>cr</sub>=s<sub>n</sub>(λ+√(λ²−1))</p>
+<h3>סינכרוני</h3><p>מנוע: Ṽ=Ẽ+jXĨ · גנרטור: Ẽ=Ṽ+jXĨ · P=3V<sub>ph</sub>I<sub>ph</sub>cosφ=3V<sub>ph</sub>E<sub>ph</sub>sinθ/X</p>
+<h3>DC</h3><p>E=k<sub>e</sub>Φω · גנרטור: E=V+I<sub>a</sub>R<sub>a</sub> · מנוע: V=E+I<sub>a</sub>R<sub>a</sub>, ω=(V−I<sub>a</sub>R<sub>a</sub>)/k<sub>e</sub>Φ, M=k<sub>e</sub>ΦI<sub>a</sub></p>`,
+};
+
+const COURSES = {
+  semi, energy,
+  signals: { name: 'אותות אקראיים', soon: true },
+  control: { name: 'בקרה א', soon: true },
+};
+
+
+
+const SB_URL = 'https://enhqzgjqqyubgfysnjib.supabase.co';
+const SB_KEY = 'sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const TOL = 0.02;
+let user = null, progress = {}, timer = null;
+const $ = s => document.querySelector(s);
+const app = () => $('#app');
+
+function parseNum(s) {
+  s = String(s).trim().replace(/,/g, '.').replace(/\s/g, '').replace(/[×x*]10\^?/i, 'e').replace(/e\+?/i, 'e');
+  return s === '' ? NaN : Number(s);
+}
+const pctTxt = st => st && st.a ? Math.round(100 * st.c / st.a) + '%' : '—';
+
+// ---------- auth ----------
+function authView(mode = 'login', msg = '') {
+  clearInterval(timer);
+  const titles = { login: 'כניסה', signup: 'הרשמה', forgot: 'שכחתי סיסמה', recover: 'סיסמה חדשה' };
+  app().innerHTML = `<div class="card auth"><h1>מעבדת מבחנים</h1><h2>${titles[mode]}</h2>
+    ${mode !== 'recover' ? '<input id="em" type="email" placeholder="אימייל" autocomplete="email">' : ''}
+    ${mode !== 'forgot' ? `<input id="pw" type="password" placeholder="${mode === 'recover' ? 'סיסמה חדשה' : 'סיסמה'}" autocomplete="${mode === 'login' ? 'current-password' : 'new-password'}">` : ''}
+    <button id="go" class="primary">${mode === 'forgot' ? 'שלח קישור איפוס' : titles[mode]}</button>
+    <p class="msg">${msg}</p>
+    ${mode === 'login' ? '<a data-m="forgot">שכחתי סיסמה</a> · <a data-m="signup">אין לי חשבון</a>' : mode !== 'recover' ? '<a data-m="login">חזרה לכניסה</a>' : ''}
+    <p class="hint">אותו חשבון כמו באפליקציות הבית.</p></div>`;
+  app().querySelectorAll('a[data-m]').forEach(a => a.onclick = () => authView(a.dataset.m));
+  $('#go').onclick = async () => {
+    const email = $('#em')?.value.trim(), password = $('#pw')?.value;
+    let r;
+    try {
+    if (mode === 'login') r = await sb.auth.signInWithPassword({ email, password });
+    else if (mode === 'signup') r = await sb.auth.signUp({ email, password });
+    else if (mode === 'forgot') r = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] });
+    else r = await sb.auth.updateUser({ password });
+    } catch (e) { return authView(mode, '⚠ אין חיבור לשרת: ' + e.message); }
+    if (r.error) return authView(mode, '⚠ ' + r.error.message);
+    if (mode === 'forgot') return authView('login', 'נשלח מייל עם קישור לאיפוס.');
+    if (mode === 'signup' && !r.data.session) return authView('login', 'נשלח מייל אימות. אשר אותו והיכנס.');
+    if (mode === 'recover') history.replaceState(null, '', location.pathname);
+  };
+}
+
+let recovering = /type=recovery/.test(location.hash);
+// supabase-js: don't await its calls inside this callback (can deadlock), so defer with setTimeout.
+sb.auth.onAuthStateChange((ev, session) => setTimeout(async () => {
+  if (ev === 'PASSWORD_RECOVERY') recovering = true;
+  if (ev === 'USER_UPDATED' && recovering) { recovering = false; user = null; }
+  if (recovering) return authView('recover');
+  const next = session?.user || null;
+  if (next?.id === user?.id && ev !== 'INITIAL_SESSION' && ev !== 'USER_UPDATED') return;
+  user = next;
+  if (!user) return authView();
+  await loadProgress();
+  homeView();
+}));
+
+async function loadProgress() {
+  progress = {};
+  const { data } = await sb.from('study_progress').select('course,topic,attempts,correct');
+  (data || []).forEach(r => ((progress[r.course] ??= {})[r.topic] = { a: r.attempts, c: r.correct }));
+}
+async function record(course, topic, n, ok) {
+  const st = ((progress[course] ??= {})[topic] ??= { a: 0, c: 0 });
+  st.a += n; st.c += ok;
+  await sb.from('study_progress').upsert({ user_id: user.id, course, topic, attempts: st.a, correct: st.c, updated_at: new Date().toISOString() });
+}
+
+// ---------- screens ----------
+function homeView() {
+  clearInterval(timer);
+  app().innerHTML = `<header><h1>מעבדת מבחנים</h1><button id="out" class="ghost">יציאה</button></header>
+    ${Object.entries(COURSES).map(([id, c]) => `<button class="course${c.soon ? ' soon' : ''}" data-c="${id}" ${c.soon ? 'disabled' : ''}>
+      <b>${c.name}</b><span>${c.soon ? 'בקרוב' : `${Object.keys(c.topics).length} סוגי שאלות · דיוק ${courseAcc(id)}`}</span></button>`).join('')}`;
+  $('#out').onclick = () => sb.auth.signOut();
+  app().querySelectorAll('[data-c]').forEach(b => b.onclick = () => courseView(b.dataset.c));
+}
+function courseAcc(id) {
+  const v = Object.values(progress[id] || {}), a = v.reduce((s, x) => s + x.a, 0), c = v.reduce((s, x) => s + x.c, 0);
+  return a ? Math.round(100 * c / a) + '%' : '—';
+}
+function courseView(id) {
+  clearInterval(timer);
+  const C = COURSES[id];
+  const groups = Object.entries(C.groups).map(([g, gname]) => `<h3>${gname}</h3>` +
+    Object.entries(C.topics).filter(([, t]) => t.group === g).map(([k, t]) =>
+      `<button class="topic" data-t="${k}"><span>${t.title}</span><em>${pctTxt(progress[id]?.[k])}</em></button>`).join('')).join('');
+  app().innerHTML = `<header><button class="ghost" id="back">→</button><h1>${C.name}</h1></header>
+    <div class="row"><button class="primary" id="weak">תרגול נקודות חולשה</button><button class="primary" id="exam">מבחן מלא (${C.minutes} דק')</button></div>
+    <button class="ghost wide" id="sheet">דף נוסחאות</button>${groups}`;
+  $('#back').onclick = homeView;
+  $('#sheet').onclick = () => sheetView(id);
+  $('#weak').onclick = () => practice(id, weakest(id));
+  $('#exam').onclick = () => examView(id);
+  app().querySelectorAll('[data-t]').forEach(b => b.onclick = () => practice(id, [b.dataset.t]));
+}
+function weakest(id) {
+  const score = k => { const s = progress[id]?.[k]; return s && s.a ? s.c / s.a : 0.5; };
+  return Object.keys(COURSES[id].topics).sort((a, b) => score(a) - score(b)).slice(0, 3);
+}
+function sheetView(id) {
+  app().innerHTML = `<header><button class="ghost" id="back">→</button><h1>דף נוסחאות</h1></header><div class="card sheet">${COURSES[id].sheet}</div>`;
+  $('#back').onclick = () => courseView(id);
+}
+
+function partsHTML(q, qi) {
+  return q.parts.map((p, i) => `<div class="part" id="p${qi}_${i}"><label>${p.label} =</label>
+    <input inputmode="decimal" dir="ltr" placeholder="1.23e16">
+    ${p.units ? `<select>${['', ...shuffle(p.units)].map(u => `<option>${u}</option>`).join('')}</select>` : p.unit ? `<span>${p.unit}</span>` : ''}
+    <i></i></div>`).join('');
+}
+const nb = h => h.replace(/(\d|<\/sup>) (?=[A-Za-zµΩÅ°%])/g, '$1&nbsp;');
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+function grade(q, qi) {
+  let ok = 0;
+  q.parts.forEach((p, i) => {
+    const el = $(`#p${qi}_${i}`), v = parseNum(el.querySelector('input').value), sel = el.querySelector('select');
+    const numOk = isFinite(v) && Math.abs(v - p.ans) <= TOL * Math.abs(p.ans) + 1e-12;
+    const unitOk = !sel || sel.value === p.unit;
+    el.querySelector('i').textContent = numOk && unitOk ? '✓' : !numOk ? `✗ ${fmt(p.ans).replace(/<[^>]+>/g, '')}` : '✗ יחידות';
+    el.className = 'part ' + (numOk && unitOk ? 'ok' : 'bad');
+    if (numOk && unitOk) ok++;
+  });
+  return ok;
+}
+
+function practice(id, keys) {
+  clearInterval(timer);
+  const C = COURSES[id], k = keys[Math.floor(Math.random() * keys.length)], t = C.topics[k], q = t.gen();
+  app().innerHTML = `<header><button class="ghost" id="back">→</button><h1>${t.title}</h1></header>
+    <div class="card"><p class="q">${nb(q.text)}</p>${partsHTML(q, 0)}
+    <div class="row"><button class="primary" id="check">בדוק</button><button class="ghost" id="next">שאלה אחרת</button></div>
+    <details id="sol" hidden><summary>פתרון מלא</summary><div>${nb(q.sol)}</div></details></div>`;
+  $('#back').onclick = () => courseView(id);
+  $('#next').onclick = () => practice(id, keys);
+  $('#check').onclick = () => {
+    const ok = grade(q, 0);
+    record(id, k, q.parts.length, ok);
+    $('#check').disabled = true; $('#sol').hidden = false; if (ok < q.parts.length) $('#sol').open = true;
+  };
+}
+
+function examView(id) {
+  const C = COURSES[id], byGroup = Object.keys(C.groups).map(g => shuffle(Object.keys(C.topics).filter(k => C.topics[k].group === g)));
+  const keys = [];
+  for (let r = 0; keys.length < 6; r++) byGroup.forEach(g => g[r] && keys.length < 6 && keys.push(g[r]));
+  const qs = keys.map(k => ({ k, q: C.topics[k].gen() }));
+  let left = C.minutes * 60;
+  app().innerHTML = `<header><button class="ghost" id="back">→</button><h1>מבחן – ${C.name}</h1><b id="clock"></b></header>
+    ${qs.map(({ k, q }, i) => `<div class="card"><h3>שאלה ${i + 1} · ${C.groups[C.topics[k].group]}</h3><p class="q">${nb(q.text)}</p>${partsHTML(q, i)}
+      <details hidden class="esol"><summary>פתרון</summary><div>${nb(q.sol)}</div></details></div>`).join('')}
+    <button class="primary wide" id="submit">הגשה</button><p id="score" class="score"></p>`;
+  const tick = () => { $('#clock').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; if (left-- <= 0) submit(); };
+  const submit = () => {
+    clearInterval(timer);
+    let tot = 0, ok = 0;
+    qs.forEach(({ k, q }, i) => { const g = grade(q, i); ok += g; tot += q.parts.length; record(id, k, q.parts.length, g); });
+    app().querySelectorAll('.esol').forEach(d => d.hidden = false);
+    $('#submit').remove();
+    $('#back').onclick = () => courseView(id);
+    $('#score').textContent = `ציון: ${Math.round(100 * ok / tot)} (${ok}/${tot} סעיפים)`;
+    $('#score').scrollIntoView({ behavior: 'smooth' });
+  };
+  $('#back').onclick = () => confirm('לצאת מהמבחן? ההתקדמות לא תישמר.') && courseView(id);
+  $('#submit').onclick = submit;
+  tick(); timer = setInterval(tick, 1000);
+}
+
+</script>
+</body>
+</html>
