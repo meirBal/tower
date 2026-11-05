@@ -618,7 +618,7 @@ body.armanual #arStick{left:50%}
 var TD = (typeof globalThis !== 'undefined' ? globalThis : window).TD || {};
 (typeof globalThis !== 'undefined' ? globalThis : window).TD = TD;
 
-TD.VERSION = '4.5.0';
+TD.VERSION = '4.5.1';
 
 TD.CONFIG = {
   // מידות העולם הלוגי (המסך מותאם אוטומטית לכל טלפון)
@@ -3223,7 +3223,8 @@ TD.AR.hurtHero = function (s, dmg, why, contact) {
   s.stats.taken += dmg;
   TD.AR.emit(s, 'hurt', { dmg: dmg, shield: sh, why: why, x: h.x, y: h.y });
   if (h.hp <= 0) {
-    if (s.run.lives > 0) { s.run.lives--; h.hp = Math.round(h.maxHp * 0.5); h.inv = 2; TD.AR.emit(s, 'revive', {}); return true; }
+    // v4.5.1: קמים לתחייה — מנקים קליעים ומטאורים מסביב ונותנים 3 שניות חסינות, כדי לא למות שוב מיד באותו מקום
+    if (s.run.lives > 0) { s.run.lives--; s.run.revived = (s.run.revived || 0) + 1; h.hp = Math.round(h.maxHp * 0.5); h.inv = 3; s.bullets = []; s.marks = []; TD.AR.emit(s, 'revive', { x: h.x, y: h.y }); return true; }
     h.hp = 0; s.over = true; s.won = false; TD.AR.emit(s, 'dead', {});
   }
   return true;
@@ -8575,6 +8576,7 @@ TD.ARUI = (function () {
     $('arOverTitle').textContent = worldDone ? '🏆 עברת את עולם ' + w + '!' : '💀 נפלת בשלב ' + s.stage;
     $('arOverSub').textContent = worldDone ? (w < 3 ? 'עולם ' + (w + 1) + ' נפתח!' : 'עברת את כל העולמות — אגדה!') : 'העולם מתחיל מחדש משלב 1 • השיא שלך: שלב ' + p.best[w] + '/50';
     var rows = [['שלב', st + '/50'], ['שלב דמות', s.run.level], ['מפלצות', s.run.kills], ['נשק', TD.AR.ITEMS.weapon[s.run.items.weapon.type].name + ' ' + TD.CONFIG.archer.rarities[s.run.items.weapon.rar].name]];
+    if (s.run.revived) rows.push(['👼 קמת לתחייה', s.run.revived + ' פעמים']);
     var box = $('arStats'); box.innerHTML = '';
     rows.forEach(function (r) { var a = document.createElement('span'), b = document.createElement('b'); a.textContent = r[0]; b.textContent = r[1]; box.appendChild(a); box.appendChild(b); });
     $('arNext').classList.toggle('hidden', !(worldDone && w < 3));
