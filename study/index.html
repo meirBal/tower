@@ -45,6 +45,10 @@ details div { margin-top:8px; line-height:1.9; }
 .hint { color:var(--mut); font-size:13px; margin:0; }
 .sheet p { line-height:2; }
 .score { font-size:22px; font-weight:700; text-align:center; color:var(--acc); }
+
+.sheetbg { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:9; }
+.sheetbg .card { max-width:420px; width:100%; }
+code { background:var(--bg); padding:2px 6px; border-radius:6px; word-break:break-all; }
 #clock { font-variant-numeric:tabular-nums; color:var(--acc); }
 </style>
 </head>
@@ -297,10 +301,27 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 const TOL = 0.02;
 let user = null, progress = {}, timer = null, installEvt = null;
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.inst').forEach(b => b.hidden = false); });
+// כמו במגדל: הכפתור תמיד מוצג (חוץ מכשהמעבדה עצמה פתוחה כאפליקציה). יש חלון התקנה → מציגים אותו; אין → הוראות.
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
 addEventListener('appinstalled', () => { installEvt = null; document.querySelectorAll('.inst').forEach(b => b.hidden = true); });
-const instBtn = () => `<button class="ghost inst" ${installEvt ? '' : 'hidden'}>⬇ התקנה</button>`;
-function bindInst() { document.querySelectorAll('.inst').forEach(b => b.onclick = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; b.hidden = true; }); }
+const isApp = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const instBtn = () => isApp() ? '' : `<button class="ghost inst">📲 הורד לטלפון</button>`;
+function bindInst() {
+  document.querySelectorAll('.inst').forEach(b => b.onclick = async () => {
+    if (installEvt) { installEvt.prompt(); const c = await installEvt.userChoice; if (c.outcome === 'accepted') { installEvt = null; b.hidden = true; } return; }
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const url = 'https://meirbal.github.io/tower/study/';
+    const d = document.createElement('div');
+    d.className = 'sheetbg';
+    d.innerHTML = `<div class="card"><h2>📲 הורדה לטלפון</h2>${ios
+      ? '<p>לחץ על כפתור השיתוף ⬆ ובחר <b>"הוסף למסך הבית"</b>.</p>'
+      : `<ol><li>פתח את <b>Chrome</b> והקלד בשורת הכתובת:<br><code dir="ltr">${url}</code></li><li>תפריט <b>⋮</b> ← <b>"התקנת אפליקציה"</b> (או "הוספה למסך הבית").</li></ol><p class="hint">מקלידים ולא לוחצים על קישור — אחרת הטלפון יכול לפתוח את הדף בתוך המגדל.</p>`}
+      <div class="row"><button class="primary" id="cp">העתק כתובת</button><button class="ghost" id="cl">סגור</button></div></div>`;
+    document.body.append(d);
+    d.querySelector('#cl').onclick = () => d.remove();
+    d.querySelector('#cp').onclick = async e => { try { await navigator.clipboard.writeText(url); e.target.textContent = 'הועתק ✓'; } catch { e.target.textContent = url; } };
+  });
+}
 const $ = s => document.querySelector(s);
 const app = () => $('#app');
 
