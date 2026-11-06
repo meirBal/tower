@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14161f">
 <title>מעבדת מבחנים</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root { --bg:#14161f; --card:#1d2030; --line:#2c3046; --tx:#e8e9f0; --mut:#9a9db3; --acc:#f2b84b; --ok:#4fc38a; --bad:#ef6b6b; }
@@ -293,7 +295,12 @@ const SB_URL = 'https://enhqzgjqqyubgfysnjib.supabase.co';
 const SB_KEY = 'sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1';
 const sb = supabase.createClient(SB_URL, SB_KEY);
 const TOL = 0.02;
-let user = null, progress = {}, timer = null;
+let user = null, progress = {}, timer = null, installEvt = null;
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.inst').forEach(b => b.hidden = false); });
+addEventListener('appinstalled', () => { installEvt = null; document.querySelectorAll('.inst').forEach(b => b.hidden = true); });
+const instBtn = () => `<button class="ghost inst" ${installEvt ? '' : 'hidden'}>⬇ התקנה</button>`;
+function bindInst() { document.querySelectorAll('.inst').forEach(b => b.onclick = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; b.hidden = true; }); }
 const $ = s => document.querySelector(s);
 const app = () => $('#app');
 
@@ -313,7 +320,8 @@ function authView(mode = 'login', msg = '') {
     <button id="go" class="primary">${mode === 'forgot' ? 'שלח קישור איפוס' : titles[mode]}</button>
     <p class="msg">${msg}</p>
     ${mode === 'login' ? '<a data-m="forgot">שכחתי סיסמה</a> · <a data-m="signup">אין לי חשבון</a>' : mode !== 'recover' ? '<a data-m="login">חזרה לכניסה</a>' : ''}
-    <p class="hint">אותו חשבון כמו באפליקציות הבית.</p></div>`;
+    <p class="hint">אותו חשבון כמו באפליקציות הבית.</p>${instBtn()}</div>`;
+  bindInst();
   app().querySelectorAll('a[data-m]').forEach(a => a.onclick = () => authView(a.dataset.m));
   $('#go').onclick = async () => {
     const email = $('#em')?.value.trim(), password = $('#pw')?.value;
@@ -359,10 +367,11 @@ async function record(course, topic, n, ok) {
 // ---------- screens ----------
 function homeView() {
   clearInterval(timer);
-  app().innerHTML = `<header><h1>מעבדת מבחנים</h1><button id="out" class="ghost">יציאה</button></header>
+  app().innerHTML = `<header><h1>מעבדת מבחנים</h1>${instBtn()}<button id="out" class="ghost">יציאה</button></header>
     ${Object.entries(COURSES).map(([id, c]) => `<button class="course${c.soon ? ' soon' : ''}" data-c="${id}" ${c.soon ? 'disabled' : ''}>
       <b>${c.name}</b><span>${c.soon ? 'בקרוב' : `${Object.keys(c.topics).length} סוגי שאלות · דיוק ${courseAcc(id)}`}</span></button>`).join('')}`;
   $('#out').onclick = () => sb.auth.signOut();
+  bindInst();
   app().querySelectorAll('[data-c]').forEach(b => b.onclick = () => courseView(b.dataset.c));
 }
 function courseAcc(id) {
