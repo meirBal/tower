@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>כיבוש הממלכות</title>
+<meta name="description" content="משחק אסטרטגיה לנייד: גרור צבאות, כבוש מחוזות, שחק נגד בוטים או עם עד 8 חברים">
+<meta name="theme-color" content="#16222f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hidden">
+  <div class="pill"><span class="coin"></span><b id="coins">0</b></div>
+  <div class="pill" id="pRegions"><span class="dot" id="myDot"></span><b id="myRegions">0</b></div>
+  <div class="pill" id="pTime">⏱ <b id="clock">0:00</b></div>
+  <div class="hud-actions">
+    <button class="pill btn-ico" id="emoBtn" title="תגובה">😀</button>
+    <button class="pill btn-ico" id="muteBtn" title="צליל">🔊</button>
+    <button class="pill btn-ico" id="pauseBtn" title="תפריט">⏸</button>
+  </div>
+</div>
+<div id="emoBar" class="hidden"></div>
+<div id="bars" class="hidden"></div>
+<div id="hint" class="hidden"></div>
+<div id="toasts"></div>
+<div id="bubble" class="hidden"></div>
+<div id="netBadge" class="hidden"></div>
+
+<!-- תפריט ראשי -->
+<section class="overlay" id="scrMenu">
+  <div class="card">
+    <div class="logo">⚔️</div>
+    <h1>כיבוש הממלכות</h1>
+    <p class="sub">גרור צבאות, כבוש מחוזות ושלוט במפה</p>
+    <label class="field">השם שלך
+      <input id="nameIn" maxlength="16" placeholder="למשל: מאיר" autocomplete="nickname">
+    </label>
+    <div class="grid2">
+      <button class="btn" id="soloBtn">🤖 נגד בוטים</button>
+      <button class="btn blue" id="hostBtn">👥 חדר עם חברים</button>
+    </div>
+    <div class="join-row">
+      <input id="codeIn" maxlength="5" placeholder="קוד חדר" inputmode="latin" autocapitalize="characters">
+      <button class="btn alt" id="joinBtn">הצטרף</button>
+    </div>
+    <div class="row">
+      <button class="btn alt small" id="howBtn">❓ איך משחקים</button>
+      <button class="btn alt small" id="boardBtn">🏆 אלופים</button>
+      <a class="btn alt small" href="../">🏰 מגדל האגדות</a>
+    </div>
+  </div>
+</section>
+
+<!-- הגדרות משחק יחיד -->
+<section class="overlay hidden" id="scrSolo">
+  <div class="card">
+    <h2>🤖 משחק נגד בוטים</h2>
+    <p class="lbl">כמה ממלכות על המפה (כולל אותך)</p>
+    <div class="seg" id="soloCount"></div>
+    <p class="lbl">רמת קושי</p>
+    <div class="seg" id="soloDiff"></div>
+    <div class="row">
+      <button class="btn" id="soloGo">התחל</button>
+      <button class="btn alt" data-back>חזרה</button>
+    </div>
+  </div>
+</section>
+
+<!-- לובי חדר -->
+<section class="overlay hidden" id="scrLobby">
+  <div class="card">
+    <h2>👥 חדר <span id="lobCode" class="code"></span></h2>
+    <p class="sub" id="lobStatus">מתחבר…</p>
+    <div class="row">
+      <button class="btn blue small" id="shareBtn">📤 שתף קישור</button>
+      <button class="btn alt small" id="copyBtn">📋 העתק קוד</button>
+    </div>
+    <ul class="plist" id="lobPlayers"></ul>
+    <div id="hostCtl">
+      <p class="lbl">בוטים שישלימו עד</p>
+      <div class="seg" id="lobFill"></div>
+      <p class="lbl">רמת הבוטים</p>
+      <div class="seg" id="lobDiff"></div>
+      <div class="row"><button class="btn" id="startBtn">התחל משחק</button></div>
+    </div>
+    <p class="sub" id="waitHost">מחכים שהמארח יתחיל…</p>
+    <div class="row"><button class="btn alt small" id="leaveBtn">יציאה</button></div>
+  </div>
+</section>
+
+<!-- איך משחקים -->
+<section class="overlay hidden" id="scrHow">
+  <div class="card">
+    <h2>❓ איך משחקים</h2>
+    <ul class="how">
+      <li><b>גרור</b> ממחוז שלך אל מחוז שכן כדי לשלוח את כל החיילים שלו.</li>
+      <li>אפשר לגרור <b>דרך כמה מחוזות שלך</b> — כולם יוצאים יחד להתקפה.</li>
+      <li>צבאות הולכים <b>דרך השטח שלך</b>, אז אפשר לתקוף כל מחוז שגובל בשטח שלך.</li>
+      <li>החיילים גדלים לבד. 🏯 <b>בירה</b> גדלה מהר — ובלי בירה הממלכה נחלשת.</li>
+      <li>⛏️ <b>מכרה</b> נותן מטבעות. <b>הקש</b> על מחוז שלך כדי לשדרג אותו (גדילה, מקום והגנה).</li>
+      <li>צבאות של ממלכות שונות שנפגשים בדרך — נלחמים.</li>
+      <li>שתי אצבעות: <b>זום והזזה</b> של המפה.</li>
+      <li>מנצחים כשכל האחרים הובסו, או כשמחזיקים <b>75%</b> מהמפה.</li>
+    </ul>
+    <div class="row"><button class="btn" data-back>הבנתי</button></div>
+  </div>
+</section>
+
+<!-- טבלת אלופים -->
+<section class="overlay hidden" id="scrBoard">
+  <div class="card">
+    <h2>🏆 אלופי הממלכות</h2>
+    <ol class="board" id="boardList"><li>טוען…</li></ol>
+    <div class="row"><button class="btn" data-back>חזרה</button></div>
+  </div>
+</section>
+
+<!-- הפסקה / תפריט במשחק -->
+<section class="overlay hidden" id="scrPause">
+  <div class="card">
+    <h2 id="pauseTitle">⏸ הפסקה</h2>
+    <div class="row">
+      <button class="btn" id="resumeBtn">המשך</button>
+      <button class="btn alt" id="quitBtn">יציאה לתפריט</button>
+    </div>
+  </div>
+</section>
+
+<!-- סוף משחק -->
+<section class="overlay hidden" id="scrEnd">
+  <div class="card">
+    <h1 id="endTitle"></h1>
+    <p class="sub" id="endSub"></p>
+    <ol class="rank" id="endRank"></ol>
+    <div class="row">
+      <button class="btn" id="againBtn">שחק שוב</button>
+      <button class="btn alt" id="endMenuBtn">תפריט</button>
+    </div>
+  </div>
+</section>
+
+<script src="js/engine.js"></script>
+<script src="js/net.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
