@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>מהמדורה למעצמה</title>
+<meta name="description" content="משחק הישרדות ובנייה: מדורה ושלושה אנשים בחושך — ומשם עד מעצמת AI">
+<meta name="theme-color" content="#0b0906">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<header id="top">
+  <div class="topline">
+    <button class="chip btn-ico" id="menuBtn" title="תפריט">☰</button>
+    <button class="chip lvl" id="lvlBtn"><span id="lvlTxt">רמה 1 · מדורה</span></button>
+    <div class="chip" id="popChip">👥 <b id="popTxt">3</b></div>
+    <div class="chip" id="foodChip">🍖 <b id="foodTxt">0</b></div>
+  </div>
+  <div id="resbar"></div>
+  <div id="alerts"></div>
+</header>
+
+<div id="placeBar" class="hidden"><span id="placeTxt"></span> <button class="btn alt small" id="placeCancel">ביטול</button></div>
+<div id="toasts"></div>
+
+<nav id="nav">
+  <button data-tab="people"><span>👥</span>שבט</button>
+  <button data-tab="craft"><span>🧺</span>תיבה</button>
+  <button data-tab="research"><span>💡</span>מחקר</button>
+  <button data-tab="build"><span>🏗️</span>בנייה</button>
+  <button data-tab="log"><span>📜</span>יומן</button>
+</nav>
+
+<section id="sheet" class="hidden">
+  <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="x" id="sheetClose">✕</button></div>
+  <div id="sheetBody"></div>
+</section>
+
+<section class="overlay hidden" id="modal">
+  <div class="card" id="modalCard"></div>
+</section>
+
+<script src="js/engine.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
