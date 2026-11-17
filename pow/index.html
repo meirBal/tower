@@ -75,7 +75,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.2";
+const VERSION = "1.3";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -362,33 +362,33 @@ function showMember(s) {
 
   section("השירותים שלי");
   if (!s.services.length) label("המנהל עוד לא נתן לך גישה לשירות.");
-  let anyBlocked = false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
   for (const o of s.services) {
     const price = Number(o.price || 0);
-    anyBlocked ||= o.blocked;
-    const info = price <= 0 ? "חינם" : o.blocked
-      ? `₪${money(price)} לחודש · ` + (o.paid_until ? `התשלום הסתיים ב-${dmy(o.paid_until)}` : "עוד לא שולם")
-      : `₪${money(price)} לחודש · שולם עד ${o.paid_until ? dmy(o.paid_until) : "—"}`;
+    const until = o.paid_until ? new Date(o.paid_until + "T00:00:00") : null;
+    const dueSoon = !o.blocked && until && (until - today) <= 7 * 86400000;
+    // subscription status: always shown, whatever else is going on with the service
+    const status = price <= 0 ? "✅ חינם"
+      : o.blocked ? `❗ דרוש תשלום · ₪${money(price)} לחודש · ` + (o.paid_until ? `התשלום הסתיים ב-${dmy(o.paid_until)}` : "עוד לא שולם")
+      : `✅ שולם עד ${dmy(o.paid_until)}${dueSoon ? " ⏰" : ""}\nתשלום הבא: ₪${money(price)} עד ${dmy(o.paid_until)}`;
     if (o.blocked) {
-      card(`🔒 ${o.name}`, "red", `${info}\nאין קודים עד שהמנהל יאשר את התשלום.`);
-      pill("שילמתי — עדכן את המנהל", "gold", () => act(async () => { await fnCall({ action: "paid", service_id: o.id }); toast("המנהל קיבל הודעה ✓"); }));
+      card(`🔒 ${o.name}`, "red", `${status}\nאין קודים עד שהמנהל יאשר את התשלום.`);
     } else if (o.busy) {
-      card(`⛔ ${o.name} תפוס`, "muted", `${o.busy.who || "מישהו"} ממתין לקוד עד ${hhmm(o.busy.until)}.\n` +
-        (o.queued ? "תקבל התראה כשיתפנה 🔔" : "כדי שהקודים לא יתחלפו, רק אחד בכל פעם."));
+      card(`⛔ ${o.name} תפוס`, "muted", `${status}\n${o.busy.who || "מישהו"} ממתין לקוד עד ${hhmm(o.busy.until)}. ` +
+        (o.queued ? "תקבל התראה כשיתפנה 🔔" : "רק אחד בכל פעם, כדי שהקודים לא יתחלפו."));
       if (!o.queued) pill("הודע לי כשמתפנה", "cyan", () => waitFor(o.id));
     } else if (o.id === myWaiting) {
-      card(o.name, "gold", `${info}\n⏳ ממתין לקוד (למעלה)`);
+      card(o.name, "gold", `${status}\n⏳ ממתין לקוד (למעלה)`);
     } else {
-      card(o.name, "gold", info);
+      card(o.name, "gold", status);
       pill(`ממתין לקוד — ${o.name}`, "gold", () => waitFor(o.id));
     }
-  }
-
-  if (s.pay_phone || s.pay_link) {
-    section(anyBlocked ? "לתשלום" : "תשלום");
-    if (s.pay_link) pill("פתח קישור תשלום", "gold", () => { window.open(s.pay_link, "_blank", "noopener"); });
-    if (s.pay_phone) pill(`ביט / פייבוקס: ${s.pay_phone} (העתק)`, "cyan", () => copy(s.pay_phone, "המספר הועתק"));
-    label("אחרי התשלום לחץ 'שילמתי'. המנהל מאשר אצלו והחסימה יורדת.");
+    if (price > 0) {
+      pill(`${o.blocked ? "💳 שלם עכשיו" : "💳 תשלום מנוי"} ₪${money(price)}`, o.blocked || dueSoon ? "red" : "line", () => pay(o.name, price, s.pay_phone, s.pay_link));
+      if (o.blocked || dueSoon) pill("שילמתי — עדכן את המנהל", "gold", () => act(async () => {
+        await fnCall({ action: "paid", service_id: o.id }); toast("המנהל קיבל הודעה ✓ — הוא מאשר אצלו והמנוי ממשיך");
+      }));
+    }
   }
 
   if (s.history.length) {
@@ -402,6 +402,25 @@ function showMember(s) {
   }
   pill("רענן", "line", () => route());
   link("עזוב קבוצה", () => { if (confirm("לעזוב את הקבוצה?")) act(async () => { await rpc("pow_leave"); route(); }); });
+}
+
+// Bit has no public link that pre-fills a transfer to a private person: the owner's own payment link if he set one,
+// otherwise copy his number, show the amount, and open Bit where the phone allows it
+async function pay(service, amount, phone, link) {
+  if (link) { window.open(link, "_blank", "noopener"); return; }
+  if (!phone) return toast("המנהל עוד לא הגדיר לאן משלמים");
+  try { await navigator.clipboard.writeText(phone); } catch {}
+  if (app.querySelector(".pay-steps")) return;
+  const c = card(`💳 תשלום ${service}: ₪${money(amount)}`, "gold",
+    `המספר של המנהל (${phone}) הועתק.\nבביט: העברת כסף ← הדבק את המספר ← ₪${money(amount)}.\nאחרי התשלום לחץ 'שילמתי'.`);
+  c.classList.add("pay-steps");
+  app.querySelector(".bar").after(c); // top of the screen
+  c.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (/android/i.test(navigator.userAgent)) {
+    const b = document.createElement("button"); b.className = "pill"; b.style.setProperty("--accent", "var(--gold)"); b.textContent = "פתח את ביט";
+    b.onclick = () => { location.href = "intent://#Intent;package=com.bnhp.payments.paymentsapp;S.browser_fallback_url=" + encodeURIComponent("https://play.google.com/store/apps/details?id=com.bnhp.payments.paymentsapp") + ";end"; };
+    c.after(b);
+  }
 }
 
 async function waitFor(serviceId) {
