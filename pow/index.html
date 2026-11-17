@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.6";
+const VERSION = "1.7";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -428,6 +428,7 @@ function showMember(s) {
     }
   }
 
+  if (s.reminder_day) label(`🔔 תזכורת תשלום מגיעה כל ${s.reminder_day} לחודש (אם התשלום עומד להסתיים).`);
   if (s.history.length) {
     section("היסטוריית קודים (7 ימים)");
     for (const x of s.history) {
