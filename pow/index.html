@@ -192,6 +192,8 @@ window.addEventListener("appinstalled", () => { installEvt = null; document.quer
 function installButton() {
   if (standalone()) return; // already running as an app
   const btn = pill("📲 הורד לטלפון", "gold", async () => {
+    // Chrome hands over the install dialog a few seconds after the page loads: wait for it instead of showing steps
+    for (let i = 0; i < 40 && !installEvt && !isIOS(); i++) await new Promise(r => setTimeout(r, 100));
     if (installEvt) {
       const ev = installEvt;
       ev.prompt();
@@ -200,6 +202,12 @@ function installButton() {
       return;
     }
     if (app.querySelector(".install-steps")) return;
+    // Android but no install dialog: not Chrome (WhatsApp / Samsung browser) — reopen the page in Chrome
+    const ua = navigator.userAgent;
+    if (/android/i.test(ua) && (/SamsungBrowser|; wv\)|FBAN|FBAV|Instagram/.test(ua) || !/Chrome\//.test(ua))) {
+      location.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end";
+      return;
+    }
     const steps = isIOS()
       ? "1. לחץ על כפתור השיתוף של ספארי ⬆️ (ריבוע עם חץ למעלה)\n2. בחר 'הוסף למסך הבית'\n3. פתח את Pay or Wait מהאייקון ולחץ 'הפעל התראות'"
       : "1. פתח את תפריט הדפדפן ⋮ (למעלה)\n2. בחר 'התקנת אפליקציה' או 'הוספה למסך הבית'\n3. פתח את Pay or Wait מהאייקון ולחץ 'הפעל התראות'";
