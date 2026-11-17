@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.7";
+const VERSION = "1.8";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -86,7 +86,11 @@ let onMemberScreen = false; // background refreshes only re-render this screen
 // ---------- small helpers ----------
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // (no lookbehind: older Safari can't parse it)
-const codeOf = t => (String(t || "").match(/(?:^|\D)(\d{4,8})(?!\d)/) || [])[1] || null;
+// the code is near the top (emails end with addresses and years), never inside a link
+const codeOf = t => (String(t || "").replace(/https?:\/\/\S+/g, " ").slice(0, 400).match(/(?:^|\D)(\d{4,8})(?!\d)/) || [])[1] || null;
+// links in forwarded emails (e.g. Netflix "get code") become tappable, shown by their site name
+const linkify = t => String(t ?? "").split(/(https?:\/\/[^\s<>"'\]\)]+)/).map((p, i) => i % 2
+  ? `<a href="${esc(p)}" target="_blank" rel="noopener">🔗 ${esc(p.split("/")[2])}</a>` : esc(p)).join("");
 const hhmm = (iso, plusMin = 0) => new Date(new Date(iso).getTime() + plusMin * 60000).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
 const ddmm = iso => new Date(iso).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const dmy = d => { const [y, m, dd] = d.slice(0, 10).split("-"); return `${dd}/${m}/${y.slice(2)}`; };
@@ -390,7 +394,7 @@ function showMember(s) {
       section(`הקוד של ${svc}`);
       codeBox(code || "—");
       if (code) pill("העתק קוד", "gold", () => copy(code, "הקוד הועתק"));
-      label(req.body || "");
+      h(`<div class="label">${linkify(req.body)}</div>`);
     }
   }
 
@@ -434,8 +438,8 @@ function showMember(s) {
     for (const x of s.history) {
       if (!x.body) continue;
       const code = codeOf(x.body);
-      const el = h(`<div class="bubble"><b>${esc(names[x.service_id] || "")} · ${esc(ddmm(x.delivered_at))}${code ? " · " + esc(code) : ""}</b><div>${esc(x.body)}</div></div>`);
-      el.onclick = () => copy(code || x.body, code ? `הקוד ${code} הועתק` : "ההודעה הועתקה");
+      const el = h(`<div class="bubble"><b>${esc(names[x.service_id] || "")} · ${esc(ddmm(x.delivered_at))}${code ? " · " + esc(code) : ""}</b><div>${linkify(x.body)}</div></div>`);
+      el.onclick = e => !e.target.closest("a") && copy(code || x.body, code ? `הקוד ${code} הועתק` : "ההודעה הועתקה");
     }
   }
   pill("רענן", "line", () => route());
