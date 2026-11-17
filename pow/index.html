@@ -75,7 +75,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.0";
+const VERSION = "1.1";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -184,6 +184,32 @@ async function disablePush() {
 }
 const pushOn = () => pushSupported() && Notification.permission === "granted" && store.get("push_on");
 
+// ---------- "📲 הורד לטלפון" (like the tower game): real install prompt on Android Chrome, steps on iPhone ----------
+let installEvt = null;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; document.querySelectorAll(".install-btn").forEach(b => b.hidden = false); });
+window.addEventListener("appinstalled", () => { installEvt = null; document.querySelectorAll(".install-btn,.install-steps").forEach(b => b.remove()); toast("הותקן ✓ — פתח את Pay or Wait מהמסך הראשי"); });
+function installButton() {
+  if (standalone()) return; // already running as an app
+  const btn = pill("📲 הורד לטלפון", "gold", async () => {
+    if (installEvt) {
+      const ev = installEvt;
+      ev.prompt();
+      const c = await ev.userChoice;
+      if (c && c.outcome === "accepted") installEvt = null;
+      return;
+    }
+    if (app.querySelector(".install-steps")) return;
+    const steps = isIOS()
+      ? "1. לחץ על כפתור השיתוף של ספארי ⬆️ (ריבוע עם חץ למעלה)\n2. בחר 'הוסף למסך הבית'\n3. פתח את Pay or Wait מהאייקון ולחץ 'הפעל התראות'"
+      : "1. פתח את תפריט הדפדפן ⋮ (למעלה)\n2. בחר 'התקנת אפליקציה' או 'הוספה למסך הבית'\n3. פתח את Pay or Wait מהאייקון ולחץ 'הפעל התראות'";
+    const c = card("📲 הורדה לטלפון", "cyan", steps + "\n\nבלי קובץ להתקנה ובלי הרשאות מיוחדות.");
+    c.classList.add("install-steps");
+    btn.after(c);
+  });
+  btn.classList.add("install-btn");
+}
+
 // ---------- UI building ----------
 function h(html) { app.insertAdjacentHTML("beforeend", html); return app.lastElementChild; }
 function clear() { clearTimeout(pollTimer); onMemberScreen = false; app.innerHTML = ""; }
@@ -230,7 +256,7 @@ async function route(quiet = false) {
 
 function showLogin() {
   h(`<div class="brand"><img src="icon-180.png" alt=""><h2>Pay or Wait</h2><div class="muted">קודי כניסה לחשבונות המשפחתיים</div></div>`);
-  if (!standalone()) card("📲 להתקנה באייפון", "cyan", "בספארי: כפתור השיתוף ⬆️ ← 'הוסף למסך הבית', ופתח את האפליקציה משם (רק כך יעבדו התראות).");
+  installButton();
   const name = field("שם (בהרשמה)", "text", "name");
   const email = field("אימייל", "email", "email");
   const pass = field("סיסמה (לפחות 8 תווים)", "password", "current-password");
@@ -279,6 +305,7 @@ function showNewPassword() {
 
 function showStart() {
   bar("Pay or Wait", { settings: true });
+  installButton();
   label("קיבלת קוד הצטרפות ממנהל החשבונות? הזן אותו כאן.");
   const code = field("קוד הצטרפות");
   code.style.textTransform = "uppercase";
@@ -287,6 +314,7 @@ function showStart() {
 
 function showPending(s) {
   bar("Pay or Wait", { settings: true });
+  installButton();
   label(`הבקשה נשלחה ✓ ממתין לאישור של ${s.owner_name || "המנהל"}.`);
   pill("רענן", "gold", () => route());
   link("בטל בקשה", () => act(async () => { await rpc("pow_leave"); route(); }));
@@ -302,7 +330,8 @@ function showMember(s) {
   onMemberScreen = true;
   if (s.prank_until) return showPrank(s.prank_until);
   label(`הקבוצה של ${s.owner_name || "המנהל"}`);
-  if (!pushOn()) card("🔔 הפעל התראות", "cyan", standalone() ? "לחץ כאן כדי לקבל את הקוד גם כשהאפליקציה סגורה." : "כדי לקבל התראות: שתף ⬆️ ← 'הוסף למסך הבית', ופתח משם.", () => act(enablePush));
+  installButton();
+  if (!pushOn()) card("🔔 הפעל התראות", "cyan", standalone() || !isIOS() ? "לחץ כאן כדי לקבל את הקוד גם כשהאפליקציה סגורה." : "באייפון התראות עובדות רק אחרי 'הורד לטלפון' ופתיחה מהאייקון.", () => act(enablePush));
   const names = Object.fromEntries(s.services.map(o => [o.id, o.name]));
 
   const req = s.requests[0];
