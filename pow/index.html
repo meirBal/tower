@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.4";
+const VERSION = "1.5";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -404,7 +404,10 @@ function showMember(s) {
       pill(`ממתין לקוד — ${o.name}`, "gold", () => waitFor(o.id));
     }
     if (price > 0) {
-      pill(`${o.blocked ? "💳 שלם עכשיו" : "💳 תשלום מנוי"} ₪${money(price)}`, o.blocked || dueSoon ? "red" : "line", () => pay(o.name, price, s.pay_phone, s.pay_link));
+      pill(`${o.blocked ? "💳 שלם עכשיו" : "💳 תשלום מנוי"} ₪${money(price)}${o.period === "year" ? " לשנה" : ""}`, o.blocked || dueSoon ? "red" : "line",
+        () => pay(o.name, price, s.pay_phone, s.pay_link));
+      // monthly service: a whole year in advance is also allowed (a yearly service is always paid per year)
+      if (o.period !== "year") pill(`💳 שנה מראש ₪${money(price * 12)}`, "line", () => pay(`${o.name} (שנה מראש)`, price * 12, s.pay_phone, s.pay_link));
       if (o.blocked || dueSoon) pill("שילמתי — עדכן את המנהל", "gold", () => act(async () => {
         await fnCall({ action: "paid", service_id: o.id }); toast("המנהל קיבל הודעה ✓ — הוא מאשר אצלו והמנוי ממשיך");
       }));
