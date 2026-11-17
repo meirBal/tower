@@ -496,6 +496,8 @@ function showPrank(untilIso) {
 }
 
 // ---------- start ----------
+// portrait only (the manifest says so for the installed app; this covers browsers that allow locking)
+try { if (standalone()) screen.orientation.lock("portrait").catch(() => {}); } catch {}
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
   navigator.serviceWorker.addEventListener("message", e => { if (e.data === "refresh" && onMemberScreen) route(true); });
