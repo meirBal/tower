@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.5";
+const VERSION = "1.6";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -251,13 +251,17 @@ async function route(quiet = false) {
   if (!loggedIn()) { clear(); return showLogin(); }
   if (!quiet) { clear(); label("טוען…"); }
   try {
-    const s = await rpc("pow_state", { p_group: store.get("group") || null });
-    if (s.group_id) store.set("group", s.group_id);
+    // "I'm the manager" shows my own group (listed first by the server); "I'm a user" shows the group I opened
+    const mode0 = store.get("mode");
+    const s = await rpc("pow_state", { p_group: mode0 === "member" ? store.get("group") || null : null });
+    const owns = (s.groups || []).some(g => g.role === "owner");
+    if (!mode0) store.set("mode", owns ? "owner" : "member");
+    const opened = store.get("group");
     clear();
-    if (s.role === "member") showMember(s);
-    else if (s.role === "pending") showPending(s);
-    else if (s.role === "owner") showOwnerHere(s);
-    else showStart(s);
+    if (store.get("mode") === "owner") showOwnerHere(s, owns);
+    else if (opened && opened === s.group_id && s.role === "member") showMember(s);
+    else if (opened && opened === s.group_id && s.role === "pending") showPending(s);
+    else showMyGroups(s);
   } catch (e) {
     if (e instanceof ApiError && (e.code === 400 || e.code === 401) && /refresh|JWT|not logged/i.test(e.message)) { store.del("session"); return route(); }
     clear(); label(errText(e)); pill("נסה שוב", "gold", () => route()); link("התנתקות", signOut);
@@ -314,47 +318,57 @@ function showNewPassword() {
   }));
 }
 
-// one tab per group I'm in (mine as owner + every group I'm a member of), and "+" to join another
-function tabs(s, joinSelected = false) {
-  const groups = s.groups || [];
-  const cur = joinSelected ? "+" : s.group_id || "+";
-  const label = g => g.role === "owner" ? "👑 הקבוצה שלי" : (g.role === "pending" ? "⏳ " : "👥 ") + (g.name || "קבוצה");
-  const row = h(`<div class="choices tabs">${groups.map(g => `<button data-id="${esc(g.id)}" class="${g.id === cur ? "sel" : ""}">${esc(label(g))}</button>`).join("")}<button data-id="+" class="${cur === "+" ? "sel" : ""}">＋ הצטרף</button></div>`);
+// the two main modes: the group I manage, and the groups I'm a user in
+function modeTabs(selected) {
+  const row = h(`<div class="choices tabs"><button data-m="owner" class="${selected === "owner" ? "sel" : ""}">👑 אני מנהל</button><button data-m="member" class="${selected === "member" ? "sel" : ""}">👥 אני משתמש</button></div>`);
   row.querySelectorAll("button").forEach(b => b.onclick = () => {
-    if (b.dataset.id === cur) return;
-    if (b.dataset.id === "+") { clear(); bar("Pay or Wait", { settings: true }); showStart(s, true); }
-    else { store.set("group", b.dataset.id); route(); }
+    if (b.dataset.m === selected) return;
+    store.set("mode", b.dataset.m); store.del("group"); route();
   });
 }
+const backToGroups = () => link("→ כל הקבוצות שלי", () => { store.del("group"); route(); });
 
-function showStart(s, fromTab = false) {
-  if (!fromTab) bar("Pay or Wait", { settings: true });
-  tabs(s, true);
+// "I'm a user": every group I'm registered in, each opens its own page; plus join a new one
+function showMyGroups(s) {
+  bar("Pay or Wait", { settings: true });
+  modeTabs("member");
   installButton();
+  const mine = (s.groups || []).filter(g => g.role !== "owner");
+  section("הקבוצות שלי");
+  if (!mine.length) label("עוד לא הצטרפת לאף קבוצה.");
+  for (const g of mine) {
+    const pending = g.role === "pending";
+    card(`${pending ? "⏳" : "👥"} הקבוצה של ${g.name || "?"}`, pending ? "muted" : "gold", pending ? "ממתין לאישור המנהל" : "לחץ לכניסה",
+      () => { store.set("group", g.id); route(); });
+  }
+  section("הצטרפות לקבוצה");
   label("קיבלת קוד הצטרפות ממנהל של קבוצה? הזן אותו כאן.");
   const code = field("קוד הצטרפות");
   code.style.textTransform = "uppercase";
-  pill("הצטרף", "gold", () => act(async () => { await rpc("pow_join", { p_code: code.value }); store.del("group"); route(); }));
+  pill("הצטרף", "gold", () => act(async () => { await rpc("pow_join", { p_code: code.value }); route(); }));
 }
 
 function showPending(s) {
   bar("Pay or Wait", { settings: true });
-  tabs(s);
+  modeTabs("member");
+  backToGroups();
   installButton();
   label(`הבקשה נשלחה ✓ ממתין לאישור של ${s.owner_name || "המנהל"}.`);
   pill("רענן", "gold", () => route());
   link("בטל בקשה", () => act(async () => { await rpc("pow_leave", { p_group: s.group_id }); store.del("group"); route(); }));
 }
 
-function showOwnerHere(s) {
+function showOwnerHere(s, owns) {
   bar("Pay or Wait", { settings: true });
-  tabs(s);
-  card("⚠️ זו גרסת המשתמשים", "red", "ניהול הקבוצה והעברת הקודים נעשים רק מאפליקציית המנהל באנדרואיד.");
+  modeTabs("owner");
+  card(owns ? "👑 הקבוצה שאתה מנהל" : "עוד אין לך קבוצה שאתה מנהל", "gold",
+    "ניהול הקבוצה והעברת הקודים נעשים מאפליקציית המנהל באנדרואיד (רק בטלפון שמקבל את ה-SMS).\nכאן, ב'👥 אני משתמש', נמצאות הקבוצות שאתה רשום בהן.");
 }
 
 function showMember(s) {
   bar("Pay or Wait", { settings: true });
-  tabs(s);
+  modeTabs("member");
+  backToGroups();
   onMemberScreen = true;
   if (s.prank_until) return showPrank(s.prank_until);
   label(`הקבוצה של ${s.owner_name || "המנהל"}`);
@@ -484,7 +498,7 @@ function choice(title, options, selected, onPick) {
 async function signOut() {
   // this phone should stop getting this account's codes
   try { await saveProfile({ web_push: null }); } catch {}
-  store.del("session"); store.del("push_on"); store.del("group");
+  store.del("session"); store.del("push_on"); store.del("group"); store.del("mode");
   route();
 }
 
