@@ -83,7 +83,8 @@ let onMemberScreen = false; // background refreshes only re-render this screen
 
 // ---------- small helpers ----------
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const codeOf = t => (String(t || "").match(/(?<!\d)\d{4,8}(?!\d)/) || [])[0] || null;
+// (no lookbehind: older Safari can't parse it)
+const codeOf = t => (String(t || "").match(/(?:^|\D)(\d{4,8})(?!\d)/) || [])[1] || null;
 const hhmm = (iso, plusMin = 0) => new Date(new Date(iso).getTime() + plusMin * 60000).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
 const ddmm = iso => new Date(iso).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const dmy = d => { const [y, m, dd] = d.slice(0, 10).split("-"); return `${dd}/${m}/${y.slice(2)}`; };
@@ -305,6 +306,7 @@ function showMember(s) {
   const names = Object.fromEntries(s.services.map(o => [o.id, o.name]));
 
   const req = s.requests[0];
+  const myWaiting = req && req.status === "waiting" ? req.service_id : null;
   if (req) {
     const svc = names[req.service_id] || "";
     if (req.status === "waiting") {
@@ -337,6 +339,8 @@ function showMember(s) {
       card(`⛔ ${o.name} תפוס`, "muted", `${o.busy.who || "מישהו"} ממתין לקוד עד ${hhmm(o.busy.until)}.\n` +
         (o.queued ? "תקבל התראה כשיתפנה 🔔" : "כדי שהקודים לא יתחלפו, רק אחד בכל פעם."));
       if (!o.queued) pill("הודע לי כשמתפנה", "cyan", () => waitFor(o.id));
+    } else if (o.id === myWaiting) {
+      card(o.name, "gold", `${info}\n⏳ ממתין לקוד (למעלה)`);
     } else {
       card(o.name, "gold", info);
       pill(`ממתין לקוד — ${o.name}`, "gold", () => waitFor(o.id));
@@ -442,15 +446,16 @@ function showPrank(untilIso) {
   const tick = () => {
     const left = Math.floor((until - Date.now()) / 1000);
     if (left <= 0) {
-      clearInterval(prankTimer); prankTimer = null;
-      box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove());
-      return route();
+      // the server decides when it ends; ask again in a few seconds (phone clocks can run ahead)
+      clearInterval(prankTimer); timer.textContent = "0:00";
+      setTimeout(() => { prankTimer = null; box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove()); route(); }, 3000);
+      return;
     }
     timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
     spawn();
   };
-  tick();
   prankTimer = setInterval(tick, 1000);
+  tick();
 }
 
 // ---------- start ----------
