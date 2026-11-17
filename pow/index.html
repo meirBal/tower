@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pay or Wait</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pay or Wait">
+<meta name="theme-color" content="#121a3a">
+<style>
+  /* same look as the Android app: dark navy + gold glow (light theme available in Settings) */
+  :root { --bg1:#0e1430; --bg2:#1b2550; --tile1:#1d2753; --tile2:#141c40; --text:#f3eee2; --muted:#9aa3c7; --gold:#f2c45c; --cyan:#5fd4f4; --red:#ff4d5a; --line:#3a4578; --fs:1; }
+  html.light { --bg1:#f7f3ea; --bg2:#ece5d4; --tile1:#ffffff; --tile2:#f4efe3; --text:#1d2240; --muted:#5d6488; --gold:#b8860b; --cyan:#127f9e; --red:#d0263a; --line:#cfc6b0; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { margin:0; min-height:100%; background:linear-gradient(var(--bg1),var(--bg2)) fixed var(--bg2); }
+  body { margin:0; min-height:100%; }
+  body { font-family:-apple-system,"Segoe UI",Rubik,Arial,sans-serif; color:var(--text);
+         font-size:calc(16px * var(--fs)); padding:calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 24px); }
+  main { max-width:520px; margin:0 auto; }
+  .bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .bar h1 { flex:1; margin:0; font-size:1.25em; font-weight:600; color:var(--gold); text-shadow:0 0 8px var(--gold); }
+  .icon-btn { background:none; border:0; color:var(--gold); font-size:1.5em; padding:6px; cursor:pointer; }
+  .brand { text-align:center; margin:36px 0 14px; }
+  .brand img { width:84px; height:84px; border-radius:20px; box-shadow:0 0 24px rgba(242,196,92,.35); }
+  .brand h2 { font-weight:300; font-size:1.9em; margin:12px 0 2px; }
+  .muted { color:var(--muted); }
+  .label { color:var(--muted); margin:6px 0; white-space:pre-line; }
+  .section { color:var(--gold); font-weight:600; font-size:.82em; letter-spacing:.08em; margin:22px 0 4px; }
+  .card { background:linear-gradient(var(--tile1),var(--tile2)); border:1.5px solid var(--accent,var(--gold)); box-shadow:0 0 10px -2px var(--accent,var(--gold));
+          border-radius:22px; padding:14px 20px; margin-top:10px; }
+  .card b { display:block; font-size:1.06em; font-weight:600; }
+  .card span { color:var(--muted); font-size:.9em; white-space:pre-line; }
+  button.pill { display:flex; width:100%; align-items:center; justify-content:center; gap:10px; margin-top:10px; padding:14px 18px; border-radius:999px;
+          background:linear-gradient(var(--tile1),var(--tile2)); color:var(--text); font:inherit; font-size:1em; border:1.5px solid var(--accent,var(--gold));
+          box-shadow:0 0 12px -3px var(--accent,var(--gold)); cursor:pointer; }
+  button.pill:disabled { opacity:.5; }
+  a.link, button.link { display:block; width:100%; text-align:center; color:var(--cyan); padding:12px; background:none; border:0; font:inherit; font-size:.92em; cursor:pointer; text-decoration:none; }
+  input { width:100%; margin-top:10px; padding:14px 22px; border-radius:999px; border:1.5px solid var(--line); background:linear-gradient(var(--tile1),var(--tile2));
+          color:var(--text); font:inherit; font-size:1em; outline:none; }
+  input:focus { border-color:var(--gold); }
+  .code { text-align:center; direction:ltr; font-size:2.6em; letter-spacing:.15em; font-weight:600; color:var(--gold); text-shadow:0 0 12px var(--gold);
+          border:1.5px solid var(--gold); border-radius:28px; padding:20px 10px; margin-top:10px; background:linear-gradient(var(--tile1),var(--tile2)); user-select:all; }
+  .bubble { background:linear-gradient(var(--tile1),var(--tile2)); border:1px solid var(--line); border-radius:18px; padding:10px 16px; margin:8px 0 0 28px; cursor:pointer; }
+  .bubble b { color:var(--gold); font-size:.85em; font-weight:600; }
+  .bubble div { color:var(--muted); font-size:.85em; white-space:pre-line; }
+  .choices { display:flex; gap:6px; margin-top:4px; }
+  .choices button { flex:1; padding:12px 4px; border-radius:999px; border:1.5px solid var(--line); background:linear-gradient(var(--tile1),var(--tile2)); color:var(--text); font:inherit; font-size:.9em; }
+  .choices button.sel { border-color:var(--gold); color:var(--gold); box-shadow:0 0 8px -2px var(--gold); }
+  .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 28px); transform:translateX(-50%); background:#000c; color:#fff; padding:12px 18px;
+           border-radius:14px; max-width:90%; font-size:.92em; z-index:50; text-align:center; }
+  .ver { text-align:center; color:var(--muted); font-size:.7em; margin-top:22px; }
+  /* the owner's 5-minute joke block */
+  #prank { position:fixed; inset:0; background:#120a0af2; z-index:40; overflow:hidden; display:none; }
+  #prank .msg { position:absolute; top:50%; left:50%; width:130%; transform:translate(-50%,-50%) rotate(-32deg); text-align:center; color:#fff; font-weight:800;
+                font-size:clamp(34px,11vw,64px); line-height:1.2; text-shadow:0 0 22px #ff2d2d; white-space:pre-line; animation:beat 1s infinite; }
+  #prank .timer { position:absolute; bottom:calc(env(safe-area-inset-bottom) + 70px); width:100%; text-align:center; direction:ltr; color:#ff2d2d;
+                  font-weight:800; font-size:64px; text-shadow:0 0 18px #ff2d2d; }
+  #prank .face { position:absolute; font-size:42px; width:56px; height:56px; line-height:56px; text-align:center; cursor:pointer; user-select:none;
+                 transition:left 2.4s ease-in-out, top 2.4s ease-in-out, transform 2.4s ease-in-out; }
+  #prank .boom { transition:transform .38s, opacity .38s !important; transform:scale(2.6) !important; opacity:0; }
+  #prank .bit { position:absolute; font-size:18px; transition:transform .6s ease-out, opacity .6s; pointer-events:none; }
+  @keyframes beat { 50% { transform:translate(-50%,-50%) rotate(-32deg) scale(1.06); } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="prank"><div class="msg">נחסמת בהיותך
+ילד קקה 💩</div><div class="timer"></div></div>
+<script>
+"use strict";
+// Pay or Wait — iPhone web version (members only). Same Supabase backend as the Android app.
+const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
+const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
+const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
+const VERSION = "1.0";
+const MIN_PASSWORD = 8;
+const app = document.getElementById("app");
+let pollTimer = null;
+let onMemberScreen = false; // background refreshes only re-render this screen
+
+// ---------- small helpers ----------
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const codeOf = t => (String(t || "").match(/(?<!\d)\d{4,8}(?!\d)/) || [])[0] || null;
+const hhmm = (iso, plusMin = 0) => new Date(new Date(iso).getTime() + plusMin * 60000).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+const ddmm = iso => new Date(iso).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const dmy = d => { const [y, m, dd] = d.slice(0, 10).split("-"); return `${dd}/${m}/${y.slice(2)}`; };
+const money = v => Number(v) % 1 === 0 ? String(Number(v)) : Number(v).toFixed(2);
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg); } catch { toast("לא הצלחתי להעתיק"); }
+}
+const store = {
+  get: k => { try { return JSON.parse(localStorage.getItem("pow_" + k)); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem("pow_" + k, JSON.stringify(v)); } catch {} },
+  del: k => { try { localStorage.removeItem("pow_" + k); } catch {} },
+};
+
+// ---------- settings (theme + font size, like the Android app) ----------
+function applyLook() {
+  const theme = store.get("theme") || "system";
+  const dark = theme === "dark" || (theme === "system" && !matchMedia("(prefers-color-scheme: light)").matches);
+  document.documentElement.classList.toggle("light", !dark);
+  document.documentElement.style.setProperty("--fs", store.get("fs") || 1);
+}
+applyLook();
+
+// ---------- Supabase (plain fetch, like the Android app) ----------
+class ApiError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
+async function http(method, path, body, token) {
+  const h = { apikey: SUPABASE_KEY, "Content-Type": "application/json" };
+  if (token) h.Authorization = "Bearer " + token;
+  if (path.startsWith("/rest/v1/pow_profiles")) h.Prefer = "resolution=merge-duplicates";
+  let r;
+  try { r = await fetch(SUPABASE_URL + path, { method, headers: h, body: body == null ? undefined : JSON.stringify(body) }); }
+  catch { throw new ApiError(0, "אין חיבור לאינטרנט"); }
+  const text = await r.text();
+  if (!r.ok) throw new ApiError(r.status, text);
+  return text ? JSON.parse(text) : null;
+}
+function saveSession(j) {
+  store.set("session", { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + j.expires_in, user_id: j.user.id });
+}
+let refreshing = null;
+async function token() {
+  const s = store.get("session");
+  if (!s) throw new ApiError(401, "not logged in");
+  if (Date.now() / 1000 < s.expires_at - 60) return s.access_token;
+  refreshing ??= http("POST", "/auth/v1/token?grant_type=refresh_token", { refresh_token: s.refresh_token }).then(saveSession).finally(() => refreshing = null);
+  await refreshing;
+  return store.get("session").access_token;
+}
+const loggedIn = () => !!store.get("session");
+const rpc = async (fn, args = {}) => http("POST", "/rest/v1/rpc/" + fn, args, await token());
+const fnCall = async body => http("POST", "/functions/v1/pow", body, await token());
+const saveProfile = async fields => http("POST", "/rest/v1/pow_profiles", { id: store.get("session").user_id, ...fields }, await token());
+
+function errText(e) {
+  const m = String(e && e.message || e);
+  if (/unpaid/.test(m)) return "חסום — התשלום לשירות הזה לא עודכן";
+  if (/pranked/.test(m)) return "נחסמת ל-5 דקות 😜";
+  if (/too_fast/.test(m)) return "רגע... נסה שוב בעוד חצי דקה";
+  if (/no_access/.test(m)) return "אין לך גישה לשירות הזה";
+  if (/code_not_found/.test(m)) return "הקוד לא נמצא";
+  if (/Invalid login/.test(m)) return "אימייל או סיסמה שגויים";
+  if (/Email not confirmed/.test(m)) return "צריך קודם לאשר את מייל האימות";
+  if (/already registered|user_already_exists/.test(m)) return "המייל הזה כבר רשום — לחץ 'התחברות'";
+  if (/email_address_invalid|invalid format/.test(m)) return "כתובת המייל לא תקינה";
+  if (e instanceof ApiError && e.code) return `שגיאה ${e.code}: ${m.slice(0, 150)}`;
+  return m;
+}
+async function act(work) { try { await work(); } catch (e) { toast(errText(e)); } }
+
+// ---------- push (iPhone: works only from the home-screen app, iOS 16.4+) ----------
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+function b64ToBytes(s) {
+  const pad = "=".repeat((4 - s.length % 4) % 4), raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+async function enablePush() {
+  if (!pushSupported()) return toast(standalone() ? "הטלפון לא תומך בהתראות (צריך iOS 16.4 ומעלה)" : "קודם הוסף למסך הבית (שתף ← הוסף למסך הבית) ופתח משם");
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return toast("ההתראות לא אושרו. אפשר לאשר בהגדרות ← התראות ← Pay or Wait");
+  const reg = await navigator.serviceWorker.ready;
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
+  await saveProfile({ web_push: sub.toJSON() });
+  store.set("push_on", true);
+  toast("התראות פועלות ✓");
+  route();
+}
+async function disablePush() {
+  try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch {}
+  await saveProfile({ web_push: null });
+  store.del("push_on");
+  toast("ההתראות כבויות");
+  route();
+}
+const pushOn = () => pushSupported() && Notification.permission === "granted" && store.get("push_on");
+
+// ---------- UI building ----------
+function h(html) { app.insertAdjacentHTML("beforeend", html); return app.lastElementChild; }
+function clear() { clearTimeout(pollTimer); onMemberScreen = false; app.innerHTML = ""; }
+function bar(title, { settings = false, back = false } = {}) {
+  const el = h(`<div class="bar">${back ? `<button class="icon-btn" aria-label="חזרה">→</button>` : ""}<h1>${esc(title)}</h1>${settings ? `<button class="icon-btn" aria-label="הגדרות">⚙︎</button>` : ""}</div>`);
+  if (back) el.firstElementChild.onclick = () => route();
+  if (settings) el.lastElementChild.onclick = showSettings;
+}
+const label = t => h(`<div class="label">${esc(t)}</div>`);
+const section = t => h(`<div class="section">${esc(t)}</div>`);
+function card(head, accent, body, onClick) {
+  const el = h(`<div class="card" style="--accent:var(--${accent})"><b>${esc(head)}</b>${body ? `<span>${esc(body)}</span>` : ""}</div>`);
+  if (onClick) { el.style.cursor = "pointer"; el.onclick = onClick; }
+  return el;
+}
+function pill(text, accent, onClick) {
+  const el = h(`<button class="pill" style="--accent:var(--${accent})">${esc(text)}</button>`);
+  el.onclick = async () => { el.disabled = true; try { await onClick(); } finally { el.disabled = false; } };
+  return el;
+}
+function link(text, onClick) { const el = h(`<button class="link">${esc(text)}</button>`); el.onclick = onClick; return el; }
+function field(placeholder, type = "text", auto = "") { return h(`<input type="${type}" placeholder="${esc(placeholder)}" ${auto ? `autocomplete="${auto}"` : ""}>`); }
+const codeBox = t => h(`<div class="code">${esc(t)}</div>`);
+function footer() { h(`<div class="ver">גרסת אייפון ${VERSION}</div>`); }
+
+// ---------- screens ----------
+async function route(quiet = false) {
+  if (location.hash.includes("type=recovery")) return showNewPassword();
+  if (!loggedIn()) { clear(); return showLogin(); }
+  if (!quiet) { clear(); label("טוען…"); }
+  try {
+    const s = await rpc("pow_state");
+    clear();
+    if (s.role === "member") showMember(s);
+    else if (s.role === "pending") showPending(s);
+    else if (s.role === "owner") showOwnerHere();
+    else showStart();
+  } catch (e) {
+    if (e instanceof ApiError && (e.code === 400 || e.code === 401) && /refresh|JWT|not logged/i.test(e.message)) { store.del("session"); return route(); }
+    clear(); label(errText(e)); pill("נסה שוב", "gold", () => route()); link("התנתקות", signOut);
+  }
+  footer();
+}
+
+function showLogin() {
+  h(`<div class="brand"><img src="icon-180.png" alt=""><h2>Pay or Wait</h2><div class="muted">קודי כניסה לחשבונות המשפחתיים</div></div>`);
+  if (!standalone()) card("📲 להתקנה באייפון", "cyan", "בספארי: כפתור השיתוף ⬆️ ← 'הוסף למסך הבית', ופתח את האפליקציה משם (רק כך יעבדו התראות).");
+  const name = field("שם (בהרשמה)", "text", "name");
+  const email = field("אימייל", "email", "email");
+  const pass = field("סיסמה (לפחות 8 תווים)", "password", "current-password");
+  const missing = () => { if (!email.value.trim()) return toast("כתוב אימייל"), true; if (!pass.value) return toast("כתוב סיסמה"), true; return false; };
+  const saveName = async () => { const n = name.value.trim(); if (n) await saveProfile({ display_name: n }); };
+  pill("התחברות", "gold", () => act(async () => {
+    if (missing()) return;
+    saveSession(await http("POST", "/auth/v1/token?grant_type=password", { email: email.value.trim(), password: pass.value }));
+    await saveName(); route();
+  }));
+  pill("הרשמה", "cyan", () => act(async () => {
+    if (missing()) return;
+    if (!name.value.trim()) return toast("כתוב שם, כדי שהמנהל ידע מי אתה");
+    if (pass.value.length < MIN_PASSWORD) return toast(`הסיסמה צריכה לפחות ${MIN_PASSWORD} תווים`);
+    const j = await http("POST", "/auth/v1/signup", { email: email.value.trim(), password: pass.value });
+    if (!j.access_token) return toast("נשלח מייל אימות. אשר אותו ואז לחץ 'התחברות' (עם השם)");
+    saveSession(j); await saveName(); route();
+  }));
+  link("שכחתי סיסמה", () => act(async () => {
+    const e = email.value.trim();
+    if (!e) return toast("כתוב קודם את האימייל");
+    const redirect = encodeURIComponent(location.origin + location.pathname);
+    await http("POST", `/auth/v1/recover?redirect_to=${redirect}`, { email: e });
+    toast("נשלח מייל לאיפוס סיסמה. פתח את הקישור שבו");
+  }));
+}
+
+// reset link lands here with #access_token=...&type=recovery
+function showNewPassword() {
+  clear();
+  const p = new URLSearchParams(location.hash.slice(1));
+  const access = p.get("access_token");
+  bar("סיסמה חדשה");
+  if (!access) { label("הקישור לא תקין או שפג תוקפו. בקש קישור חדש."); link("חזרה", () => { history.replaceState(null, "", location.pathname); route(); }); return; }
+  const pass = field("סיסמה חדשה (לפחות 8 תווים)", "password", "new-password");
+  pill("שמור סיסמה", "gold", () => act(async () => {
+    if (pass.value.length < MIN_PASSWORD) return toast(`הסיסמה צריכה לפחות ${MIN_PASSWORD} תווים`);
+    await http("PUT", "/auth/v1/user", { password: pass.value }, access);
+    // the recovery link also carries a session: keep the user logged in
+    const refresh = p.get("refresh_token"), uid = JSON.parse(atob(access.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).sub;
+    if (refresh) store.set("session", { access_token: access, refresh_token: refresh, expires_at: Math.floor(Date.now() / 1000) + Number(p.get("expires_in") || 3600), user_id: uid });
+    history.replaceState(null, "", location.pathname);
+    toast("הסיסמה עודכנה ✓"); route();
+  }));
+}
+
+function showStart() {
+  bar("Pay or Wait", { settings: true });
+  label("קיבלת קוד הצטרפות ממנהל החשבונות? הזן אותו כאן.");
+  const code = field("קוד הצטרפות");
+  code.style.textTransform = "uppercase";
+  pill("הצטרף", "gold", () => act(async () => { await rpc("pow_join", { p_code: code.value }); route(); }));
+}
+
+function showPending(s) {
+  bar("Pay or Wait", { settings: true });
+  label(`הבקשה נשלחה ✓ ממתין לאישור של ${s.owner_name || "המנהל"}.`);
+  pill("רענן", "gold", () => route());
+  link("בטל בקשה", () => act(async () => { await rpc("pow_leave"); route(); }));
+}
+
+function showOwnerHere() {
+  bar("Pay or Wait", { settings: true });
+  card("⚠️ זו גרסת המשתמשים", "red", "ניהול הקבוצה והעברת הקודים נעשים רק מאפליקציית המנהל באנדרואיד.");
+}
+
+function showMember(s) {
+  bar("Pay or Wait", { settings: true });
+  onMemberScreen = true;
+  if (s.prank_until) return showPrank(s.prank_until);
+  label(`הקבוצה של ${s.owner_name || "המנהל"}`);
+  if (!pushOn()) card("🔔 הפעל התראות", "cyan", standalone() ? "לחץ כאן כדי לקבל את הקוד גם כשהאפליקציה סגורה." : "כדי לקבל התראות: שתף ⬆️ ← 'הוסף למסך הבית', ופתח משם.", () => act(enablePush));
+  const names = Object.fromEntries(s.services.map(o => [o.id, o.name]));
+
+  const req = s.requests[0];
+  if (req) {
+    const svc = names[req.service_id] || "";
+    if (req.status === "waiting") {
+      card(`⏳ ממתין לקוד ${svc} — השירות נעול עליך`, "cyan",
+        `עכשיו בקש את הקוד מתוך ${svc}. כשה-SMS יגיע למנהל, הקוד יופיע כאן.\nהנעילה עד ${hhmm(req.created_at, 10)}, או עד שהקוד מגיע.`);
+      pill("בטל המתנה", "muted", () => act(async () => { await fnCall({ action: "cancel", service_id: req.service_id }); route(true); }));
+      pollTimer = setTimeout(() => route(true), 3000); // in case the push is late
+    } else {
+      const code = codeOf(req.body);
+      section(`הקוד של ${svc}`);
+      codeBox(code || "—");
+      if (code) pill("העתק קוד", "gold", () => copy(code, "הקוד הועתק"));
+      label(req.body || "");
+    }
+  }
+
+  section("השירותים שלי");
+  if (!s.services.length) label("המנהל עוד לא נתן לך גישה לשירות.");
+  let anyBlocked = false;
+  for (const o of s.services) {
+    const price = Number(o.price || 0);
+    anyBlocked ||= o.blocked;
+    const info = price <= 0 ? "חינם" : o.blocked
+      ? `₪${money(price)} לחודש · ` + (o.paid_until ? `התשלום הסתיים ב-${dmy(o.paid_until)}` : "עוד לא שולם")
+      : `₪${money(price)} לחודש · שולם עד ${o.paid_until ? dmy(o.paid_until) : "—"}`;
+    if (o.blocked) {
+      card(`🔒 ${o.name}`, "red", `${info}\nאין קודים עד שהמנהל יאשר את התשלום.`);
+      pill("שילמתי — עדכן את המנהל", "gold", () => act(async () => { await fnCall({ action: "paid", service_id: o.id }); toast("המנהל קיבל הודעה ✓"); }));
+    } else if (o.busy) {
+      card(`⛔ ${o.name} תפוס`, "muted", `${o.busy.who || "מישהו"} ממתין לקוד עד ${hhmm(o.busy.until)}.\n` +
+        (o.queued ? "תקבל התראה כשיתפנה 🔔" : "כדי שהקודים לא יתחלפו, רק אחד בכל פעם."));
+      if (!o.queued) pill("הודע לי כשמתפנה", "cyan", () => waitFor(o.id));
+    } else {
+      card(o.name, "gold", info);
+      pill(`ממתין לקוד — ${o.name}`, "gold", () => waitFor(o.id));
+    }
+  }
+
+  if (s.pay_phone || s.pay_link) {
+    section(anyBlocked ? "לתשלום" : "תשלום");
+    if (s.pay_link) pill("פתח קישור תשלום", "gold", () => { window.open(s.pay_link, "_blank", "noopener"); });
+    if (s.pay_phone) pill(`ביט / פייבוקס: ${s.pay_phone} (העתק)`, "cyan", () => copy(s.pay_phone, "המספר הועתק"));
+    label("אחרי התשלום לחץ 'שילמתי'. המנהל מאשר אצלו והחסימה יורדת.");
+  }
+
+  if (s.history.length) {
+    section("היסטוריית קודים (7 ימים)");
+    for (const x of s.history) {
+      if (!x.body) continue;
+      const code = codeOf(x.body);
+      const el = h(`<div class="bubble"><b>${esc(names[x.service_id] || "")} · ${esc(ddmm(x.delivered_at))}${code ? " · " + esc(code) : ""}</b><div>${esc(x.body)}</div></div>`);
+      el.onclick = () => copy(code || x.body, code ? `הקוד ${code} הועתק` : "ההודעה הועתקה");
+    }
+  }
+  pill("רענן", "line", () => route());
+  link("עזוב קבוצה", () => { if (confirm("לעזוב את הקבוצה?")) act(async () => { await rpc("pow_leave"); route(); }); });
+}
+
+async function waitFor(serviceId) {
+  await act(async () => {
+    const r = await fnCall({ action: "wait", service_id: serviceId });
+    if (r && r.locked) toast(`${r.locked.who || "מישהו"} ממתין עכשיו (עד ${hhmm(r.locked.until)}). נודיע לך כשיתפנה 🔔`);
+    route(true);
+  });
+}
+
+function showSettings() {
+  clear();
+  bar("הגדרות", { back: true });
+  section("פרופיל");
+  const name = field("השם שלך (מוצג למנהל ולאחרים)");
+  pill("שמור שם", "gold", () => act(async () => { if (!name.value.trim()) return toast("כתוב שם"); await saveProfile({ display_name: name.value.trim() }); toast("נשמר ✓"); }));
+
+  section("מראה ונגישות");
+  choice("ערכת צבע", [["system", "לפי המכשיר"], ["dark", "כהה"], ["light", "בהיר"]], store.get("theme") || "system", v => { store.set("theme", v); applyLook(); showSettings(); });
+  choice("גודל גופן", [["0.9", "קטן"], ["1", "רגיל"], ["1.15", "גדול"], ["1.3", "ענק"]], String(store.get("fs") || 1), v => { store.set("fs", Number(v)); applyLook(); showSettings(); });
+
+  section("התראות");
+  label(pushOn() ? "✅ התראות פועלות" : "❌ התראות כבויות");
+  if (pushOn()) pill("כבה התראות", "line", () => act(disablePush));
+  else pill("הפעל התראות", "cyan", () => act(enablePush));
+  label("לכיבוי מלא: הגדרות האייפון ← התראות ← Pay or Wait.");
+
+  section("חשבון");
+  pill("התנתקות", "line", signOut);
+  footer();
+}
+function choice(title, options, selected, onPick) {
+  label(title);
+  const row = h(`<div class="choices">${options.map(([v, t]) => `<button data-v="${esc(v)}" class="${v === selected ? "sel" : ""}">${esc(t)}</button>`).join("")}</div>`);
+  row.querySelectorAll("button").forEach(b => b.onclick = () => { if (b.dataset.v !== selected) onPick(b.dataset.v); });
+}
+
+async function signOut() {
+  // this phone should stop getting this account's codes
+  try { await saveProfile({ web_push: null }); } catch {}
+  store.del("session"); store.del("push_on");
+  route();
+}
+
+// ---------- the owner's 5-minute joke block ----------
+let prankTimer = null;
+function showPrank(untilIso) {
+  const until = new Date(untilIso).getTime(), box = document.getElementById("prank"), timer = box.querySelector(".timer");
+  if (prankTimer) return;
+  box.style.display = "block";
+  const faces = ["😂", "🤣", "😆", "😜", "🤪", "😝", "😹"];
+  const spawn = () => {
+    if (box.querySelectorAll(".face").length >= 12) return;
+    const f = document.createElement("div");
+    f.className = "face"; f.textContent = faces[Math.floor(Math.random() * faces.length)];
+    const W = innerWidth - 56, H = innerHeight - 56;
+    f.style.left = (Math.random() < .5 ? Math.random() * W / 4 : W * 3 / 4 + Math.random() * W / 4) + "px";
+    f.style.top = Math.random() * H + "px";
+    box.appendChild(f);
+    const wander = () => {
+      if (!f.isConnected || f.classList.contains("boom")) return;
+      f.style.left = Math.random() * W + "px"; f.style.top = Math.random() * H + "px";
+      f.style.transform = `rotate(${Math.round(Math.random() * 80 - 40)}deg)`;
+      setTimeout(wander, 2400);
+    };
+    setTimeout(wander, 50);
+    f.onclick = () => {
+      f.textContent = "💥"; f.classList.add("boom"); setTimeout(() => f.remove(), 400);
+      const r = f.getBoundingClientRect();
+      for (let i = 0; i < 7; i++) {
+        const b = document.createElement("div"); b.className = "bit"; b.textContent = ["✨", "💫", "⭐"][i % 3];
+        b.style.left = r.left + 18 + "px"; b.style.top = r.top + 18 + "px"; box.appendChild(b);
+        const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 70;
+        requestAnimationFrame(() => { b.style.transform = `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d}px)`; b.style.opacity = 0; });
+        setTimeout(() => b.remove(), 650);
+      }
+    };
+  };
+  const tick = () => {
+    const left = Math.floor((until - Date.now()) / 1000);
+    if (left <= 0) {
+      clearInterval(prankTimer); prankTimer = null;
+      box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove());
+      return route();
+    }
+    timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+    spawn();
+  };
+  tick();
+  prankTimer = setInterval(tick, 1000);
+}
+
+// ---------- start ----------
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data === "refresh" && onMemberScreen) route(true); });
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && onMemberScreen) route(true); });
+route();
+</script>
+</body>
+</html>
