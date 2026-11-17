@@ -48,6 +48,8 @@
   .bubble div { color:var(--muted); font-size:.85em; white-space:pre-line; }
   .choices { display:flex; gap:6px; margin-top:4px; }
   .choices button { flex:1; padding:12px 4px; border-radius:999px; border:1.5px solid var(--line); background:linear-gradient(var(--tile1),var(--tile2)); color:var(--text); font:inherit; font-size:.9em; }
+  .choices.tabs { overflow-x:auto; flex-wrap:nowrap; margin:6px 0 4px; }
+  .choices.tabs button { flex:0 0 auto; padding:10px 16px; }
   .choices button.sel { border-color:var(--gold); color:var(--gold); box-shadow:0 0 8px -2px var(--gold); }
   .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 28px); transform:translateX(-50%); background:#000c; color:#fff; padding:12px 18px;
            border-radius:14px; max-width:90%; font-size:.92em; z-index:50; text-align:center; }
@@ -75,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.3";
+const VERSION = "1.4";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -249,12 +251,13 @@ async function route(quiet = false) {
   if (!loggedIn()) { clear(); return showLogin(); }
   if (!quiet) { clear(); label("טוען…"); }
   try {
-    const s = await rpc("pow_state");
+    const s = await rpc("pow_state", { p_group: store.get("group") || null });
+    if (s.group_id) store.set("group", s.group_id);
     clear();
     if (s.role === "member") showMember(s);
     else if (s.role === "pending") showPending(s);
-    else if (s.role === "owner") showOwnerHere();
-    else showStart();
+    else if (s.role === "owner") showOwnerHere(s);
+    else showStart(s);
   } catch (e) {
     if (e instanceof ApiError && (e.code === 400 || e.code === 401) && /refresh|JWT|not logged/i.test(e.message)) { store.del("session"); return route(); }
     clear(); label(errText(e)); pill("נסה שוב", "gold", () => route()); link("התנתקות", signOut);
@@ -311,30 +314,47 @@ function showNewPassword() {
   }));
 }
 
-function showStart() {
-  bar("Pay or Wait", { settings: true });
+// one tab per group I'm in (mine as owner + every group I'm a member of), and "+" to join another
+function tabs(s, joinSelected = false) {
+  const groups = s.groups || [];
+  const cur = joinSelected ? "+" : s.group_id || "+";
+  const label = g => g.role === "owner" ? "👑 הקבוצה שלי" : (g.role === "pending" ? "⏳ " : "👥 ") + (g.name || "קבוצה");
+  const row = h(`<div class="choices tabs">${groups.map(g => `<button data-id="${esc(g.id)}" class="${g.id === cur ? "sel" : ""}">${esc(label(g))}</button>`).join("")}<button data-id="+" class="${cur === "+" ? "sel" : ""}">＋ הצטרף</button></div>`);
+  row.querySelectorAll("button").forEach(b => b.onclick = () => {
+    if (b.dataset.id === cur) return;
+    if (b.dataset.id === "+") { clear(); bar("Pay or Wait", { settings: true }); showStart(s, true); }
+    else { store.set("group", b.dataset.id); route(); }
+  });
+}
+
+function showStart(s, fromTab = false) {
+  if (!fromTab) bar("Pay or Wait", { settings: true });
+  tabs(s, true);
   installButton();
-  label("קיבלת קוד הצטרפות ממנהל החשבונות? הזן אותו כאן.");
+  label("קיבלת קוד הצטרפות ממנהל של קבוצה? הזן אותו כאן.");
   const code = field("קוד הצטרפות");
   code.style.textTransform = "uppercase";
-  pill("הצטרף", "gold", () => act(async () => { await rpc("pow_join", { p_code: code.value }); route(); }));
+  pill("הצטרף", "gold", () => act(async () => { await rpc("pow_join", { p_code: code.value }); store.del("group"); route(); }));
 }
 
 function showPending(s) {
   bar("Pay or Wait", { settings: true });
+  tabs(s);
   installButton();
   label(`הבקשה נשלחה ✓ ממתין לאישור של ${s.owner_name || "המנהל"}.`);
   pill("רענן", "gold", () => route());
-  link("בטל בקשה", () => act(async () => { await rpc("pow_leave"); route(); }));
+  link("בטל בקשה", () => act(async () => { await rpc("pow_leave", { p_group: s.group_id }); store.del("group"); route(); }));
 }
 
-function showOwnerHere() {
+function showOwnerHere(s) {
   bar("Pay or Wait", { settings: true });
+  tabs(s);
   card("⚠️ זו גרסת המשתמשים", "red", "ניהול הקבוצה והעברת הקודים נעשים רק מאפליקציית המנהל באנדרואיד.");
 }
 
 function showMember(s) {
   bar("Pay or Wait", { settings: true });
+  tabs(s);
   onMemberScreen = true;
   if (s.prank_until) return showPrank(s.prank_until);
   label(`הקבוצה של ${s.owner_name || "המנהל"}`);
@@ -369,8 +389,8 @@ function showMember(s) {
     const dueSoon = !o.blocked && until && (until - today) <= 7 * 86400000;
     // subscription status: always shown, whatever else is going on with the service
     const status = price <= 0 ? "✅ חינם"
-      : o.blocked ? `❗ דרוש תשלום · ₪${money(price)} לחודש · ` + (o.paid_until ? `התשלום הסתיים ב-${dmy(o.paid_until)}` : "עוד לא שולם")
-      : `✅ שולם עד ${dmy(o.paid_until)}${dueSoon ? " ⏰" : ""}\nתשלום הבא: ₪${money(price)} עד ${dmy(o.paid_until)}`;
+      : o.blocked ? `❗ דרוש תשלום · ₪${money(price)} ${o.period === "year" ? "לשנה" : "לחודש"} · ` + (o.paid_until ? `התשלום הסתיים ב-${dmy(o.paid_until)}` : "עוד לא שולם")
+      : `✅ שולם עד ${dmy(o.paid_until)}${dueSoon ? " ⏰" : ""}\nתשלום הבא: ₪${money(price)} (${o.period === "year" ? "שנתי" : "חודשי"}) עד ${dmy(o.paid_until)}`;
     if (o.blocked) {
       card(`🔒 ${o.name}`, "red", `${status}\nאין קודים עד שהמנהל יאשר את התשלום.`);
     } else if (o.busy) {
@@ -401,7 +421,7 @@ function showMember(s) {
     }
   }
   pill("רענן", "line", () => route());
-  link("עזוב קבוצה", () => { if (confirm("לעזוב את הקבוצה?")) act(async () => { await rpc("pow_leave"); route(); }); });
+  link("עזוב קבוצה", () => { if (confirm("לעזוב את הקבוצה?")) act(async () => { await rpc("pow_leave", { p_group: s.group_id }); store.del("group"); route(); }); });
 }
 
 // Bit has no public link that pre-fills a transfer to a private person: the owner's own payment link if he set one,
@@ -461,7 +481,7 @@ function choice(title, options, selected, onPick) {
 async function signOut() {
   // this phone should stop getting this account's codes
   try { await saveProfile({ web_push: null }); } catch {}
-  store.del("session"); store.del("push_on");
+  store.del("session"); store.del("push_on"); store.del("group");
   route();
 }
 
