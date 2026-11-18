@@ -79,7 +79,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.11";
+const VERSION = "1.12";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -377,6 +377,7 @@ function showMember(s) {
   backToGroups();
   onMemberScreen = true;
   if (s.prank_until) return showPrank(s.prank_until);
+  hidePrank(); // pardoned by the owner before the time was up
   label(`הקבוצה של ${s.owner_name || "המנהל"}`);
   installButton();
   if (!pushOn()) card("🔔 הפעל התראות", "cyan", standalone() || !isIOS() ? "לחץ כאן כדי לקבל את הקוד גם כשהאפליקציה סגורה." : "באייפון התראות עובדות רק אחרי 'הורד לטלפון' ופתיחה מהאייקון.", () => act(enablePush));
@@ -511,6 +512,14 @@ async function signOut() {
 
 // ---------- the owner's 5-minute joke block ----------
 let prankTimer = null;
+function hidePrank() {
+  if (!prankTimer) return;
+  const box = document.getElementById("prank");
+  clearInterval(prankTimer); prankTimer = null;
+  try { speechSynthesis.cancel(); } catch {}
+  box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove());
+  box.querySelector(".msg").textContent = "נחסמת בהיותך\nילד קקה 💩";
+}
 function showPrank(untilIso) {
   const until = new Date(untilIso).getTime(), box = document.getElementById("prank"), timer = box.querySelector(".timer");
   if (prankTimer) return;
@@ -575,6 +584,7 @@ function showPrank(untilIso) {
     const left = Math.floor((until - Date.now()) / 1000);
     msg.textContent = texts[Math.floor(left / 10) % 2];
     if (left <= 240 && mercy.style.display === "none") mercy.style.display = "block";
+    if (left % 15 === 0 && onMemberScreen) route(true); // a pardon ends it early (the push may be late or off)
     if (left <= 0) {
       // the server decides when it ends; ask again in a few seconds (phone clocks can run ahead)
       clearInterval(prankTimer); timer.textContent = "0:00";
