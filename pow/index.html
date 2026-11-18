@@ -64,20 +64,22 @@
                  transition:left 2.4s ease-in-out, top 2.4s ease-in-out, transform 2.4s ease-in-out; }
   #prank .boom { transition:transform .38s, opacity .38s !important; transform:scale(2.6) !important; opacity:0; }
   #prank .bit { position:absolute; font-size:18px; transition:transform .6s ease-out, opacity .6s; pointer-events:none; }
+  #prank .mercy { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 160px); display:none; z-index:2;
+                  background:#fff; color:#120a0a; border:0; border-radius:28px; padding:14px 26px; font:inherit; font-weight:800; font-size:20px; box-shadow:0 0 24px #ff2d2d; }
   @keyframes beat { 50% { transform:translate(-50%,-50%) rotate(-32deg) scale(1.06); } }
 </style>
 </head>
 <body>
 <main id="app"></main>
 <div id="prank"><div class="msg">נחסמת בהיותך
-ילד קקה 💩</div><div class="timer"></div></div>
+ילד קקה 💩</div><div class="timer"></div><button class="mercy">🙏 בקש חנינה</button></div>
 <script>
 "use strict";
 // Pay or Wait — iPhone web version (members only). Same Supabase backend as the Android app.
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.10";
+const VERSION = "1.11";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -560,12 +562,23 @@ function showPrank(untilIso) {
       }
     };
   };
+  // the message switches every 10 seconds; after the first minute the member may beg the owner for mercy
+  const msg = box.querySelector(".msg"), mercy = box.querySelector(".mercy");
+  const texts = ["נחסמת בהיותך\nילד קקה 💩", "You shall not pass\nYou piece of shit"];
+  mercy.textContent = "🙏 בקש חנינה"; mercy.disabled = false; mercy.style.display = "none";
+  mercy.onclick = async () => {
+    mercy.disabled = true; mercy.textContent = "שולח...";
+    try { await fnCall({ action: "mercy" }); mercy.textContent = "נשלח. עכשיו מחכים לרחמים 🙏"; }
+    catch { mercy.disabled = false; mercy.textContent = "🙏 בקש חנינה"; toast("לא נשלח, נסה שוב"); }
+  };
   const tick = () => {
     const left = Math.floor((until - Date.now()) / 1000);
+    msg.textContent = texts[Math.floor(left / 10) % 2];
+    if (left <= 240 && mercy.style.display === "none") mercy.style.display = "block";
     if (left <= 0) {
       // the server decides when it ends; ask again in a few seconds (phone clocks can run ahead)
       clearInterval(prankTimer); timer.textContent = "0:00";
-      setTimeout(() => { prankTimer = null; box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove()); route(); }, 3000);
+      setTimeout(() => { prankTimer = null; box.style.display = "none"; box.querySelectorAll(".face,.bit").forEach(x => x.remove()); msg.textContent = texts[0]; route(); }, 3000);
       return;
     }
     timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
