@@ -1,6 +1,6 @@
 // Pay or Wait (iPhone web app) — service worker: installs to the home screen and shows push notifications.
 // The page itself always comes from the network when there is one; Supabase calls never go through here.
-const CACHE = "pow-10";
+const CACHE = "pow-11";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-180.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

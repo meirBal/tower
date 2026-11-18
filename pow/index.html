@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.9";
+const VERSION = "1.10";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -517,8 +517,19 @@ function showPrank(untilIso) {
   // sounds (made here, not copied from anywhere): a sad "wah wah" on opening, a fart per popped emoji.
   // iPhone only plays sound after a tap, so if the opening one was blocked it plays on the first pop.
   const snd = n => new Audio(`sounds/${n}.mp3`).play();
+  // the phone's own voice says "לוזר!" (Hebrew voice if the phone has one, otherwise English)
+  const say = () => {
+    try {
+      const he = speechSynthesis.getVoices().find(v => v.lang.startsWith("he"));
+      const u = new SpeechSynthesisUtterance(he ? "לוזר!" : "Loser!");
+      if (he) { u.voice = he; u.lang = he.lang; } else u.lang = "en-US";
+      u.pitch = 0.5; u.rate = 0.75;
+      speechSynthesis.speak(u);
+    } catch {}
+  };
+  const loser = () => snd("loser").then(() => setTimeout(say, 2700));
   let loserPlayed = false;
-  snd("loser").then(() => loserPlayed = true, () => {});
+  loser().then(() => loserPlayed = true, () => {});
   const spawn = () => {
     if (box.querySelectorAll(".face").length >= 12) return;
     const f = document.createElement("div");
@@ -536,7 +547,8 @@ function showPrank(untilIso) {
     setTimeout(wander, 50);
     f.onclick = () => {
       f.textContent = "💥"; f.classList.add("boom"); setTimeout(() => f.remove(), 400);
-      if (!loserPlayed) { loserPlayed = true; snd("loser").catch(() => {}); }
+      if (!loserPlayed) { loserPlayed = true; loser().catch(() => {}); }
+      else if (Math.random() < 0.25) say();
       else snd("fart" + (1 + Math.floor(Math.random() * 3))).catch(() => {});
       const r = f.getBoundingClientRect();
       for (let i = 0; i < 7; i++) {
