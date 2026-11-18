@@ -77,7 +77,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.8";
+const VERSION = "1.9";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -513,7 +513,12 @@ function showPrank(untilIso) {
   const until = new Date(untilIso).getTime(), box = document.getElementById("prank"), timer = box.querySelector(".timer");
   if (prankTimer) return;
   box.style.display = "block";
-  const faces = ["😂", "🤣", "😆", "😜", "🤪", "😝", "😹"];
+  const faces = ["😂", "🤣", "😆", "😜", "🤪", "😝", "😹", "💩", "💩", "🍑"];
+  // sounds (made here, not copied from anywhere): a sad "wah wah" on opening, a fart per popped emoji.
+  // iPhone only plays sound after a tap, so if the opening one was blocked it plays on the first pop.
+  const snd = n => new Audio(`sounds/${n}.mp3`).play();
+  let loserPlayed = false;
+  snd("loser").then(() => loserPlayed = true, () => {});
   const spawn = () => {
     if (box.querySelectorAll(".face").length >= 12) return;
     const f = document.createElement("div");
@@ -531,9 +536,11 @@ function showPrank(untilIso) {
     setTimeout(wander, 50);
     f.onclick = () => {
       f.textContent = "💥"; f.classList.add("boom"); setTimeout(() => f.remove(), 400);
+      if (!loserPlayed) { loserPlayed = true; snd("loser").catch(() => {}); }
+      else snd("fart" + (1 + Math.floor(Math.random() * 3))).catch(() => {});
       const r = f.getBoundingClientRect();
       for (let i = 0; i < 7; i++) {
-        const b = document.createElement("div"); b.className = "bit"; b.textContent = ["✨", "💫", "⭐"][i % 3];
+        const b = document.createElement("div"); b.className = "bit"; b.textContent = ["💨", "✨", "💫"][i % 3];
         b.style.left = r.left + 18 + "px"; b.style.top = r.top + 18 + "px"; box.appendChild(b);
         const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 70;
         requestAnimationFrame(() => { b.style.transform = `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d}px)`; b.style.opacity = 0; });
