@@ -87,7 +87,8 @@
 import * as G from "./geo.js";
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
-const VERSION = "1.0";
+const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";   // same key pair as the family apps
+const VERSION = "1.1";
 const MIN_PASSWORD = 8;
 const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
 const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
@@ -146,6 +147,8 @@ const db = {
 };
 const rpc = async (fn, args) => http("POST", "/rest/v1/rpc/" + fn, args, await token());
 const ai = async (action, projectId) => http("POST", "/functions/v1/slicer-ai", { action, project_id: projectId }, await token());
+const pushCall = async (action, projectId) => http("POST", "/functions/v1/slicer-push", { action, project_id: projectId }, await token());
+const notify = projectId => pushCall("notify", projectId).catch(() => {});      // tell the other side; the in-app popup is the fallback
 async function upload(path, blob) {
   const r = await fetch(`${SUPABASE_URL}/storage/v1/object/slicer/${path}`, {
     method: "POST", body: blob, headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token(), "x-upsert": "true", "Content-Type": blob.type || "application/octet-stream" },
@@ -292,7 +295,42 @@ async function home(tab) {
       const el = card(`${p.kind === "file" ? "🧊" : "💡"} ${p.title || "פרויקט בלי שם"}`, acc, `${st}${who} · ${ddmm(p.updated_at)}`);
       el.style.cursor = "pointer"; el.onclick = () => go(project, p.id);
     }
+    pushBlock();
   };
+}
+
+// ---------- phone notifications (web push, same VAPID keys as the family apps) ----------
+const pushSupported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+const pushOn = () => pushSupported() && Notification.permission === "granted" && store.get("push_on");
+function b64ToBytes(s) {
+  const pad = "=".repeat((4 - s.length % 4) % 4), raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+function pushBlock() {
+  if (!pushSupported()) return;
+  section("🔔 התראות לטלפון");
+  if (!pushOn()) return pill("🔔 הפעלת התראות", "cyan", () => act(enablePush));
+  label(me.role === "admin" ? "מגיעה התראה כשנשלח פרויקט לאישור." : "מגיעה התראה כשמאיר מאשר או מחזיר פרויקט.");
+  pill("שליחת התראת בדיקה", "cyan", () => act(async () => {
+    const r = await pushCall("test");
+    toast(r.sent ? "נשלחה — תופיע בעוד רגע" : "לא נשלחה — כבו והפעילו שוב את ההתראות");
+  }));
+  link("כיבוי התראות", () => act(async () => {
+    try { const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); if (sub) await sub.unsubscribe(); } catch {}
+    await rpc("slicer_save_push", { p_sub: null });
+    store.del("push_on"); toast("ההתראות כבויות"); go(home);
+  }));
+}
+async function enablePush() {
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return toast("ההתראות לא אושרו. אפשר לאשר בהגדרות הדפדפן ← הרשאות ← התראות");
+  const reg = await navigator.serviceWorker.ready;
+  const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
+  await rpc("slicer_save_push", { p_sub: sub.toJSON() });
+  store.set("push_on", true);
+  await pushCall("test").catch(() => {});
+  toast("התראות פועלות ✓ — נשלחה התראת בדיקה");
+  go(home);
 }
 function homeTop(tab) {
   bar("הסלייסר החכם", { logout: true });
@@ -533,6 +571,7 @@ function reviewBlock(p, s) {
       est_grams: p.stats ? G.estimateGrams(p.stats, cur, sp ? sp.material : "PLA") : null,
     });
     if (lesson.checked && text) await db.add("slicer_lessons", { project_id: p.id, text });
+    notify(p.id);
     toast(status === "approved" ? "אושר ✓" : "הוחזר לתיקון");
     go(project, p.id);
   });
@@ -546,6 +585,7 @@ function actionsBlock(p, editable, s) {
     const high = (p.settings.risks || []).some(r => r.level === "high");
     pill("📤 שליחה לאישור מנהל", "gold", () => act(async () => {
       await db.set(`slicer_projects?id=eq.${p.id}`, { status: "pending_review" });
+      notify(p.id);
       toast("נשלח למאיר ✓"); go(project, p.id);
     }));
     if (high) label("יש סיכון גבוה בהמלצה — מאיר יראה אותו בבדיקה.");
