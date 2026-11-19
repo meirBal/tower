@@ -76,6 +76,24 @@
   #modal .card { max-width:420px; width:100%; }
   .ver { text-align:center; color:var(--muted); font-size:.7em; margin-top:22px; }
   img.idea { width:100%; border-radius:18px; margin-top:10px; border:1px solid var(--line); }
+  /* the assistant chat: bot on the right (start), her messages on the left (end) */
+  .chat { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+  .bubble { max-width:86%; padding:10px 14px; border-radius:18px; white-space:pre-line; line-height:1.45; font-size:.95em; }
+  .bubble.bot { align-self:flex-start; background:linear-gradient(var(--tile1),var(--tile2)); border:1.5px solid var(--gold); border-start-start-radius:6px; }
+  .bubble.me { align-self:flex-end; background:#2f3f86; border:1.5px solid var(--cyan); border-start-end-radius:6px; }
+  .bubble.wide { max-width:100%; }
+  .bubble img { display:block; max-width:100%; border-radius:12px; margin-top:6px; }
+  .typing i { display:inline-block; width:7px; height:7px; margin:0 2px; border-radius:50%; background:var(--gold); animation:blink 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay:.2s; } .typing i:nth-child(3) { animation-delay:.4s; }
+  @keyframes blink { 0%,80%,100% { opacity:.2; } 40% { opacity:1; } }
+  .chat .choices { align-self:stretch; margin-top:0; }
+  .chat-input { display:flex; gap:6px; align-items:center; margin-top:10px; }
+  .chat-input input { flex:1; margin:0; }
+  .concepts { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:8px; }
+  .concepts button { background:#0004; border:1.5px solid var(--line); border-radius:14px; padding:6px; color:var(--text); font:inherit; cursor:pointer; }
+  .concepts button.sel { border-color:var(--gold); box-shadow:0 0 8px -2px var(--gold); }
+  .concepts img { width:100%; aspect-ratio:1; background:#f3eee2; border-radius:10px; margin:0; }
+  .concepts b { display:block; font-size:.8em; margin-top:4px; } .concepts small { display:block; color:var(--muted); font-size:.7em; }
 </style>
 <script type="importmap">{ "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
@@ -91,7 +109,7 @@ import * as G from "./geo.js";
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";   // same key pair as the family apps
-const VERSION = "2.0";
+const VERSION = "2.1";
 const MIN_PASSWORD = 8;
 const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
 const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
@@ -445,7 +463,7 @@ const b64 = s => { let bin = ""; for (const x of new TextEncoder().encode(s)) bi
 const running = job => !!job && (job.status === "queued" || job.status === "running");
 function steps(p) {
   const idea = p.kind === "idea";
-  const names = idea ? ["רעיון", "שאלות", "תוכנית", "מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
+  const names = idea ? ["רעיון", "שיחה", "תוכנית", "מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["קובץ", "הדמיה", "שיחה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
   let now;
   if (idea && !p.answers) now = 1;
   else if (idea && (!p.file_path || p.model_status === "modeling")) now = p.plan_ok ? 3 : 2;
@@ -456,15 +474,18 @@ function drawProject(p, tris, wait, job, pc) {
   const admin = me.role === "admin", mine = p.owner === me.user_id, idea = p.kind === "idea";
   const editable = mine && (p.status === "draft" || p.status === "returned");
   const canTune = editable || admin;                 // turn the model, mark spots
-  const busy = (wait && !wait.failed) || running(job) || p.model_status === "planning" || p.model_status === "modeling";   // AI or PC at work: no second request
+  const working = running(job) || p.model_status === "planning" || p.model_status === "modeling";
+  const busy = (wait && !wait.failed) || working;    // AI or PC at work: no second request
+  const chatty = !!p.chat || !p.questions;           // v2.1 chat; projects from before keep their question form
   bar(p.title || "פרויקט חדש", { back: true });
   steps(p);
-  if (wait) waitingCard(p, wait);
+  if (wait) waitingCard(p, wait, chatty && !!wait.step);   // a chat / concepts step waits inside the chat
   else { nowCard(p, admin, mine, job, pc); if (busy) watchJobs(p, job); }
   if (p.status === "returned") card("↩ מאיר החזיר לתיקון", "red", p.admin_notes || "בלי הערה");
   if (p.description) card("📝 התיאור", "line", p.description);
   if (p.image_path) { const img = h(`<img class="idea" alt="">`); download(p.image_path).then(b => img.src = URL.createObjectURL(b)).catch(() => img.remove()); }
-  if (idea) { questionsBlock(p, editable && !busy && !p.plan_ok); planBlock(p, editable && !busy); }
+  const talk = () => chatty ? chatBlock(p, editable && !working && !p.plan_ok, wait) : questionsBlock(p, editable && !busy && !p.plan_ok);
+  if (idea) { talk(); planBlock(p, editable && !busy); }
   if (admin && !tris && (p.model_status === "model_failed" || p.status === "pending_review")) modelBlock(p);   // fallback: Meir uploads a model
 
   let s = null;
@@ -511,7 +532,7 @@ function drawProject(p, tris, wait, job, pc) {
     if (idea && p.plan_ok && editable && !busy) remodelBlock(p);
   }
 
-  if (!idea) questionsBlock(p, editable && !busy);
+  if (!idea) talk();
   if (p.settings) settingsBlock(p);
   if (admin && p.status === "pending_review" && tris) reviewBlock(p, s);
   actionsBlock(p, editable && !busy, s, job);
@@ -534,9 +555,10 @@ function nowCard(p, admin, mine, job, pc) {
     else t = p.gcode_path ? "📥 קובץ ההדפסה מוכן — למטה\nהורידי אותו, שלחי למדפסת, ובסוף סמני אם הצליח." : admin ? "🔪 אושר — אפשר לשלוח לחיתוך למטה" : "✅ אושר — מחכה לחיתוך במחשב";
   }
   else if (mine && (p.status === "draft" || p.status === "returned")) {
-    if (!p.questions) t = "👉 עכשיו: לחצי 'המשך' למטה, וה-AI ישאל כמה שאלות";
+    if (!p.answers && (p.chat || !p.questions)) t = "💬 עכשיו: ספרי לעוזר בשיחה למטה\nאפשר ללחוץ על תשובה מוכנה או לכתוב במילים שלך.";
     else if (idea && ms === "model_failed" && !model) { t = "⚠️ ה-AI לא הצליח לבנות את המודל\nאפשר לנסות שוב או לבקש ממאיר — למטה."; acc = "red"; }
-    else if (idea && !model) t = p.plan ? "👉 עכשיו: בדקי את התוכנית למטה\nנכונה? 'ליצור מודל'. לא? 'לתקן' וכתבי מה לשנות." : "👉 עכשיו: עני על השאלות למטה ולחצי '📐 ה-AI מתכנן'";
+    else if (idea && !model) t = p.plan ? "👉 עכשיו: בדקי את התוכנית למטה\nנכונה? 'ליצור מודל'. לא? 'לתקן' וכתבי מה לשנות."
+      : p.chat ? "🎨 עכשיו: בחרי בשיחה למטה את הסקיצה הכי קרובה למה שדמיינת" : "👉 עכשיו: עני על השאלות למטה ולחצי '📐 ה-AI מתכנן'";
     else if (!p.settings) t = idea ? "🧊 המודל מוכן!\nבדקי אותו בהדמיה. צריך שינוי? סמני מקום ולחצי 'לתקן את המודל'. הכול טוב? 'קבלי המלצת הדפסה'." : "👉 עכשיו: עני על השאלות למטה וקבלי המלצת הדפסה";
     else t = "👉 עכשיו: עברי על ההמלצה, ואם הכול טוב — שליחה לאישור מאיר למטה";
   }
@@ -679,10 +701,87 @@ async function aiStep(p, action, extra) {
     go(project, p.id);
   } catch (e) { w.remove(); toast(errText(e)); }
 }
+// ---------- the assistant chat (v2.1): one question per turn, quick replies, free text and photos; ideas end with 3 concept sketches ----------
+const CONCEPT_Q = "סקיצה שנבחרה";
+const autoChat = new Set();                          // a new project opens its chat once per session (no loop when the AI fails)
+const bubble = (box, who, text) => h(`<div class="bubble ${who}">${esc(text)}</div>`, box);
+function chatBlock(p, editable, wait) {
+  const idea = p.kind === "idea", chat = p.chat || [], done = !!p.answers, last = chat[chat.length - 1];
+  const chosen = (p.answers || []).find(a => a.q === CONCEPT_Q), queued = wait?.step && !wait.failed;
+  section("💬 השיחה עם העוזר");
+  listCard("⚠️ חשוב לדעת", "red", p.questions?.warnings);
+  const box = h(`<div class="chat"></div>`);
+  const say = (who, text) => bubble(box, who, text);
+  for (const m of chat) {
+    const b = say(m.role === "bot" ? "bot" : "me", m.text);
+    if (m.image) { const img = h(`<img alt="">`, b); download(m.image).then(x => img.src = URL.createObjectURL(x)).catch(() => img.remove()); }
+  }
+  if (queued) say("bot", "⏳ אני עמוס כרגע — הבקשה בתור ואענה לבד ברגע שאפשר. אפשר גם לסגור את האפליקציה, תגיע התראה.");
+  if (wait?.step && wait.failed) say("bot", "⚠️ לא הצלחתי לענות אחרי כמה ניסיונות 🙏");
+  const send = (o) => chatSend(p, box, o);
+  if (editable && !queued && last?.role === "bot" && last.chips?.length && !done) box.appendChild(choices(last.chips.map(c => [c, c]), "", v => send({ message: v })));
+  if (idea && done) {
+    if (p.concepts) {
+      const b = h(`<div class="bubble bot wide">🎨 הכנתי לך ${p.concepts.items.length} סקיצות — איזו הכי קרובה למה שדמיינת?<div class="concepts">${p.concepts.items.map((c, i) =>
+        `<button data-i="${i}" class="${chosen?.a.startsWith(c.title + " —") ? "sel" : ""}"><img alt="" src="data:image/svg+xml;base64,${b64(c.svg)}"><b>${esc(c.title)}</b><small>${esc(c.note)}</small></button>`).join("")}</div></div>`, box);
+      if (chosen) say("me", "בחרתי: " + chosen.a);
+      else if (editable && !queued) {
+        b.querySelectorAll(".concepts button").forEach(x => x.onclick = () => pickConcept(p, p.concepts.items[x.dataset.i]));
+        const none = choices([["none", "אף אחת — אסביר במילים"]], "", () => {
+          none.remove();
+          const t = h(`<textarea placeholder="מה היית רוצה אחרת?"></textarea>`, box);
+          pill("📐 להמשיך לתוכנית", "gold", () => t.value.trim() ? pickConcept(p, null, t.value.trim()) : toast("כתבי בכמה מילים מה את רוצה"), box);
+          t.focus();
+        });
+        box.appendChild(none);
+      }
+    } else if (editable && !queued) {
+      say("bot", "רוצה שאצייר לך 3 סקיצות לפני שאני מתכנן?");
+      box.appendChild(choices([["yes", "🎨 כן, להראות סקיצות"], ["skip", "לדלג ישר לתוכנית"]], "", v => v === "yes" ? send({ action: "concepts" }) : aiStep(p, "plan")));
+    }
+    if (chosen && !p.plan && editable && !queued) pill("📐 ה-AI מתכנן", "gold", () => aiStep(p, "plan"));
+  }
+  if (!idea && done && editable && !queued) pill(p.settings ? "🔄 המלצה חדשה" : "🛠️ קבלי המלצת הדפסה", "gold", () => aiStep(p, "settings"));
+  if (!editable || queued) return;
+  if (wait?.failed) box.appendChild(choices([["again", "🔄 לנסות שוב"]], "", () => send({ action: wait.step })));
+  const row = h(`<div class="chat-input"><button class="icon-btn" aria-label="צירוף תמונה">📷</button><input placeholder="${done ? "רוצה להוסיף משהו? כתבי כאן" : "כתבי תשובה…"}" enterkeyhint="send"><button class="icon-btn" aria-label="שליחה" style="transform:scaleX(-1)">➤</button><input type="file" accept="image/*" hidden></div>`);
+  const [cam, text, go2, file] = row.children;
+  const fromText = () => { const message = text.value.trim(); if (message) send({ message }); };
+  go2.onclick = fromText;
+  text.onkeydown = e => { if (e.key === "Enter") fromText(); };
+  cam.onclick = () => file.click();
+  file.onchange = () => file.files[0] && send({ message: text.value.trim(), file: file.files[0] });
+  if (!chat.length && !wait && !autoChat.has(p.id)) { autoChat.add(p.id); send({}); }   // the assistant opens the conversation
+}
+// one turn: her bubble + typing dots now; a closing turn goes straight on to the sketches (idea) or the settings (file)
+async function chatSend(p, box, { message = "", file = null, action = "chat" }) {
+  if (box.classList.contains("sending")) return;
+  box.classList.add("sending");
+  box.parentElement.querySelectorAll(".chat-input button, .chat-input input, .chat .choices button").forEach(x => x.disabled = true);
+  if (message || file) { const b = bubble(box, "me", message); if (file) h(`<img alt="" src="${URL.createObjectURL(file)}">`, b); }
+  const typing = (text = "") => { const t = h(`<div class="bubble bot typing">${esc(text)} <i></i><i></i><i></i></div>`, box); t.scrollIntoView({ behavior: "smooth", block: "center" }); return t; };
+  let t = typing(action === "concepts" ? "🎨 מצייר 3 סקיצות" : "");
+  try {
+    let image;
+    if (file) { image = `${p.id}/chat-${Date.now()}.jpg`; await upload(image, await shrink(file)); }
+    const r = await ai(action, p.id, action === "chat" ? { message, image } : {});
+    if (r?.done) {
+      t.remove(); bubble(box, "bot", r.reply);
+      t = typing(p.kind === "idea" ? "🎨 מצייר 3 סקיצות" : "🛠️ בוחר הגדרות הדפסה");
+      await ai(p.kind === "idea" ? "concepts" : "settings", p.id);
+    }
+  } catch (e) { toast(errText(e)); }
+  go(project, p.id);
+}
+async function pickConcept(p, c, note) {
+  const answers = [...p.answers.filter(a => a.q !== CONCEPT_Q), { q: CONCEPT_Q, a: c ? `${c.title} — ${c.note}` : `אף אחת — ${note}` }];
+  await act(async () => { await setP(p.id, { answers }); await aiStep(p, "plan"); });
+}
+
 // the request waits for a busy / over-quota AI: the server retries by itself; this screen checks every 15 s and pops up when it's done
-function waitingCard(p, w) {
-  if (w.failed) { card("⚠️ ה-AI לא ענה אחרי כמה ניסיונות", "red", "אפשר לנסות שוב עכשיו."); return; }
-  card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `השרת מנסה שוב לבד${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
+function waitingCard(p, w, inChat) {
+  if (w.failed) { if (!inChat) card("⚠️ ה-AI לא ענה אחרי כמה ניסיונות", "red", "אפשר לנסות שוב עכשיו."); return; }
+  if (!inChat) card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `השרת מנסה שוב לבד${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
   const my = screen;
   screenTimer = setInterval(async () => {
     if (my !== screen) return clearInterval(screenTimer);
