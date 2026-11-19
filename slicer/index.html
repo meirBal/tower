@@ -61,7 +61,9 @@
   .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--gold); }
   ul.list { margin:8px 0 0; padding-inline-start:20px; color:var(--muted); font-size:.92em; } ul.list li { margin:4px 0; }
   .dot { display:inline-block; width:14px; height:14px; border-radius:50%; vertical-align:-2px; border:1px solid #fff6; margin-inline-end:6px; }
-  .q { margin-top:14px; } .q > b { display:block; font-weight:500; }
+  .q { margin-top:14px; } .q > b { display:block; font-weight:500; } .q small { display:block; color:var(--muted); font-size:.82em; margin-top:2px; white-space:pre-line; }
+  .q.missing > b { color:var(--red); }
+  .q textarea { min-height:64px; }
   .spools { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:12px; }
   .spool { text-align:center; border:1px solid var(--line); border-radius:18px; padding:10px; background:#0004; }
   .spool svg { width:86px; height:86px; }
@@ -89,7 +91,7 @@ import * as G from "./geo.js";
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";   // same key pair as the family apps
-const VERSION = "1.2";
+const VERSION = "1.3";
 const MIN_PASSWORD = 8;
 const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
 const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
@@ -189,7 +191,7 @@ function card(head, accent, body, into) {
 }
 function pill(text, accent, onClick, into) {
   const el = h(`<button class="pill" style="--accent:var(--${accent})">${esc(text)}</button>`, into);
-  el.onclick = async () => { el.disabled = true; try { await onClick(); } finally { el.disabled = false; } };
+  el.onclick = async () => { el.disabled = true; el.textContent = "⏳ רגע…"; try { await onClick(); } finally { el.disabled = false; el.textContent = text; } };
   return el;
 }
 function link(text, onClick, into) { const el = h(`<button class="link">${esc(text)}</button>`, into); el.onclick = onClick; return el; }
@@ -402,8 +404,8 @@ async function project(id) {
 function steps(p) {
   const names = p.kind === "file" ? ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["רעיון", "שאלות", "יצירת מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
   let now;
-  if (p.kind === "idea") now = p.answers ? 2 : 1;
-  else now = p.status === "printed" ? 7 : p.status === "approved" ? 5 : p.status === "pending_review" ? 4 : p.settings ? 3 : 2;
+  if (p.kind === "idea" && !p.file_path) now = p.answers ? 2 : 1;
+  else now = (p.status === "printed" ? 7 : p.status === "approved" ? 5 : p.status === "pending_review" ? 4 : p.settings ? 3 : 2) + (p.kind === "idea" ? 1 : 0);
   h(`<div class="steps">${names.map((n, i) => `<span class="${i < now ? "done" : i === now ? "now" : ""}">${i < now ? "✓ " : ""}${n}</span>`).join("")}</div>`);
 }
 function drawProject(p, tris, wait) {
@@ -413,7 +415,7 @@ function drawProject(p, tris, wait) {
   bar(p.title || "פרויקט חדש", { back: true });
   steps(p);
   const busy = wait && !wait.failed;                 // an AI request waits in line: no second one
-  if (wait) waitingCard(p, wait);
+  if (wait) waitingCard(p, wait); else nowCard(p, admin, mine);
   if (p.status === "returned") card("↩ מאיר החזיר לתיקון", "red", p.admin_notes || "בלי הערה");
   if (p.description) card("📝 התיאור", "line", p.description);
   if (p.image_path) { const img = h(`<img class="idea" alt="">`); download(p.image_path).then(b => img.src = URL.createObjectURL(b)).catch(() => img.remove()); }
@@ -457,14 +459,28 @@ function drawProject(p, tris, wait) {
       if (canTune) { const x = link("הסרה", () => act(async () => { await db.set(`slicer_projects?id=eq.${p.id}`, { marks: p.marks.filter((_, j) => j !== i) }); go(project, p.id); }), el); x.style.padding = "4px"; }
     });
     statsCard(s);
-  } else if (p.kind === "idea") {
-    card("🧪 יצירת מודל מהרעיון", "line", "השלב הזה מתווסף בגרסה הבאה. הרעיון, התמונה והתשובות נשמרים ויחכו לו.");
   }
 
   questionsBlock(p, editable && !busy);
   if (p.settings) settingsBlock(p);
-  if (admin && p.status === "pending_review") reviewBlock(p, s);
+  if (admin && p.status === "pending_review") (tris ? reviewBlock(p, s) : modelBlock(p));
   actionsBlock(p, editable, s);
+}
+
+function nowCard(p, admin, mine) {
+  const model = !!p.file_path;
+  let t = null;
+  if (p.status === "pending_review") t = admin ? (model ? "👑 מחכה לבדיקה שלך — למטה" : "👑 רעיון שמחכה למודל ממך — העלאה למטה")
+    : model ? "⏳ אצל מאיר לבדיקה\nתקבלי התראה ברגע שהוא מאשר או מחזיר." : "⏳ אצל מאיר — הוא מכין את המודל לפי התשובות שלך\nכשהמודל מוכן תקבלי התראה, והוא יופיע כאן בהדמיה.";
+  else if (mine && (p.status === "draft" || p.status === "returned")) {
+    if (!p.questions) t = "👉 עכשיו: לחצי 'המשך' למטה, וה-AI ישאל כמה שאלות";
+    else if (!model) t = "👉 עכשיו: עני על השאלות למטה ושלחי למאיר ליצירת המודל";
+    else if (!p.settings) t = p.kind === "idea" && p.answers ? "🧊 המודל מוכן!\nבדקי אותו בהדמיה, ואז לחצי 'קבלי המלצת הדפסה' למטה." : "👉 עכשיו: עני על השאלות למטה וקבלי המלצת הדפסה";
+    else t = "👉 עכשיו: עברי על ההמלצה, ואם הכול טוב — שליחה לאישור מאיר למטה";
+  }
+  if (!t) return;
+  const [head, body] = t.split("\n");
+  card(head, p.status === "pending_review" ? "gold" : "cyan", body);
 }
 
 function statsCard(s) {
@@ -482,27 +498,53 @@ function statsCard(s) {
 function questionsBlock(p, editable) {
   section("🧭 שאלות הכוונה");
   if (!p.questions) {
-    if (editable) pill("המשך — ה-AI ישאל כמה שאלות קצרות", "gold", () => aiStep(p, "questions"));
+    if (editable) pill("המשך — ה-AI ישאל כמה שאלות", "gold", () => aiStep(p, "questions"));
     else label("עוד לא נענו שאלות");
     return;
   }
-  if (p.questions.summary) label("ה-AI הבין: " + p.questions.summary);
-  const answers = new Map((p.answers || []).map(a => [a.q, a.a]));
-  for (const q of p.questions.questions) {
-    h(`<div class="q"><b>${esc(q.q)}</b></div>`);
-    const row = choices(q.options.map(o => [o, o]), answers.get(q.q), (v, b) => {
-      if (!editable) return;
-      answers.set(q.q, v); row.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
-    });
+  const Q = p.questions;
+  if (Q.summary) label("ה-AI הבין: " + Q.summary);
+  if (Q.warnings?.length) { const r = card("⚠️ חשוב לדעת", "red"); h(`<ul class="list">${Q.warnings.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, r); }
+  const old = new Map((p.answers || []).map(a => [a.q, a.a]));
+  const read = [];                                   // per question: () => answer text or ""
+  for (const q of Q.questions) {
+    const type = q.type || "choice";                 // questions from before 1.3 are all choices
+    const why = [q.why, q.hint && "📏 " + q.hint].filter(Boolean).join("\n");
+    const box = h(`<div class="q"><b>${esc(q.q)}</b>${why ? `<small>${esc(why)}</small>` : ""}</div>`);
+    if (type === "choice") {
+      let v = old.get(q.q) || "";
+      const row = choices(q.options.map(o => [o, o]), v, (x, btn) => {
+        if (!editable) return;
+        v = x; row.querySelectorAll("button").forEach(y => y.classList.toggle("sel", y === btn)); box.classList.remove("missing");
+      });
+      read.push([box, () => v]);
+    } else {
+      const unit = q.unit || 'מ"מ';
+      const el = type === "number"
+        ? h(`<input type="number" inputmode="decimal" min="0" step="0.1" placeholder="${esc(unit)}" value="${esc(parseFloat(old.get(q.q)) || "")}">`, box)
+        : h(`<textarea placeholder="כתבי כאן">${esc(old.get(q.q) || "")}</textarea>`, box);
+      el.disabled = !editable;
+      el.oninput = () => box.classList.remove("missing");
+      read.push([box, () => { const t = el.value.trim(); return t && type === "number" ? `${t} ${unit}` : t; }]);
+    }
   }
   if (!editable) return;
-  pill(p.kind === "idea" ? "שמירת התשובות" : p.settings ? "🔄 המלצה חדשה לפי התשובות" : "🛠️ קבלי המלצת הדפסה", "gold", () => act(async () => {
-    if (p.questions.questions.some(q => !answers.has(q.q))) return toast("עני קודם על כל השאלות");
-    p.answers = p.questions.questions.map(q => ({ q: q.q, a: answers.get(q.q) }));
+  const model = !!p.file_path;
+  pill(!model ? "📤 שליחה למאיר ליצירת המודל" : p.settings ? "🔄 המלצה חדשה לפי התשובות" : "🛠️ קבלי המלצת הדפסה", "gold", () => act(async () => {
+    const missing = read.filter(([, get]) => !get());
+    missing.forEach(([box]) => box.classList.add("missing"));
+    if (missing.length) { missing[0][0].scrollIntoView({ behavior: "smooth", block: "center" }); return toast(`חסרות ${missing.length} תשובות — סימנתי באדום`); }
+    p.answers = Q.questions.map((q, i) => ({ q: q.q, a: read[i][1]() }));
+    if (!model) {
+      await db.set(`slicer_projects?id=eq.${p.id}`, { answers: p.answers, status: "pending_review" });
+      notify(p.id);
+      toast("נשלח למאיר ✓ תקבלי התראה כשהמודל מוכן");
+      return go(project, p.id);
+    }
     await db.set(`slicer_projects?id=eq.${p.id}`, { answers: p.answers });
-    if (p.kind === "idea") return go(project, p.id);
     await aiStep(p, "settings");
   }));
+  const again = link("🔄 לנסח את השאלות מחדש", () => { again.disabled = true; aiStep(p, "questions"); });
 }
 
 async function aiStep(p, action) {
@@ -563,6 +605,34 @@ function settingsBlock(p) {
   }
 }
 
+// admin: an idea waits for its model — upload the STL/3MF/OBJ made for it; it goes back to her as a draft with the preview
+function modelBlock(p) {
+  section("👑 יצירת המודל");
+  const c = h(`<div class="card"><b>העלאת מודל לרעיון</b><span>התיאור והתשובות שלה למעלה. אחרי ההעלאה הפרויקט חוזר אליה עם ההדמיה, והיא מבקשת המלצת הדפסה.</span></div>`);
+  const input = h(`<input type="file" accept=".stl,.3mf,.obj">`, c);
+  const notes = h(`<textarea placeholder="הערה לאבישג (לא חובה בהעלאה, חובה בהחזרה)"></textarea>`, c);
+  pill("⬆️ העלאה ושליחה אליה", "green", () => act(async () => {
+    const f = input.files[0];
+    if (!f) return toast("בחר קובץ");
+    if (f.size > 50 * 1024 * 1024) return toast("הקובץ גדול מ-50MB");
+    const tris = await parseModel(await f.arrayBuffer(), f.name);
+    const best = G.bestOrientation(tris);
+    const path = `${p.id}/model.${f.name.split(".").pop().toLowerCase()}`;
+    await upload(path, f);
+    models.set(path, tris);
+    await db.set(`slicer_projects?id=eq.${p.id}`, { file_path: path, file_name: f.name, rotation: [best.rx, best.ry], stats: statsForDb(best.s), status: "draft", admin_notes: notes.value.trim() || null });
+    notify(p.id);
+    toast("המודל נשלח אליה ✓"); go(project, p.id);
+  }), c);
+  pill("↩ החזרה לתיקון", "red", () => act(async () => {
+    const text = notes.value.trim();
+    if (!text) return toast("כתוב מה לתקן");
+    await db.set(`slicer_projects?id=eq.${p.id}`, { status: "returned", admin_notes: text, reviewed_at: new Date().toISOString() });
+    notify(p.id);
+    toast("הוחזר לתיקון"); go(project, p.id);
+  }), c);
+}
+
 // admin: tune the recommendation, then approve or send back with a note (optionally saved as a lesson for the AI)
 function reviewBlock(p, s) {
   section("👑 בדיקת מנהל");
@@ -603,7 +673,7 @@ function reviewBlock(p, s) {
 
 function actionsBlock(p, editable, s) {
   const admin = me.role === "admin";
-  if (editable && p.settings && p.kind === "file") {
+  if (editable && p.settings && p.file_path) {
     const high = (p.settings.risks || []).some(r => r.level === "high");
     pill("📤 שליחה לאישור מנהל", "gold", () => act(async () => {
       await db.set(`slicer_projects?id=eq.${p.id}`, { status: "pending_review" });
@@ -612,7 +682,6 @@ function actionsBlock(p, editable, s) {
     }));
     if (high) label("יש סיכון גבוה בהמלצה — מאיר יראה אותו בבדיקה.");
   }
-  if (p.status === "pending_review" && !admin) card("⏳ נשלח למאיר לבדיקה", "gold", "תקבלי את ההחלטה כאן.");
   if (p.status === "approved") {
     card("✅ אושר" + (p.admin_notes ? " — " + p.admin_notes : ""), "cyan", "השלב הבא — חיתוך אוטומטי לקובץ מדפסת — יתחבר כשהשרת במחשב יופעל.\nכשההדפסה מסתיימת, לחצי 'הודפס' והחומר יירד מהמלאי.");
     pill("🖨️ הודפס — להוריד מהמלאי", "green", () => act(async () => {
@@ -698,12 +767,12 @@ function startAdminPoll() {
   if (me?.role !== "admin") return;
   const tick = async () => {
     try {
-      const rows = await db.get("slicer_projects?status=eq.pending_review&select=id,title,owner,updated_at&order=updated_at");
+      const rows = await db.get("slicer_projects?status=eq.pending_review&select=id,title,owner,updated_at,file_path&order=updated_at");
       const seen = store.get("seen") || {}, fresh = rows.find(r => seen[r.id] !== r.updated_at);
       if (!fresh || modal.innerHTML) return;
       seen[fresh.id] = fresh.updated_at; store.set("seen", seen);
       navigator.vibrate?.([120, 60, 120]);
-      modal.innerHTML = `<div class="back"><div class="card"><b>📬 ${esc(names[fresh.owner] || "")} שלחה פרויקט לאישור</b><span>${esc(fresh.title || "בלי שם")}</span></div></div>`;
+      modal.innerHTML = `<div class="back"><div class="card"><b>📬 ${esc(names[fresh.owner] || "")} שלחה ${fresh.file_path ? "פרויקט לאישור" : "רעיון שמחכה למודל"}</b><span>${esc(fresh.title || "בלי שם")}</span></div></div>`;
       const c = modal.querySelector(".card");
       pill("לפתיחה", "gold", () => { modal.innerHTML = ""; go(project, fresh.id); }, c);
       link("אחר כך", () => modal.innerHTML = "", c);
