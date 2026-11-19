@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="הסלייסר החכם">
 <meta name="theme-color" content="#121a3a">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://enhqzgjqqyubgfysnjib.supabase.co https://cdn.jsdelivr.net; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <style>
   /* same family look as Pay or Wait: dark navy + gold glow */
   :root { --bg1:#0e1430; --bg2:#1b2550; --tile1:#1d2753; --tile2:#141c40; --text:#f3eee2; --muted:#9aa3c7; --gold:#f2c45c; --cyan:#5fd4f4; --red:#ff4d5a; --green:#6fe39a; --line:#3a4578; }
@@ -88,7 +89,7 @@ import * as G from "./geo.js";
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";   // same key pair as the family apps
-const VERSION = "1.1";
+const VERSION = "1.2";
 const MIN_PASSWORD = 8;
 const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
 const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
@@ -96,7 +97,7 @@ const LAYER = (l) => l <= 0.12 ? "עדין מאוד" : l <= 0.16 ? "עדין" : 
 const SUPPORTS = { none: "בלי תמיכות", tree: "תמיכות עץ", painted: "תמיכות רק במקומות הנדרשים" };
 const app = document.getElementById("app"), modal = document.getElementById("modal");
 let me = null, printers = [], spools = [], names = {};
-let view = null, adminPoll = null, screen = 0;
+let view = null, adminPoll = null, screen = 0, screenTimer = null;
 const models = new Map();                       // file path → triangles (Float32Array), kept for the session
 
 // ---------- small helpers ----------
@@ -175,7 +176,7 @@ async function act(work) { try { await work(); } catch (e) { toast(errText(e)); 
 
 // ---------- UI building ----------
 function h(html, into = app) { into.insertAdjacentHTML("beforeend", html); return into.lastElementChild; }
-function clear() { if (view) { view.dispose(); view = null; } app.innerHTML = ""; }
+function clear() { clearInterval(screenTimer); if (view) { view.dispose(); view = null; } app.innerHTML = ""; }
 function bar(title, { back = false, logout = false } = {}) {
   const el = h(`<div class="bar">${back ? `<button class="icon-btn" aria-label="חזרה">→</button>` : ""}<h1>${esc(title)}</h1>${logout ? `<button class="icon-btn" aria-label="התנתקות" style="font-size:1em">יציאה</button>` : ""}</div>`);
   if (back) el.firstElementChild.onclick = () => go(home);
@@ -389,14 +390,14 @@ function statsForDb(s) {
 
 // ---------- one project: steps, 3D view, questions, recommendation, approval ----------
 async function project(id) {
-  const [p] = await db.get(`slicer_projects?id=eq.${id}&select=*`);
+  const [[p], [wait]] = await Promise.all([db.get(`slicer_projects?id=eq.${id}&select=*`), db.get(`slicer_ai_queue?project_id=eq.${id}&select=*`)]);
   if (!p) throw new Error("הפרויקט לא נמצא");
   let tris = null;
   if (p.file_path) {
     tris = models.get(p.file_path);
     if (!tris) { tris = await parseModel(await (await download(p.file_path)).arrayBuffer(), p.file_name); models.set(p.file_path, tris); }
   }
-  return () => drawProject(p, tris);
+  return () => drawProject(p, tris, wait);
 }
 function steps(p) {
   const names = p.kind === "file" ? ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["רעיון", "שאלות", "יצירת מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
@@ -405,12 +406,14 @@ function steps(p) {
   else now = p.status === "printed" ? 7 : p.status === "approved" ? 5 : p.status === "pending_review" ? 4 : p.settings ? 3 : 2;
   h(`<div class="steps">${names.map((n, i) => `<span class="${i < now ? "done" : i === now ? "now" : ""}">${i < now ? "✓ " : ""}${n}</span>`).join("")}</div>`);
 }
-function drawProject(p, tris) {
+function drawProject(p, tris, wait) {
   const admin = me.role === "admin", mine = p.owner === me.user_id;
   const editable = mine && (p.status === "draft" || p.status === "returned");
   const canTune = editable || admin;                 // turn the model, mark spots
   bar(p.title || "פרויקט חדש", { back: true });
   steps(p);
+  const busy = wait && !wait.failed;                 // an AI request waits in line: no second one
+  if (wait) waitingCard(p, wait);
   if (p.status === "returned") card("↩ מאיר החזיר לתיקון", "red", p.admin_notes || "בלי הערה");
   if (p.description) card("📝 התיאור", "line", p.description);
   if (p.image_path) { const img = h(`<img class="idea" alt="">`); download(p.image_path).then(b => img.src = URL.createObjectURL(b)).catch(() => img.remove()); }
@@ -458,7 +461,7 @@ function drawProject(p, tris) {
     card("🧪 יצירת מודל מהרעיון", "line", "השלב הזה מתווסף בגרסה הבאה. הרעיון, התמונה והתשובות נשמרים ויחכו לו.");
   }
 
-  questionsBlock(p, editable);
+  questionsBlock(p, editable && !busy);
   if (p.settings) settingsBlock(p);
   if (admin && p.status === "pending_review") reviewBlock(p, s);
   actionsBlock(p, editable, s);
@@ -506,13 +509,32 @@ async function aiStep(p, action) {
   const w = card(action === "questions" ? "🧭 המתכנן מנסח שאלות…" : "🛠️ מהנדס ההדפסה בוחר הגדרות…", "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
   try {
     const r = await ai(action, p.id);
-    if (action === "settings" && p.stats) await saveGrams(p, r.settings);
+    if (r && r.queued) toast("ה-AI עמוס — הבקשה הועברה לתור ✓");
     go(project, p.id);
   } catch (e) { w.remove(); toast(errText(e)); }
 }
-async function saveGrams(p, s) {
-  const sp = spoolOf(s.printer, s.slot);
-  await db.set(`slicer_projects?id=eq.${p.id}`, { est_grams: G.estimateGrams(p.stats, s, sp ? sp.material : "PLA") });
+// the request waits for a busy / over-quota AI: the server retries by itself; this screen checks every 15 s and pops up when it's done
+function waitingCard(p, w) {
+  if (w.failed) { card("⚠️ ה-AI לא ענה אחרי כמה ניסיונות", "red", "אפשר לנסות שוב עכשיו."); return; }
+  card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `השרת מנסה שוב לבד${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
+  const my = screen;
+  screenTimer = setInterval(async () => {
+    if (my !== screen) return clearInterval(screenTimer);
+    try {
+      const left = await db.get(`slicer_ai_queue?project_id=eq.${p.id}&select=failed`);
+      if (left.length && !left[0].failed) return;
+      clearInterval(screenTimer);
+      if (left.length) return go(project, p.id);       // gave up: show the retry
+      popup("✨ התשובה מה-AI הגיעה", p.title || "", "להמשך", () => go(project, p.id));
+    } catch {}
+  }, 15000);
+}
+function popup(head, body, okText, onOk) {
+  navigator.vibrate?.([120, 60, 120]);
+  modal.innerHTML = `<div class="back"><div class="card"><b>${esc(head)}</b><span>${esc(body)}</span></div></div>`;
+  const c = modal.querySelector(".card");
+  pill(okText, "gold", () => { modal.innerHTML = ""; onOk(); }, c);
+  link("אחר כך", () => modal.innerHTML = "", c);
 }
 
 function settingsBlock(p) {
