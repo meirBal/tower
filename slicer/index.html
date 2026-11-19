@@ -91,12 +91,13 @@ import * as G from "./geo.js";
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";   // same key pair as the family apps
-const VERSION = "1.3";
+const VERSION = "2.0";
 const MIN_PASSWORD = 8;
 const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
 const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
 const LAYER = (l) => l <= 0.12 ? "עדין מאוד" : l <= 0.16 ? "עדין" : l <= 0.2 ? "רגיל" : "מהיר";
 const SUPPORTS = { none: "בלי תמיכות", tree: "תמיכות עץ", painted: "תמיכות רק במקומות הנדרשים" };
+const SPARE = 50;                                   // grams a spool must keep after a print
 const app = document.getElementById("app"), modal = document.getElementById("modal");
 let me = null, printers = [], spools = [], names = {};
 let view = null, adminPoll = null, screen = 0, screenTimer = null;
@@ -148,18 +149,29 @@ const db = {
   },
   del: async q => http("DELETE", "/rest/v1/" + q, null, await token()),
 };
+const setP = (id, row) => db.set(`slicer_projects?id=eq.${id}`, row);
 const rpc = async (fn, args) => http("POST", "/rest/v1/rpc/" + fn, args, await token());
-const ai = async (action, projectId) => http("POST", "/functions/v1/slicer-ai", { action, project_id: projectId }, await token());
+const ai = async (action, projectId, extra = {}) => http("POST", "/functions/v1/slicer-ai", { action, project_id: projectId, ...extra }, await token());
+// the PC worker: connected (seen in the last 2 minutes) → true / false; null when it can't be checked
+const pcOnline = () => rpc("slicer_worker_status", {}).then(r => !!r?.online).catch(() => null);
 const pushCall = async (action, projectId) => http("POST", "/functions/v1/slicer-push", { action, project_id: projectId }, await token());
 const notify = projectId => pushCall("notify", projectId).catch(() => {});      // tell the other side; the in-app popup is the fallback
+async function handOver(p, row, msg) { await setP(p.id, row); notify(p.id); toast(msg); go(project, p.id); }
 async function upload(path, blob) {
   const r = await fetch(`${SUPABASE_URL}/storage/v1/object/slicer/${path}`, {
     method: "POST", body: blob, headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token(), "x-upsert": "true", "Content-Type": blob.type || "application/octet-stream" },
   }).catch(() => null);
   if (!r || !r.ok) throw new ApiError(r ? r.status : 0, r ? await r.text() : "ההעלאה נכשלה — בדקי אינטרנט");
 }
+// a file to keep: a signed link that downloads with its own name (blob: links don't work inside the Android app)
+async function saveFile(path, name) {
+  const { signedURL } = await http("POST", "/storage/v1/object/sign/slicer/" + path, { expiresIn: 600 }, await token());
+  const a = document.createElement("a");
+  a.href = `${SUPABASE_URL}/storage/v1${signedURL}&download=${encodeURIComponent(name)}`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
 async function download(path) {
-  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/authenticated/slicer/${path}`, { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token() } }).catch(() => null);
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/authenticated/slicer/${path}`, { cache: "no-store", headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token() } }).catch(() => null);
   if (!r || !r.ok) throw new ApiError(r ? r.status : 0, "לא הצלחתי להוריד את הקובץ");
   return r.blob();
 }
@@ -193,6 +205,14 @@ function pill(text, accent, onClick, into) {
   const el = h(`<button class="pill" style="--accent:var(--${accent})">${esc(text)}</button>`, into);
   el.onclick = async () => { el.disabled = true; el.textContent = "⏳ רגע…"; try { await onClick(); } finally { el.disabled = false; el.textContent = text; } };
   return el;
+}
+const li = x => typeof x === "string" ? `<li>${esc(x)}</li>` : `<li class="${x.level === "high" ? "bad" : x.level === "medium" ? "warn" : ""}">${esc(x.text)}</li>`;
+const list = (items, into) => h(`<ul class="list">${items.map(li).join("")}</ul>`, into);
+const listCard = (head, accent, items) => items?.length && list(items, card(head, accent));
+// a card with a two-column "name: value" table; add(name, html)
+function rowsCard(head, accent) {
+  const c = h(`<div class="card" style="--accent:var(--${accent})">${head ? `<b>${esc(head)}</b>` : ""}<dl class="rows"></dl></div>`), dl = c.querySelector("dl");
+  return { c, add: (k, v) => dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd>${v}</dd>`) };
 }
 function link(text, onClick, into) { const el = h(`<button class="link">${esc(text)}</button>`, into); el.onclick = onClick; return el; }
 function field(placeholder, type = "text", auto = "", into) { return h(`<input type="${type}" placeholder="${esc(placeholder)}" ${auto ? `autocomplete="${auto}"` : ""}>`, into); }
@@ -239,7 +259,9 @@ async function route() {
     await loadBase();
     if (!me) return () => { bar("הסלייסר החכם", { logout: true }); card("אין גישה", "red", "החשבון הזה לא מורשה לאפליקציה.\nאם זו טעות — דברי עם מאיר."); };
     startAdminPoll();
-    return await home();
+    saveNativePush();
+    const open = new URLSearchParams(location.search).get("project");
+    return open ? await project(open) : await home();
   });
 }
 
@@ -286,9 +308,10 @@ async function home(tab) {
   tab = tab || store.get("tab") || (admin ? "pending" : "all");
   if (!admin) tab = "all";
   if (tab === "spools") { await loadBase(); return () => { homeTop(tab); drawSpools(); }; }
-  const rows = await db.get("slicer_projects?select=id,title,kind,status,updated_at,owner,description&order=updated_at.desc&limit=100");
+  const [rows, pc] = await Promise.all([db.get("slicer_projects?select=id,title,kind,status,updated_at,owner,description&order=updated_at.desc&limit=100"), admin ? pcOnline() : null]);
   return () => {
     homeTop(tab);
+    if (pc != null) h(`<div class="label ${pc ? "ok" : "bad"}">${pc ? "🖥️ המחשב מחובר" : "🖥️ המחשב לא מחובר — מודלים וחיתוך יחכו לו"}</div>`);
     pill("➕ פרויקט חדש", "gold", () => go(newProject));
     const list = tab === "pending" ? rows.filter(p => p.status === "pending_review") : rows;
     if (!list.length) label(tab === "pending" ? "אין פרויקטים שמחכים לאישור ✓" : "עוד אין פרויקטים. לחצי על 'פרויקט חדש' 🙂");
@@ -309,7 +332,14 @@ function b64ToBytes(s) {
   const pad = "=".repeat((4 - s.length % 4) % 4), raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
   return Uint8Array.from(raw, c => c.charCodeAt(0));
 }
+const nativeToken = () => { try { return window.SlicerNative?.fcmToken?.() || null; } catch { return null; } };
+function saveNativePush() {
+  const fcm = nativeToken();
+  if (fcm) rpc("slicer_save_push", { fcm }).catch(() => {});
+}
+window.addEventListener("slicernative-fcm", () => { if (me) saveNativePush(); });
 function pushBlock() {
+  if (nativeToken()) return;                         // the Android app gets notifications by itself
   if (!pushSupported()) return;
   section("🔔 התראות לטלפון");
   if (!pushOn()) return pill("🔔 הפעלת התראות", "cyan", () => act(enablePush));
@@ -367,13 +397,13 @@ async function newProject() {
         const ext = f.name.split(".").pop().toLowerCase();
         const p = await db.add("slicer_projects", { kind, description, file_name: f.name, title: f.name.replace(/\.[^.]+$/, "").slice(0, 40) });
         await upload(`${p.id}/model.${ext}`, f);
-        await db.set(`slicer_projects?id=eq.${p.id}`, { file_path: `${p.id}/model.${ext}`, rotation: [best.rx, best.ry], stats: statsForDb(best.s) });
-        models.set(`${p.id}/model.${ext}`, tris);
+        await setP(p.id, { file_path: `${p.id}/model.${ext}`, rotation: [best.rx, best.ry], stats: statsForDb(best.s) });
+        models.set(modelKey({ file_path: `${p.id}/model.${ext}` }), tris);
         return go(project, p.id);
       }
       const img = imgBox.querySelector("input").files[0];
       const p = await db.add("slicer_projects", { kind, description });
-      if (img) { await upload(`${p.id}/idea.jpg`, await shrink(img)); await db.set(`slicer_projects?id=eq.${p.id}`, { image_path: `${p.id}/idea.jpg` }); }
+      if (img) { await upload(`${p.id}/idea.jpg`, await shrink(img)); await setP(p.id, { image_path: `${p.id}/idea.jpg` }); }
       go(project, p.id);
     }));
   };
@@ -392,33 +422,50 @@ function statsForDb(s) {
 
 // ---------- one project: steps, 3D view, questions, recommendation, approval ----------
 async function project(id) {
-  const [[p], [wait]] = await Promise.all([db.get(`slicer_projects?id=eq.${id}&select=*`), db.get(`slicer_ai_queue?project_id=eq.${id}&select=*`)]);
+  const [[p], [wait], jobs] = await Promise.all([db.get(`slicer_projects?id=eq.${id}&select=*`), db.get(`slicer_ai_queue?project_id=eq.${id}&select=*`),
+    db.get(`slicer_jobs?project_id=eq.${id}&select=*&order=created_at.desc&limit=1`)]);
   if (!p) throw new Error("הפרויקט לא נמצא");
+  const job = jobs[0] || null, pc = job && job.status === "queued" ? await pcOnline() : null;
   let tris = null;
   if (p.file_path) {
-    tris = models.get(p.file_path);
-    if (!tris) { tris = await parseModel(await (await download(p.file_path)).arrayBuffer(), p.file_name); models.set(p.file_path, tris); }
+    tris = models.get(modelKey(p));
+    if (!tris) { tris = await parseModel(await (await download(p.file_path)).arrayBuffer(), p.file_path); models.set(modelKey(p), tris); }
+    // a new model from the PC comes with stats NULL: best orientation + stats here; marks of the previous model don't fit the new mesh
+    if (!p.stats) {
+      const best = G.bestOrientation(tris);
+      Object.assign(p, { rotation: [best.rx, best.ry], stats: statsForDb(best.s), marks: [] });
+      await setP(id, { rotation: p.rotation, stats: p.stats, marks: [] }).catch(() => {});
+    }
   }
-  return () => drawProject(p, tris, wait);
+  return () => drawProject(p, tris, wait, job, pc);
 }
+const hash = s => { let x = 5381; for (let i = 0; i < s.length; i++) x = (x * 33 ^ s.charCodeAt(i)) >>> 0; return x.toString(36); };
+const modelKey = p => p.file_path + "#" + hash(p.scad || "");      // a new model round may reuse the same file path
+const b64 = s => { let bin = ""; for (const x of new TextEncoder().encode(s)) bin += String.fromCharCode(x); return btoa(bin); };
+const running = job => !!job && (job.status === "queued" || job.status === "running");
 function steps(p) {
-  const names = p.kind === "file" ? ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["רעיון", "שאלות", "יצירת מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
+  const idea = p.kind === "idea";
+  const names = idea ? ["רעיון", "שאלות", "תוכנית", "מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
   let now;
-  if (p.kind === "idea" && !p.file_path) now = p.answers ? 2 : 1;
-  else now = (p.status === "printed" ? 7 : p.status === "approved" ? 5 : p.status === "pending_review" ? 4 : p.settings ? 3 : 2) + (p.kind === "idea" ? 1 : 0);
+  if (idea && !p.answers) now = 1;
+  else if (idea && (!p.file_path || p.model_status === "modeling")) now = p.plan_ok ? 3 : 2;
+  else now = (p.status === "printed" ? 7 : p.status === "approved" ? (p.gcode_path ? 6 : 5) : p.status === "pending_review" ? 4 : p.settings ? 3 : 2) + (idea ? 2 : 0);
   h(`<div class="steps">${names.map((n, i) => `<span class="${i < now ? "done" : i === now ? "now" : ""}">${i < now ? "✓ " : ""}${n}</span>`).join("")}</div>`);
 }
-function drawProject(p, tris, wait) {
-  const admin = me.role === "admin", mine = p.owner === me.user_id;
+function drawProject(p, tris, wait, job, pc) {
+  const admin = me.role === "admin", mine = p.owner === me.user_id, idea = p.kind === "idea";
   const editable = mine && (p.status === "draft" || p.status === "returned");
   const canTune = editable || admin;                 // turn the model, mark spots
+  const busy = (wait && !wait.failed) || running(job) || p.model_status === "planning" || p.model_status === "modeling";   // AI or PC at work: no second request
   bar(p.title || "פרויקט חדש", { back: true });
   steps(p);
-  const busy = wait && !wait.failed;                 // an AI request waits in line: no second one
-  if (wait) waitingCard(p, wait); else nowCard(p, admin, mine);
+  if (wait) waitingCard(p, wait);
+  else { nowCard(p, admin, mine, job, pc); if (busy) watchJobs(p, job); }
   if (p.status === "returned") card("↩ מאיר החזיר לתיקון", "red", p.admin_notes || "בלי הערה");
   if (p.description) card("📝 התיאור", "line", p.description);
   if (p.image_path) { const img = h(`<img class="idea" alt="">`); download(p.image_path).then(b => img.src = URL.createObjectURL(b)).catch(() => img.remove()); }
+  if (idea) { questionsBlock(p, editable && !busy && !p.plan_ok); planBlock(p, editable && !busy); }
+  if (admin && !tris && (p.model_status === "model_failed" || p.status === "pending_review")) modelBlock(p);   // fallback: Meir uploads a model
 
   let s = null;
   if (tris) {
@@ -434,15 +481,16 @@ function drawProject(p, tris, wait) {
       if (!marking) return;
       form.innerHTML = "";
       const note = field("מה לשנות כאן? (למשל: לעבות, צבע אחר, לא צריך)", "text", "", form);
+      const o = tri * 9, at = [0, 1, 2].map(k => Math.round((tris[o + k] + tris[o + 3 + k] + tris[o + 6 + k]) / 3));   // mm, in the model's own frame (for the AI)
       pill("📍 שמירת הסימון", "cyan", () => act(async () => {
-        await db.set(`slicer_projects?id=eq.${p.id}`, { marks: [...p.marks, { tri, note: note.value.trim() }] });
+        await setP(p.id, { marks: [...p.marks, { tri, at, note: note.value.trim() }] });
         go(project, p.id);
       }), form);
       note.focus();
     });
     if (canTune) {
       const save = (r) => act(async () => {
-        await db.set(`slicer_projects?id=eq.${p.id}`, { rotation: r, stats: statsForDb(G.analyze(G.rotate(tris, r[0], r[1]))) });
+        await setP(p.id, { rotation: r, stats: statsForDb(G.analyze(G.rotate(tris, r[0], r[1]))) });
         go(project, p.id);
       });
       choices([["auto", "✨ כיוון אוטומטי"], ["x", "↻ סיבוב קדימה"], ["y", "↻ סיבוב לצד"], ["mark", "📍 סמני מקום"]], "", (v, b) => {
@@ -456,36 +504,116 @@ function drawProject(p, tris, wait) {
     app.appendChild(form);
     p.marks.forEach((m, i) => {
       const el = card(`📍 סימון ${i + 1}`, "cyan", m.note || "בלי הערה");
-      if (canTune) { const x = link("הסרה", () => act(async () => { await db.set(`slicer_projects?id=eq.${p.id}`, { marks: p.marks.filter((_, j) => j !== i) }); go(project, p.id); }), el); x.style.padding = "4px"; }
+      if (canTune) { const x = link("הסרה", () => act(async () => { await setP(p.id, { marks: p.marks.filter((_, j) => j !== i) }); go(project, p.id); }), el); x.style.padding = "4px"; }
     });
     statsCard(s);
+    if (idea) listCard("🔍 מה ה-AI מצא בבדיקת המודל", "gold", p.critique?.issues);
+    if (idea && p.plan_ok && editable && !busy) remodelBlock(p);
   }
 
-  questionsBlock(p, editable && !busy);
+  if (!idea) questionsBlock(p, editable && !busy);
   if (p.settings) settingsBlock(p);
-  if (admin && p.status === "pending_review") (tris ? reviewBlock(p, s) : modelBlock(p));
-  actionsBlock(p, editable, s);
+  if (admin && p.status === "pending_review" && tris) reviewBlock(p, s);
+  actionsBlock(p, editable && !busy, s, job);
 }
 
-function nowCard(p, admin, mine) {
-  const model = !!p.file_path;
-  let t = null;
-  if (p.status === "pending_review") t = admin ? (model ? "👑 מחכה לבדיקה שלך — למטה" : "👑 רעיון שמחכה למודל ממך — העלאה למטה")
-    : model ? "⏳ אצל מאיר לבדיקה\nתקבלי התראה ברגע שהוא מאשר או מחזיר." : "⏳ אצל מאיר — הוא מכין את המודל לפי התשובות שלך\nכשהמודל מוכן תקבלי התראה, והוא יופיע כאן בהדמיה.";
+function nowCard(p, admin, mine, job, pc) {
+  const model = !!p.file_path, idea = p.kind === "idea", ms = p.model_status;
+  let t = null, acc = p.status === "pending_review" ? "gold" : "cyan";
+  if (running(job)) t = job.status === "queued" && pc === false ? "⏳ ממתין למחשב\nהמחשב של מאיר כבוי או לא מחובר. כשיידלק — זה ימשיך לבד."
+    : job.kind === "slice" ? "🔪 חותך לקובץ מדפסת…\nכשהקובץ מוכן תקפוץ כאן הודעה." : "🧊 המחשב מייצר את המודל…\nלוקח כמה דקות. כשהמודל מוכן תקפוץ כאן הודעה.";
+  else if (ms === "planning") t = "📐 ה-AI מתכנן…\nכשהתוכנית מוכנה היא תופיע כאן.";
+  else if (ms === "modeling") t = job?.kind === "model" && job.status === "done" ? "🔍 ה-AI בודק את המודל…\nעוד רגע הוא יופיע בהדמיה." : "✍️ ה-AI כותב את המודל…\nאחר כך המחשב מייצר אותו.";
+  else if (p.status === "approved" && !p.gcode_path && job?.kind === "slice" && job.status === "error") {
+    t = admin ? "⚠️ החיתוך במחשב נכשל\n" + (job.error || "") + "\nאפשר לנסות שוב למטה." : "⚠️ החיתוך במחשב נכשל\nמאיר יראה את זה ויטפל."; acc = "red";
+  }
+  else if (p.status === "pending_review") t = admin ? (model ? "👑 מחכה לבדיקה שלך — ההדמיה וההגדרות למטה" : "👑 רעיון שמחכה למודל ממך — העלאה למטה")
+    : model ? "⏳ אצל מאיר לבדיקה\nתקבלי התראה ברגע שהוא מאשר או מחזיר." : "⏳ אצל מאיר — הוא מכין את המודל\nכשהמודל מוכן תקבלי התראה, והוא יופיע כאן בהדמיה.";
+  else if (p.status === "approved") {
+    if (p.print_result === "failed") { t = `⚠️ ההדפסה נכשלה ב-~${p.failed_pct}%\nירד מהמלאי רק מה שהודפס. אפשר להדפיס שוב מאותו קובץ.`; acc = "red"; }
+    else t = p.gcode_path ? "📥 קובץ ההדפסה מוכן — למטה\nהורידי אותו, שלחי למדפסת, ובסוף סמני אם הצליח." : admin ? "🔪 אושר — אפשר לשלוח לחיתוך למטה" : "✅ אושר — מחכה לחיתוך במחשב";
+  }
   else if (mine && (p.status === "draft" || p.status === "returned")) {
     if (!p.questions) t = "👉 עכשיו: לחצי 'המשך' למטה, וה-AI ישאל כמה שאלות";
-    else if (!model) t = "👉 עכשיו: עני על השאלות למטה ושלחי למאיר ליצירת המודל";
-    else if (!p.settings) t = p.kind === "idea" && p.answers ? "🧊 המודל מוכן!\nבדקי אותו בהדמיה, ואז לחצי 'קבלי המלצת הדפסה' למטה." : "👉 עכשיו: עני על השאלות למטה וקבלי המלצת הדפסה";
+    else if (idea && ms === "model_failed" && !model) { t = "⚠️ ה-AI לא הצליח לבנות את המודל\nאפשר לנסות שוב או לבקש ממאיר — למטה."; acc = "red"; }
+    else if (idea && !model) t = p.plan ? "👉 עכשיו: בדקי את התוכנית למטה\nנכונה? 'ליצור מודל'. לא? 'לתקן' וכתבי מה לשנות." : "👉 עכשיו: עני על השאלות למטה ולחצי '📐 ה-AI מתכנן'";
+    else if (!p.settings) t = idea ? "🧊 המודל מוכן!\nבדקי אותו בהדמיה. צריך שינוי? סמני מקום ולחצי 'לתקן את המודל'. הכול טוב? 'קבלי המלצת הדפסה'." : "👉 עכשיו: עני על השאלות למטה וקבלי המלצת הדפסה";
     else t = "👉 עכשיו: עברי על ההמלצה, ואם הכול טוב — שליחה לאישור מאיר למטה";
   }
   if (!t) return;
-  const [head, body] = t.split("\n");
-  card(head, p.status === "pending_review" ? "gold" : "cyan", body);
+  const [head, ...body] = t.split("\n");
+  card(head, acc, body.join("\n"));
+}
+
+// something runs on the AI or the PC: check every 10 s and pop up when it's done
+function watchJobs(p, job) {
+  const my = screen, sig = (q, j) => `${q.model_status}|${q.gcode_path}|${j?.id}|${j?.status}`, was = sig(p, job);
+  screenTimer = setInterval(async () => {
+    if (my !== screen) return clearInterval(screenTimer);
+    try {
+      const [[q], [j]] = await Promise.all([db.get(`slicer_projects?id=eq.${p.id}&select=model_status,gcode_path`), db.get(`slicer_jobs?project_id=eq.${p.id}&select=id,kind,status&order=created_at.desc&limit=1`)]);
+      if (my !== screen || sig(q, j) === was) return;
+      clearInterval(screenTimer);
+      const open = () => go(project, p.id);
+      if (q.gcode_path && !p.gcode_path) return popup("📥 קובץ ההדפסה מוכן", p.title || "", "להורדה", open);
+      if (q.model_status === "model_ready" && p.model_status !== "model_ready") return popup("🧊 המודל מוכן!", "אפשר לראות אותו בהדמיה", "לצפייה", open);
+      if (q.model_status === "model_failed" || j?.status === "error") return popup("⚠️ משהו לא הצליח", p.title || "", "לפרטים", open);
+      open();
+    } catch {}
+  }, 10000);
+}
+
+// idea: the AI's plan — parts with sizes, assumptions and a sketch; she approves it or says what to change
+function planBlock(p, editable) {
+  const P = p.plan;
+  if (P) {
+    section("📐 התוכנית");
+    const c = h(`<div class="card" style="--accent:var(--${p.plan_ok ? "line" : "gold"})"><b>${esc(P.overall_mm ? `גודל כולל: ${P.overall_mm.join(" × ")} מ"מ` : "החלקים")}</b></div>`);
+    if (P.summary) label(P.summary, c);
+    if (P.sketch_svg) h(`<img class="idea" alt="סקיצה" src="data:image/svg+xml;base64,${b64(P.sketch_svg)}">`, c);      // an <img>: scripts in the SVG never run
+    h(`<ul class="list">${(P.parts || []).map(x => `<li><span style="color:var(--text)">${esc(x.name)}</span> — ${esc(Object.entries(x.dims || {}).map(([k, v]) => `${k} ${v} מ"מ`).join(" · "))}${x.notes ? `<br>${esc(x.notes)}` : ""}</li>`).join("")}</ul>`, c);
+    if (P.key_dims?.length) h(`<dl class="rows">${P.key_dims.map(k => `<dt>${esc(k.name)}</dt><dd>${esc(k.mm)} מ"מ${k.from ? ` <span class="muted">(${esc(k.from)})</span>` : ""}</dd>`).join("")}</dl>`, c);
+    listCard("⚠️ חשוב לדעת", "red", P.warnings);
+    listCard("🤔 מה ה-AI הניח", "line", P.assumptions);
+  }
+  if (!editable) return;
+  if (p.model_status === "model_failed" && !p.file_path) {
+    pill("🔄 לנסות שוב ליצור מודל", "gold", () => aiStep(p, "model"));
+    pill("📤 לבקש ממאיר להכין את המודל", "cyan", () => act(async () => {
+      await handOver(p, { status: "pending_review" }, "נשלח למאיר ✓ תקבלי התראה כשהמודל מוכן");
+    }));
+    return;
+  }
+  if (!P || p.plan_ok) return;
+  pill("✅ התוכנית נכונה — ליצור מודל", "green", () => act(async () => {
+    await setP(p.id, { plan_ok: true });
+    await aiStep(p, "model");
+  }));
+  let box = null;
+  const fix = pill("✏️ לתקן", "cyan", async () => {
+    if (box) return;
+    box = document.createElement("div"); fix.after(box);
+    const t = h(`<textarea placeholder="מה לשנות? (למשל: גבוה יותר ב-2 ס&quot;מ, בלי מגירה)"></textarea>`, box);
+    pill("📐 לתכנן מחדש", "gold", () => { const comment = t.value.trim(); if (!comment) return toast("כתבי מה לשנות"); return aiStep(p, "plan", { comment }); }, box);
+    t.focus();
+  });
+}
+
+
+// idea: model ready — marks and/or a comment make a new model round; otherwise on to the recommendation
+function remodelBlock(p) {
+  const c = h(`<div class="card" style="--accent:var(--cyan)"><b>✏️ צריך שינוי במודל?</b><span>סמני מקומות בהדמיה (📍 סמני מקום) ו/או כתבי מה לשנות.</span></div>`);
+  const t = h(`<textarea placeholder="מה לשנות? (למשל: לעבות את הדופן, חור של 8 מ&quot;מ)"></textarea>`, c);
+  pill("🔄 לתקן את המודל", "cyan", () => {
+    const comment = t.value.trim();
+    if (!comment && !p.marks.length) return toast("סמני מקום או כתבי מה לשנות");
+    return aiStep(p, "model", { comment });
+  }, c);
+  pill(p.settings ? "🔄 המלצה חדשה" : "🛠️ קבלי המלצת הדפסה", "gold", () => aiStep(p, "settings"));
 }
 
 function statsCard(s) {
-  const c = h(`<div class="card" style="--accent:var(--line)"><b>🔍 בדיקות בקוד</b><dl class="rows"></dl></div>`), dl = c.querySelector("dl");
-  const add = (k, v) => dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd>${v}</dd>`);
+  const { add } = rowsCard("🔍 בדיקות בקוד", "line");
   add("מידות", `${s.size.join(" × ")} מ"מ`);
   add("נפח", `${s.volume_cm3} סמ"ק`);
   const o = s.overhang_pct;
@@ -504,7 +632,7 @@ function questionsBlock(p, editable) {
   }
   const Q = p.questions;
   if (Q.summary) label("ה-AI הבין: " + Q.summary);
-  if (Q.warnings?.length) { const r = card("⚠️ חשוב לדעת", "red"); h(`<ul class="list">${Q.warnings.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, r); }
+  listCard("⚠️ חשוב לדעת", "red", Q.warnings);
   const old = new Map((p.answers || []).map(a => [a.q, a.a]));
   const read = [];                                   // per question: () => answer text or ""
   for (const q of Q.questions) {
@@ -530,27 +658,23 @@ function questionsBlock(p, editable) {
   }
   if (!editable) return;
   const model = !!p.file_path;
-  pill(!model ? "📤 שליחה למאיר ליצירת המודל" : p.settings ? "🔄 המלצה חדשה לפי התשובות" : "🛠️ קבלי המלצת הדפסה", "gold", () => act(async () => {
+  pill(!model ? (p.plan ? "📐 תוכנית חדשה לפי התשובות" : "📐 ה-AI מתכנן") : p.settings ? "🔄 המלצה חדשה לפי התשובות" : "🛠️ קבלי המלצת הדפסה", "gold", () => act(async () => {
     const missing = read.filter(([, get]) => !get());
     missing.forEach(([box]) => box.classList.add("missing"));
     if (missing.length) { missing[0][0].scrollIntoView({ behavior: "smooth", block: "center" }); return toast(`חסרות ${missing.length} תשובות — סימנתי באדום`); }
     p.answers = Q.questions.map((q, i) => ({ q: q.q, a: read[i][1]() }));
-    if (!model) {
-      await db.set(`slicer_projects?id=eq.${p.id}`, { answers: p.answers, status: "pending_review" });
-      notify(p.id);
-      toast("נשלח למאיר ✓ תקבלי התראה כשהמודל מוכן");
-      return go(project, p.id);
-    }
-    await db.set(`slicer_projects?id=eq.${p.id}`, { answers: p.answers });
-    await aiStep(p, "settings");
+    await setP(p.id, { answers: p.answers });
+    await aiStep(p, model ? "settings" : "plan");
   }));
   const again = link("🔄 לנסח את השאלות מחדש", () => { again.disabled = true; aiStep(p, "questions"); });
 }
 
-async function aiStep(p, action) {
-  const w = card(action === "questions" ? "🧭 המתכנן מנסח שאלות…" : "🛠️ מהנדס ההדפסה בוחר הגדרות…", "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
+const AI_WORK = { questions: "🧭 המתכנן מנסח שאלות…", settings: "🛠️ מהנדס ההדפסה בוחר הגדרות…", plan: "📐 ה-AI מתכנן — חלקים, מידות וסקיצה…", model: "✍️ ה-AI כותב את המודל ושולח למחשב…" };
+async function aiStep(p, action, extra) {
+  const w = card(AI_WORK[action], "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
+  w.scrollIntoView({ behavior: "smooth", block: "center" });
   try {
-    const r = await ai(action, p.id);
+    const r = await ai(action, p.id, extra);
     if (r && r.queued) toast("ה-AI עמוס — הבקשה הועברה לתור ✓");
     go(project, p.id);
   } catch (e) { w.remove(); toast(errText(e)); }
@@ -579,33 +703,44 @@ function popup(head, body, okText, onOk) {
   link("אחר כך", () => modal.innerHTML = "", c);
 }
 
+// filament rules: a spool keeps ≥ 50 g after the print; a spool of the same material and colour on the same printer can be joined as backup
+function joinCandidates(printer, slot) {
+  const sp = spoolOf(printer, slot);
+  return sp ? spools.filter(x => x.printer_id === printer && x.slot !== slot && x.material === sp.material && String(x.color_hex).toLowerCase() === String(sp.color_hex).toLowerCase()) : [];
+}
+function joinTip(printer, slot, other) {
+  return printer === "mk4s" ? `יש גליל זהה (חומר וצבע) ב-T${other}. אפשר לחבר אותם עם Spool join של ה-MMU3 (בהגדרות המדפסת / PrusaSlicer) — כשגליל T${slot} נגמר, המדפסת ממשיכה מ-T${other}.`
+    : `יש גליל זהה (חומר וצבע) ב-T${other}. אם המדפסת תומכת במעבר אוטומטי לגליל זהה כשהגליל נגמר — אפשר לחבר ביניהם.`;
+}
+function gramsCheck(s, grams) {
+  const sp = spoolOf(s.printer, s.slot), bk = s.backup_slot ? spoolOf(s.printer, s.backup_slot) : null;
+  const have = Number(sp?.grams_left ?? 0) + Number(bk?.grams_left ?? 0);
+  return { ok: !!sp && grams + SPARE <= have,
+    msg: `${sp ? `בגליל T${s.slot} נשארו ${Math.round(sp.grams_left)} גרם` : "אין גליל מוגדר"}${bk ? ` ועוד ${Math.round(bk.grams_left)} בגליל הגיבוי T${bk.slot}` : ""}, וההדפסה צריכה ~${Math.round(grams)} גרם + ${SPARE} גרם רזרבה` };
+}
+
 function settingsBlock(p) {
   const s = p.settings, sp = spoolOf(s.printer, s.slot);
   section("🛠️ ההמלצה");
   if (s.summary) card("💬 " + s.summary, "gold");
-  const c = h(`<div class="card" style="--accent:var(--line)"><dl class="rows"></dl></div>`), dl = c.querySelector("dl");
-  const add = (k, v) => dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd>${v}</dd>`);
+  const { c, add } = rowsCard("", "line");
   add("מדפסת", esc(PRINTER[s.printer]));
   add("גליל", `${sp ? `<span class="dot" style="background:${esc(sp.color_hex)}"></span>` : ""}T${s.slot} · ${esc(spoolName(sp))}`);
   add("איכות", `${esc(LAYER(s.layer_height))} (שכבה ${s.layer_height} מ"מ)`);
   add("חוזק", `${s.walls} קירות · ${s.infill_pct}% מילוי ${esc(s.infill_pattern)}`);
   add("תמיכות", esc(SUPPORTS[s.supports]) + (s.brim_mm ? ` · שוליים ${s.brim_mm} מ"מ` : ""));
   if (p.est_grams != null) {
-    const enough = sp && Number(sp.grams_left) >= p.est_grams * 1.15;
-    add("חומר משוער", `~${p.est_grams} גרם <span class="${enough ? "ok" : "bad"}">(${sp ? `נשארו ${Math.round(sp.grams_left)}` : "אין גליל"})</span>`);
+    const enough = gramsCheck(s, p.est_grams).ok;
+    add("חומר משוער", `~${p.est_grams} גרם <span class="${enough ? "ok" : "bad"}">(${sp ? `נשארו ${Math.round(sp.grams_left)}` : "אין גליל"}${s.backup_slot ? ` + גיבוי T${s.backup_slot}` : ""})</span>`);
   }
-  if (s.why?.length) h(`<ul class="list">${s.why.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, c);
-  if (s.risks?.length) {
-    const r = card("⚠️ סיכונים ונקודות לתשומת לב", "red");
-    h(`<ul class="list">${s.risks.map(x => `<li class="${x.level === "high" ? "bad" : x.level === "medium" ? "warn" : ""}">${esc(x.text)}</li>`).join("")}</ul>`, r);
-  }
-  if (s.ideas?.length) {
-    const r = card("💡 רעיונות לשיפור", "cyan");
-    h(`<ul class="list">${s.ideas.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, r);
-  }
+  const join = joinCandidates(s.printer, s.slot)[0];
+  if (join && !s.backup_slot) h(`<div class="sub">🔗 ${esc(joinTip(s.printer, s.slot, join.slot))}</div>`, c);
+  if (s.why?.length) list(s.why, c);
+  listCard("⚠️ סיכונים ונקודות לתשומת לב", "red", s.risks);
+  listCard("💡 רעיונות לשיפור", "cyan", s.ideas);
 }
 
-// admin: an idea waits for its model — upload the STL/3MF/OBJ made for it; it goes back to her as a draft with the preview
+// admin fallback (the AI/PC couldn't make the model): upload the STL/3MF/OBJ made for it; it goes back to her as a draft with the preview
 function modelBlock(p) {
   section("👑 יצירת המודל");
   const c = h(`<div class="card"><b>העלאת מודל לרעיון</b><span>התיאור והתשובות שלה למעלה. אחרי ההעלאה הפרויקט חוזר אליה עם ההדמיה, והיא מבקשת המלצת הדפסה.</span></div>`);
@@ -619,17 +754,13 @@ function modelBlock(p) {
     const best = G.bestOrientation(tris);
     const path = `${p.id}/model.${f.name.split(".").pop().toLowerCase()}`;
     await upload(path, f);
-    models.set(path, tris);
-    await db.set(`slicer_projects?id=eq.${p.id}`, { file_path: path, file_name: f.name, rotation: [best.rx, best.ry], stats: statsForDb(best.s), status: "draft", admin_notes: notes.value.trim() || null });
-    notify(p.id);
-    toast("המודל נשלח אליה ✓"); go(project, p.id);
+    models.set(modelKey({ file_path: path }), tris);
+    await handOver(p, { file_path: path, file_name: f.name, rotation: [best.rx, best.ry], stats: statsForDb(best.s), status: "draft", admin_notes: notes.value.trim() || null, plan_ok: true }, "המודל נשלח אליה ✓");
   }), c);
   pill("↩ החזרה לתיקון", "red", () => act(async () => {
     const text = notes.value.trim();
     if (!text) return toast("כתוב מה לתקן");
-    await db.set(`slicer_projects?id=eq.${p.id}`, { status: "returned", admin_notes: text, reviewed_at: new Date().toISOString() });
-    notify(p.id);
-    toast("הוחזר לתיקון"); go(project, p.id);
+    await handOver(p, { status: "returned", admin_notes: text, reviewed_at: new Date().toISOString() }, "הוחזר לתיקון");
   }), c);
 }
 
@@ -645,7 +776,19 @@ function reviewBlock(p, s) {
   };
   const spoolOpts = () => spools.map(x => [`${x.printer_id}|${x.slot}`, `${PRINTER[x.printer_id]} · T${x.slot} · ${spoolName(x)}`]);
   h(`<div class="label">מדפסת וגליל</div><select>${spoolOpts().map(([v, t]) => `<option value="${esc(v)}" ${v === `${cur.printer}|${cur.slot}` ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`, c);
-  const ps = c.lastElementChild; ps.onchange = () => { const [a, b] = ps.value.split("|"); cur.printer = a; cur.slot = Number(b); };
+  const ps = c.lastElementChild; ps.onchange = () => { const [a, b] = ps.value.split("|"); cur.printer = a; cur.slot = Number(b); fillBackup(); };
+  h(`<div class="label">גליל גיבוי (חיבור גלילים)</div>`, c);
+  const bk = h(`<select></select>`, c), tip = h(`<div class="sub"></div>`, c);
+  const fillBackup = () => {
+    const cands = joinCandidates(cur.printer, cur.slot);
+    if (!cands.some(x => x.slot === cur.backup_slot)) delete cur.backup_slot;
+    bk.innerHTML = [["", "בלי"], ...cands.map(x => [x.slot, `T${x.slot} · ${spoolName(x)} · ${Math.round(x.grams_left)} גרם`])]
+      .map(([v, t]) => `<option value="${v}" ${String(cur.backup_slot ?? "") === String(v) ? "selected" : ""}>${esc(t)}</option>`).join("");
+    bk.disabled = !cands.length;
+    tip.textContent = cands.length ? joinTip(cur.printer, cur.slot, cands[0].slot) : "אין במדפסת הזו גליל נוסף מאותו חומר וצבע.";
+  };
+  bk.onchange = () => { if (bk.value) cur.backup_slot = Number(bk.value); else delete cur.backup_slot; };
+  fillBackup();
   sel("גובה שכבה", "layer_height", [0.08, 0.12, 0.16, 0.2, 0.24, 0.28].map(v => [v, `${v} מ"מ — ${LAYER(v)}`]));
   sel("קירות", "walls", [1, 2, 3, 4, 5, 6].map(v => [v, String(v)]));
   sel("מילוי", "infill_pct", [0, 5, 10, 15, 20, 25, 30, 40, 50, 100].map(v => [v, v + "%"]));
@@ -657,38 +800,42 @@ function reviewBlock(p, s) {
   const finish = (status) => act(async () => {
     const text = notes.value.trim();
     if (status === "returned" && !text) return toast("כתוב מה לתקן");
-    const sp = spoolOf(cur.printer, cur.slot);
-    await db.set(`slicer_projects?id=eq.${p.id}`, {
-      status, settings: cur, admin_notes: text, reviewed_at: new Date().toISOString(),
-      est_grams: p.stats ? G.estimateGrams(p.stats, cur, sp ? sp.material : "PLA") : null,
-    });
+    const sp = spoolOf(cur.printer, cur.slot), est = p.stats ? G.estimateGrams(p.stats, cur, sp ? sp.material : "PLA") : null;
+    if (status === "approved" && est != null && !gramsCheck(cur, est).ok) return toast(`${gramsCheck(cur, est).msg}. בחר גליל אחר או גליל גיבוי.`);
+    await setP(p.id, { status, settings: cur, admin_notes: text, reviewed_at: new Date().toISOString(), est_grams: est });
     if (lesson.checked && text) await db.add("slicer_lessons", { project_id: p.id, text });
+    let sliced = status === "approved";
+    if (sliced) await rpc("slicer_enqueue_slice", { p_project: p.id }).catch(e => { sliced = false; toast("אושר, אבל לא נשלח לחיתוך: " + errText(e)); });
     notify(p.id);
-    toast(status === "approved" ? "אושר ✓" : "הוחזר לתיקון");
+    if (status === "returned") toast("הוחזר לתיקון"); else if (sliced) toast("אושר ✓ נשלח לחיתוך במחשב");
     go(project, p.id);
   });
   pill("✅ אישור", "green", () => finish("approved"), c);
   pill("↩ החזרה לתיקון", "red", () => finish("returned"), c);
 }
 
-function actionsBlock(p, editable, s) {
+function actionsBlock(p, editable, s, job) {
   const admin = me.role === "admin";
   if (editable && p.settings && p.file_path) {
     const high = (p.settings.risks || []).some(r => r.level === "high");
+    const g = p.est_grams != null ? gramsCheck(p.settings, p.est_grams) : { ok: true }, sp = spoolOf(p.settings.printer, p.settings.slot);
+    const join = !g.ok && sp && joinCandidates(p.settings.printer, p.settings.slot).find(x => Number(sp.grams_left) + Number(x.grams_left) >= p.est_grams + SPARE);
+    if (!g.ok) card(join ? "🔗 צריך לחבר גליל גיבוי" : "🧵 אין מספיק חומר בגליל", join ? "gold" : "red",
+      `${g.msg}.\n${join ? `יש גליל זהה ב-T${join.slot} — מאיר יחבר אותם באישור.` : "בקשי ממאיר להחליף גליל, או בקשי המלצה חדשה."}`);
     pill("📤 שליחה לאישור מנהל", "gold", () => act(async () => {
-      await db.set(`slicer_projects?id=eq.${p.id}`, { status: "pending_review" });
-      notify(p.id);
-      toast("נשלח למאיר ✓"); go(project, p.id);
+      if (!g.ok && !join) return toast("אין מספיק חומר בגליל — ההסבר למעלה");
+      await handOver(p, { status: "pending_review" }, "נשלח למאיר ✓");
     }));
     if (high) label("יש סיכון גבוה בהמלצה — מאיר יראה אותו בבדיקה.");
   }
   if (p.status === "approved") {
-    card("✅ אושר" + (p.admin_notes ? " — " + p.admin_notes : ""), "cyan", "השלב הבא — חיתוך אוטומטי לקובץ מדפסת — יתחבר כשהשרת במחשב יופעל.\nכשההדפסה מסתיימת, לחצי 'הודפס' והחומר יירד מהמלאי.");
-    pill("🖨️ הודפס — להוריד מהמלאי", "green", () => act(async () => {
-      const left = await rpc("slicer_mark_printed", { p_id: p.id });
-      toast(left == null ? "סומן כהודפס" : `ירדו ~${p.est_grams} גרם. נשארו ${Math.round(left)} גרם בגליל`);
-      go(project, p.id);
+    card("✅ אושר" + (p.admin_notes ? " — " + p.admin_notes : ""), "cyan", "כשההדפסה מסתיימת, סמני כאן אם הצליחה — והחומר יירד מהמלאי.");
+    if (p.gcode_path) gcodeCard(p);
+    else if (admin && !running(job)) pill(job?.kind === "slice" && job.status === "error" ? "🔁 לנסות לחתוך שוב" : "🔪 חיתוך לקובץ מדפסת", "gold", () => act(async () => {
+      await rpc("slicer_enqueue_slice", { p_project: p.id });
+      toast("נשלח לחיתוך במחשב ✓"); go(project, p.id);
     }));
+    printResultBlock(p);
   }
   if (p.status === "printed") card("🎉 הודפס", "green", p.printed_at ? ddmm(p.printed_at) : "");
   if (editable || admin) {
@@ -696,11 +843,56 @@ function actionsBlock(p, editable, s) {
     const del = link("🗑️ מחיקת הפרויקט", () => act(async () => {
       if (!sure) { sure = true; del.textContent = "למחוק לגמרי? לחצי שוב"; return; }
       await db.del(`slicer_projects?id=eq.${p.id}`);
-      const paths = [p.file_path, p.image_path].filter(Boolean);
+      const paths = [p.file_path, p.image_path, p.gcode_path].filter(Boolean);
       if (paths.length) await fetch(`${SUPABASE_URL}/storage/v1/object/slicer`, { method: "DELETE", headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token(), "Content-Type": "application/json" }, body: JSON.stringify({ prefixes: paths }) }).catch(() => {});
       toast("נמחק"); go(home);
     }));
   }
+}
+
+// the sliced file: real grams per tool and time from the slicer, download to the phone with its own name
+const hhmm = min => { const hh = Math.floor(min / 60), mm = Math.round(min % 60); return hh ? `${hh} ש' ${mm} ד'` : `${mm} דקות`; };
+function gcodeCard(p) {
+  const m = p.gcode_meta || {}, s = p.settings;
+  const { c, add } = rowsCard("📥 קובץ ההדפסה מוכן", "green");
+  add("קובץ", `<span style="direction:ltr;unicode-bidi:embed">${esc(p.gcode_name || "")}</span>`);
+  if (m.time_min != null) add("זמן הדפסה", esc(hhmm(m.time_min)));
+  for (const [t, g] of Object.entries(m.grams_per_tool || {})) {
+    const slot = Number(t.replace(/\D/g, "")), sp = spoolOf(s.printer, slot);
+    const ok = gramsCheck({ ...s, slot, backup_slot: slot === s.slot ? s.backup_slot : null }, Number(g)).ok;
+    add(`חומר ${t}`, `${sp ? `<span class="dot" style="background:${esc(sp.color_hex)}"></span>` : ""}${Math.round(g)} גרם <span class="${ok ? "ok" : "bad"}">(${sp ? `נשארו ${Math.round(sp.grams_left)}` : "אין גליל"})</span>`);
+  }
+  if (m.slicer?.name) add("נחתך ב", esc(`${m.slicer.name} ${m.slicer.version || ""}`));
+  pill("📥 הורדה לטלפון", "green", () => act(async () => {
+    const name = p.gcode_name || p.gcode_path.split("/").pop();
+    await saveFile(p.gcode_path, name);
+    toast("ההורדה התחילה ✓ " + name);
+  }), c);
+}
+// printed OK → everything comes off the spool; failed at ~N% → only that share, and it can be printed again
+function printResultBlock(p) {
+  const tools = p.gcode_meta?.grams_per_tool, total = tools ? Object.values(tools).reduce((a, b) => a + Number(b), 0) : p.est_grams;
+  const mark = pct => act(async () => {
+    const left = await rpc("slicer_mark_printed", pct ? { p_id: p.id, p_failed_pct: pct } : { p_id: p.id });
+    const used = total != null ? Math.round(total * (pct || 100) / 100) : null;
+    toast(left == null || used == null ? (pct ? "נרשם" : "סומן כהודפס") : `${pct ? `נרשם ${pct}%: ` : ""}ירדו ~${used} גרם. נשארו ${Math.round(left)} גרם בגליל`);
+    go(project, p.id);
+  });
+  pill("🖨️ הודפס בהצלחה", "green", () => mark(null));
+  let box = null;
+  const fail = pill("⚠️ נכשל באמצע", "red", async () => {
+    if (box) return;
+    box = document.createElement("div"); fail.after(box);
+    label("בערך כמה אחוז הודפס לפני שנכשל?", box);
+    let pct = 0;
+    const row = choices([10, 20, 30, 40, 50, 60, 70, 80, 90].map(v => [String(v), v + "%"]), "", (v, b) => {
+      pct = Number(v); row.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
+      info.textContent = total != null ? `ירדו מהמלאי ~${Math.round(total * pct / 100)} גרם` : "";
+    });
+    box.appendChild(row);
+    const info = label("", box);
+    pill("✔️ לרשום ולהוריד מהמלאי", "red", () => pct ? mark(pct) : toast("בחרי בערך כמה אחוז הודפס"), box);
+  });
 }
 
 // ---------- admin: filament per printer — how many spools, then material / colour / brand / catalog name / grams per slot ----------
