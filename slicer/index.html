@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>הסלייסר החכם</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="הסלייסר החכם">
+<meta name="theme-color" content="#121a3a">
+<style>
+  /* same family look as Pay or Wait: dark navy + gold glow */
+  :root { --bg1:#0e1430; --bg2:#1b2550; --tile1:#1d2753; --tile2:#141c40; --text:#f3eee2; --muted:#9aa3c7; --gold:#f2c45c; --cyan:#5fd4f4; --red:#ff4d5a; --green:#6fe39a; --line:#3a4578; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { margin:0; min-height:100%; background:linear-gradient(var(--bg1),var(--bg2)) fixed var(--bg2); }
+  body { margin:0; font-family:-apple-system,"Segoe UI",Rubik,Arial,sans-serif; color:var(--text); font-size:16px;
+         padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 24px); }
+  main { max-width:560px; margin:0 auto; }
+  .bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .bar h1 { flex:1; margin:0; font-size:1.25em; font-weight:600; color:var(--gold); text-shadow:0 0 8px var(--gold); }
+  .icon-btn { background:none; border:0; color:var(--gold); font-size:1.4em; padding:6px; cursor:pointer; }
+  .brand { text-align:center; margin:36px 0 14px; }
+  .brand img { width:84px; height:84px; border-radius:20px; box-shadow:0 0 24px rgba(242,196,92,.35); }
+  .brand h2 { font-weight:300; font-size:1.9em; margin:12px 0 2px; }
+  .muted { color:var(--muted); }
+  .label { color:var(--muted); margin:8px 0; white-space:pre-line; }
+  .section { color:var(--gold); font-weight:600; font-size:.9em; margin:24px 0 4px; }
+  .card { background:linear-gradient(var(--tile1),var(--tile2)); border:1.5px solid var(--accent,var(--gold)); box-shadow:0 0 10px -2px var(--accent,var(--gold));
+          border-radius:22px; padding:14px 18px; margin-top:10px; }
+  .card b { display:block; font-size:1.04em; font-weight:600; }
+  .card span, .card .sub { color:var(--muted); font-size:.9em; white-space:pre-line; }
+  button.pill { display:flex; width:100%; align-items:center; justify-content:center; gap:10px; margin-top:10px; padding:14px 18px; border-radius:999px;
+          background:linear-gradient(var(--tile1),var(--tile2)); color:var(--text); font:inherit; border:1.5px solid var(--accent,var(--gold));
+          box-shadow:0 0 12px -3px var(--accent,var(--gold)); cursor:pointer; }
+  button.pill:disabled { opacity:.5; }
+  button.link { display:block; width:100%; text-align:center; color:var(--cyan); padding:12px; background:none; border:0; font:inherit; font-size:.92em; cursor:pointer; }
+  input, select, textarea { width:100%; margin-top:10px; padding:13px 20px; border-radius:999px; border:1.5px solid var(--line); background:linear-gradient(var(--tile1),var(--tile2));
+          color:var(--text); font:inherit; font-size:16px; outline:none; }
+  textarea { border-radius:18px; min-height:96px; resize:vertical; }
+  input:focus, select:focus, textarea:focus { border-color:var(--gold); }
+  input[type=color] { padding:4px; height:44px; }
+  input[type=file] { border-radius:18px; }
+  .choices { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .choices button { flex:1 1 auto; padding:11px 14px; border-radius:999px; border:1.5px solid var(--line); background:linear-gradient(var(--tile1),var(--tile2)); color:var(--text); font:inherit; font-size:.92em; cursor:pointer; }
+  .choices button.sel { border-color:var(--gold); color:var(--gold); box-shadow:0 0 8px -2px var(--gold); }
+  .tabs { flex-wrap:nowrap; overflow-x:auto; }
+  .tabs button { flex:0 0 auto; }
+  .steps { display:flex; gap:6px; overflow-x:auto; padding:6px 0 2px; }
+  .steps span { flex:0 0 auto; padding:6px 12px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:.8em; white-space:nowrap; }
+  .steps span.done { border-color:var(--gold); color:var(--gold); }
+  .steps span.now { background:var(--gold); border-color:var(--gold); color:#1d2240; box-shadow:0 0 10px var(--gold); }
+  .viewer { position:relative; height:min(60vh,380px); margin-top:10px; border-radius:22px; overflow:hidden; border:1.5px solid var(--line); background:radial-gradient(circle at 50% 40%, #26336a, #0e1430); }
+  .viewer canvas { display:block; width:100%; height:100%; touch-action:none; }
+  .viewer .hint { position:absolute; inset:auto 0 8px; text-align:center; color:var(--muted); font-size:.8em; pointer-events:none; }
+  .viewer.marking { border-color:var(--cyan); box-shadow:0 0 14px -2px var(--cyan); }
+  .rows { display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin-top:8px; font-size:.93em; }
+  .rows dt { color:var(--muted); } .rows dd { margin:0; }
+  .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--gold); }
+  ul.list { margin:8px 0 0; padding-inline-start:20px; color:var(--muted); font-size:.92em; } ul.list li { margin:4px 0; }
+  .dot { display:inline-block; width:14px; height:14px; border-radius:50%; vertical-align:-2px; border:1px solid #fff6; margin-inline-end:6px; }
+  .q { margin-top:14px; } .q > b { display:block; font-weight:500; }
+  .spools { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:12px; }
+  .spool { text-align:center; border:1px solid var(--line); border-radius:18px; padding:10px; background:#0004; }
+  .spool svg { width:86px; height:86px; }
+  .spool input, .spool select { margin-top:6px; padding:9px 12px; font-size:15px; }
+  .spool small { display:block; color:var(--muted); font-size:.75em; margin-top:6px; text-align:start; }
+  .spool select { text-align:center; border-color:var(--gold); color:var(--gold); }
+  .toast { position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom) + 28px); transform:translateX(-50%); background:#000c; color:#fff; padding:12px 18px;
+           border-radius:14px; max-width:90%; font-size:.92em; z-index:70; text-align:center; }
+  #modal .back { position:fixed; inset:0; background:#000b; display:flex; align-items:center; justify-content:center; z-index:60; padding:20px; }
+  #modal .card { max-width:420px; width:100%; }
+  .ver { text-align:center; color:var(--muted); font-size:.7em; margin-top:22px; }
+  img.idea { width:100%; border-radius:18px; margin-top:10px; border:1px solid var(--line); }
+</style>
+<script type="importmap">{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }</script>
+</head>
+<body>
+<main id="app"></main>
+<div id="modal"></div>
+<script type="module">
+// הסלייסר החכם — idea / photo / 3D file → AI guidance → print settings → admin approval. Same Supabase project as the family apps.
+import * as G from "./geo.js";
+const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
+const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
+const VERSION = "1.0";
+const MIN_PASSWORD = 8;
+const PRINTER = { mk4s: "Prusa MK4S", u1: "Snapmaker U1" };
+const STATUS = { draft: ["טיוטה", "line"], pending_review: ["ממתין לאישור", "gold"], returned: ["הוחזר לתיקון", "red"], approved: ["אושר", "cyan"], printed: ["הודפס", "green"] };
+const LAYER = (l) => l <= 0.12 ? "עדין מאוד" : l <= 0.16 ? "עדין" : l <= 0.2 ? "רגיל" : "מהיר";
+const SUPPORTS = { none: "בלי תמיכות", tree: "תמיכות עץ", painted: "תמיכות רק במקומות הנדרשים" };
+const app = document.getElementById("app"), modal = document.getElementById("modal");
+let me = null, printers = [], spools = [], names = {};
+let view = null, adminPoll = null, screen = 0;
+const models = new Map();                       // file path → triangles (Float32Array), kept for the session
+
+// ---------- small helpers ----------
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ddmm = iso => new Date(iso).toLocaleString("he-IL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+function toast(msg) { document.querySelectorAll(".toast").forEach(x => x.remove()); const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3800); }
+const store = {
+  get: k => { try { return JSON.parse(localStorage.getItem("slc_" + k)); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem("slc_" + k, JSON.stringify(v)); } catch {} },
+  del: k => { try { localStorage.removeItem("slc_" + k); } catch {} },
+};
+
+// ---------- Supabase (plain fetch, like the other family apps) ----------
+class ApiError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
+async function http(method, path, body, tok, headers = {}) {
+  const h = { apikey: SUPABASE_KEY, ...headers };
+  if (tok) h.Authorization = "Bearer " + tok;
+  if (body != null) h["Content-Type"] = "application/json";
+  let r;
+  try { r = await fetch(SUPABASE_URL + path, { method, headers: h, body: body == null ? undefined : JSON.stringify(body) }); }
+  catch { throw new ApiError(0, "אין חיבור לשרת — בדקי אינטרנט ונסי שוב"); }
+  const text = await r.text();
+  if (!r.ok) throw new ApiError(r.status, text);
+  return text ? JSON.parse(text) : null;
+}
+function saveSession(j) {
+  store.set("session", { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + j.expires_in, user_id: j.user.id });
+}
+let refreshing = null;
+async function token() {
+  const s = store.get("session");
+  if (!s) throw new ApiError(401, "not logged in");
+  if (Date.now() / 1000 < s.expires_at - 60) return s.access_token;
+  refreshing ??= http("POST", "/auth/v1/token?grant_type=refresh_token", { refresh_token: s.refresh_token }).then(saveSession).finally(() => refreshing = null);
+  await refreshing;
+  return store.get("session").access_token;
+}
+const loggedIn = () => !!store.get("session");
+const db = {
+  get: async q => http("GET", "/rest/v1/" + q, null, await token()),
+  add: async (table, row) => (await http("POST", "/rest/v1/" + table, row, await token(), { Prefer: "return=representation" }))[0],
+  set: async (q, row) => {
+    const out = await http("PATCH", "/rest/v1/" + q, row, await token(), { Prefer: "return=representation" });
+    if (!out.length) throw new ApiError(403, "אין הרשאה לשנות את זה עכשיו");
+    return out[0];
+  },
+  del: async q => http("DELETE", "/rest/v1/" + q, null, await token()),
+};
+const rpc = async (fn, args) => http("POST", "/rest/v1/rpc/" + fn, args, await token());
+const ai = async (action, projectId) => http("POST", "/functions/v1/slicer-ai", { action, project_id: projectId }, await token());
+async function upload(path, blob) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/slicer/${path}`, {
+    method: "POST", body: blob, headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token(), "x-upsert": "true", "Content-Type": blob.type || "application/octet-stream" },
+  }).catch(() => null);
+  if (!r || !r.ok) throw new ApiError(r ? r.status : 0, r ? await r.text() : "ההעלאה נכשלה — בדקי אינטרנט");
+}
+async function download(path) {
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/authenticated/slicer/${path}`, { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token() } }).catch(() => null);
+  if (!r || !r.ok) throw new ApiError(r ? r.status : 0, "לא הצלחתי להוריד את הקובץ");
+  return r.blob();
+}
+
+function errText(e) {
+  let m = String(e && e.message || e);
+  try { const j = JSON.parse(m); m = j.error || j.message || j.msg || m; } catch {}
+  if (/Invalid login/.test(m)) return "אימייל או סיסמה שגויים";
+  if (/Email not confirmed/.test(m)) return "צריך קודם לאשר את מייל האימות";
+  if (/not approved/.test(m)) return "אפשר לסמן הודפס רק אחרי אישור";
+  if (e instanceof ApiError && e.code && !/[א-ת]/.test(m)) return `שגיאה ${e.code}: ${m.slice(0, 150)}`;
+  return m;
+}
+const authErr = e => e instanceof ApiError && (e.code === 401 || (e.code === 400 && /refresh|JWT|not logged/i.test(e.message)));
+async function act(work) { try { await work(); } catch (e) { toast(errText(e)); } }
+
+// ---------- UI building ----------
+function h(html, into = app) { into.insertAdjacentHTML("beforeend", html); return into.lastElementChild; }
+function clear() { if (view) { view.dispose(); view = null; } app.innerHTML = ""; }
+function bar(title, { back = false, logout = false } = {}) {
+  const el = h(`<div class="bar">${back ? `<button class="icon-btn" aria-label="חזרה">→</button>` : ""}<h1>${esc(title)}</h1>${logout ? `<button class="icon-btn" aria-label="התנתקות" style="font-size:1em">יציאה</button>` : ""}</div>`);
+  if (back) el.firstElementChild.onclick = () => go(home);
+  if (logout) el.lastElementChild.onclick = () => { store.del("session"); me = null; clearInterval(adminPoll); route(); };
+}
+const label = (t, into) => h(`<div class="label">${esc(t)}</div>`, into);
+const section = t => h(`<div class="section">${esc(t)}</div>`);
+function card(head, accent, body, into) {
+  return h(`<div class="card" style="--accent:var(--${accent})"><b>${esc(head)}</b>${body ? `<span>${esc(body)}</span>` : ""}</div>`, into);
+}
+function pill(text, accent, onClick, into) {
+  const el = h(`<button class="pill" style="--accent:var(--${accent})">${esc(text)}</button>`, into);
+  el.onclick = async () => { el.disabled = true; try { await onClick(); } finally { el.disabled = false; } };
+  return el;
+}
+function link(text, onClick, into) { const el = h(`<button class="link">${esc(text)}</button>`, into); el.onclick = onClick; return el; }
+function field(placeholder, type = "text", auto = "", into) { return h(`<input type="${type}" placeholder="${esc(placeholder)}" ${auto ? `autocomplete="${auto}"` : ""}>`, into); }
+function choices(items, selected, onPick, cls = "") {
+  const row = h(`<div class="choices ${cls}">${items.map(([v, t]) => `<button data-v="${esc(v)}" class="${v === selected ? "sel" : ""}">${esc(t)}</button>`).join("")}</div>`);
+  row.querySelectorAll("button").forEach(b => b.onclick = () => onPick(b.dataset.v, b, row));
+  return row;
+}
+const footer = () => h(`<div class="ver">גרסה ${VERSION}</div>`);
+
+// every screen loads its data first and returns a draw function, so a slow load never draws over the next screen
+async function go(fn, ...args) {
+  const my = ++screen;
+  clear(); label("טוען…");
+  try {
+    const draw = await fn(...args);
+    if (my !== screen) return;
+    clear(); draw(); footer();
+  } catch (e) {
+    if (my !== screen) return;
+    if (authErr(e)) { store.del("session"); return route(); }
+    clear(); label(errText(e)); pill("נסי שוב", "gold", () => go(fn, ...args)); link("→ לדף הבית", () => go(home));
+  }
+}
+
+async function loadBase() {
+  const uid = store.get("session").user_id;
+  const [mine, pr, sp, mem] = await Promise.all([
+    db.get(`slicer_members?user_id=eq.${uid}&select=*`), db.get("slicer_printers?select=*&order=id"),
+    db.get("slicer_spools?select=*&order=printer_id,slot"), db.get("slicer_members?select=user_id,display_name"),
+  ]);
+  me = mine[0] || null; printers = pr || []; spools = sp || [];
+  names = Object.fromEntries((mem || []).map(m => [m.user_id, m.display_name]));
+}
+const printerOf = id => printers.find(p => p.id === id);
+const spoolOf = (printer, slot) => spools.find(s => s.printer_id === printer && s.slot === slot);
+const spoolName = s => s ? `${s.color_name || s.color_hex} · ${s.material}${s.brand ? " · " + s.brand : ""}` : "לא מוגדר";
+
+// ---------- start ----------
+async function route() {
+  if (location.hash.includes("type=recovery")) { clear(); return showNewPassword(); }
+  if (!loggedIn()) { clear(); return showLogin(); }
+  go(async () => {
+    await loadBase();
+    if (!me) return () => { bar("הסלייסר החכם", { logout: true }); card("אין גישה", "red", "החשבון הזה לא מורשה לאפליקציה.\nאם זו טעות — דברי עם מאיר."); };
+    startAdminPoll();
+    return await home();
+  });
+}
+
+function showLogin() {
+  h(`<div class="brand"><img src="icon-180.png" alt=""><h2>הסלייסר החכם</h2><div class="muted">מרעיון לקובץ הדפסה — בלי להתעסק בהגדרות</div></div>`);
+  installButton();
+  const email = field("אימייל", "email", "email");
+  const pass = field("סיסמה", "password", "current-password");
+  pill("התחברות", "gold", () => act(async () => {
+    if (!email.value.trim() || !pass.value) return toast("כתבי אימייל וסיסמה");
+    saveSession(await http("POST", "/auth/v1/token?grant_type=password", { email: email.value.trim(), password: pass.value }));
+    route();
+  }));
+  link("שכחתי סיסמה", () => act(async () => {
+    const e = email.value.trim();
+    if (!e) return toast("כתבי קודם את האימייל");
+    const redirect = encodeURIComponent(location.origin + location.pathname);
+    await http("POST", `/auth/v1/recover?redirect_to=${redirect}`, { email: e });
+    toast("נשלח מייל לאיפוס סיסמה. פתחי את הקישור שבו");
+  }));
+  footer();
+}
+
+// reset link lands here with #access_token=...&type=recovery
+function showNewPassword() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  const access = p.get("access_token");
+  bar("סיסמה חדשה");
+  if (!access) { label("הקישור לא תקין או שפג תוקפו. בקשי קישור חדש."); link("חזרה", () => { history.replaceState(null, "", location.pathname); route(); }); return; }
+  const pass = field("סיסמה חדשה (לפחות 8 תווים)", "password", "new-password");
+  pill("שמירת סיסמה", "gold", () => act(async () => {
+    if (pass.value.length < MIN_PASSWORD) return toast(`הסיסמה צריכה לפחות ${MIN_PASSWORD} תווים`);
+    await http("PUT", "/auth/v1/user", { password: pass.value }, access);
+    const refresh = p.get("refresh_token"), uid = JSON.parse(atob(access.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).sub;
+    if (refresh) store.set("session", { access_token: access, refresh_token: refresh, expires_at: Math.floor(Date.now() / 1000) + Number(p.get("expires_in") || 3600), user_id: uid });
+    history.replaceState(null, "", location.pathname);
+    toast("הסיסמה עודכנה ✓"); route();
+  }));
+}
+
+// ---------- home: my projects (admin: waiting for approval / all / filament) ----------
+async function home(tab) {
+  const admin = me.role === "admin";
+  tab = tab || store.get("tab") || (admin ? "pending" : "all");
+  if (!admin) tab = "all";
+  if (tab === "spools") { await loadBase(); return () => { homeTop(tab); drawSpools(); }; }
+  const rows = await db.get("slicer_projects?select=id,title,kind,status,updated_at,owner,description&order=updated_at.desc&limit=100");
+  return () => {
+    homeTop(tab);
+    pill("➕ פרויקט חדש", "gold", () => go(newProject));
+    const list = tab === "pending" ? rows.filter(p => p.status === "pending_review") : rows;
+    if (!list.length) label(tab === "pending" ? "אין פרויקטים שמחכים לאישור ✓" : "עוד אין פרויקטים. לחצי על 'פרויקט חדש' 🙂");
+    for (const p of list) {
+      const [st, acc] = STATUS[p.status];
+      const who = admin && p.owner !== me.user_id ? ` · ${names[p.owner] || ""}` : "";
+      const el = card(`${p.kind === "file" ? "🧊" : "💡"} ${p.title || "פרויקט בלי שם"}`, acc, `${st}${who} · ${ddmm(p.updated_at)}`);
+      el.style.cursor = "pointer"; el.onclick = () => go(project, p.id);
+    }
+  };
+}
+function homeTop(tab) {
+  bar("הסלייסר החכם", { logout: true });
+  if (me.role !== "admin") return;
+  choices([["pending", "📬 לאישור"], ["all", "כל הפרויקטים"], ["spools", "🧵 פילמנטים"]], tab, t => { store.set("tab", t); go(home, t); }, "tabs");
+}
+
+// ---------- new project: a 3D file, or an idea with an optional photo ----------
+async function newProject() {
+  return () => {
+    bar("פרויקט חדש", { back: true });
+    let kind = "file";
+    choices([["file", "🧊 יש לי קובץ תלת-ממד"], ["idea", "💡 יש לי רעיון או תמונה"]], kind, (v, b, row) => {
+      kind = v; row.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
+      fileBox.hidden = v !== "file"; imgBox.hidden = v !== "idea";
+      desc.placeholder = v === "file" ? "מה זה ולמה זה ישמש? (למשל: מעמד לטלפון למטבח)" : "תארי את הרעיון: מה זה, בערך באיזה גודל, למה ישמש";
+    });
+    const desc = h(`<textarea placeholder="מה זה ולמה זה ישמש? (למשל: מעמד לטלפון למטבח)"></textarea>`);
+    const fileBox = h(`<div><div class="label">קובץ STL, 3MF או OBJ (למשל מ-Printables או MakerWorld)</div><input type="file" accept=".stl,.3mf,.obj"></div>`);
+    const imgBox = h(`<div hidden><div class="label">תמונה (לא חובה) — של חפץ דומה, סקיצה או השראה</div><input type="file" accept="image/*"></div>`);
+    pill("יצירת הפרויקט", "gold", () => act(async () => {
+      const description = desc.value.trim();
+      if (kind === "idea" && !description) return toast("כתבי בכמה מילים מה הרעיון");
+      if (kind === "file") {
+        const f = fileBox.querySelector("input").files[0];
+        if (!f) return toast("בחרי קובץ");
+        if (f.size > 50 * 1024 * 1024) return toast("הקובץ גדול מ-50MB");
+        toast("קורא את המודל…");
+        const tris = await parseModel(await f.arrayBuffer(), f.name);
+        const best = G.bestOrientation(tris);
+        const ext = f.name.split(".").pop().toLowerCase();
+        const p = await db.add("slicer_projects", { kind, description, file_name: f.name, title: f.name.replace(/\.[^.]+$/, "").slice(0, 40) });
+        await upload(`${p.id}/model.${ext}`, f);
+        await db.set(`slicer_projects?id=eq.${p.id}`, { file_path: `${p.id}/model.${ext}`, rotation: [best.rx, best.ry], stats: statsForDb(best.s) });
+        models.set(`${p.id}/model.${ext}`, tris);
+        return go(project, p.id);
+      }
+      const img = imgBox.querySelector("input").files[0];
+      const p = await db.add("slicer_projects", { kind, description });
+      if (img) { await upload(`${p.id}/idea.jpg`, await shrink(img)); await db.set(`slicer_projects?id=eq.${p.id}`, { image_path: `${p.id}/idea.jpg` }); }
+      go(project, p.id);
+    }));
+  };
+}
+async function shrink(file) {                        // photos go to the AI as ≤1600px JPEG
+  const bmp = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(ok => c.toBlob(ok, "image/jpeg", 0.85));
+}
+function statsForDb(s) {
+  const fits = Object.fromEntries(printers.map(p => [p.id, G.fits(s.size, p)]));
+  const { mask, min, ...rest } = s;
+  return { ...rest, fits, est_grams_hint: G.estimateGrams(s, { walls: 2, infill_pct: 15 }) };
+}
+
+// ---------- one project: steps, 3D view, questions, recommendation, approval ----------
+async function project(id) {
+  const [p] = await db.get(`slicer_projects?id=eq.${id}&select=*`);
+  if (!p) throw new Error("הפרויקט לא נמצא");
+  let tris = null;
+  if (p.file_path) {
+    tris = models.get(p.file_path);
+    if (!tris) { tris = await parseModel(await (await download(p.file_path)).arrayBuffer(), p.file_name); models.set(p.file_path, tris); }
+  }
+  return () => drawProject(p, tris);
+}
+function steps(p) {
+  const names = p.kind === "file" ? ["קובץ", "הדמיה", "שאלות", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"] : ["רעיון", "שאלות", "יצירת מודל", "הדמיה", "המלצה", "אישור מנהל", "חיתוך", "הדפסה"];
+  let now;
+  if (p.kind === "idea") now = p.answers ? 2 : 1;
+  else now = p.status === "printed" ? 7 : p.status === "approved" ? 5 : p.status === "pending_review" ? 4 : p.settings ? 3 : 2;
+  h(`<div class="steps">${names.map((n, i) => `<span class="${i < now ? "done" : i === now ? "now" : ""}">${i < now ? "✓ " : ""}${n}</span>`).join("")}</div>`);
+}
+function drawProject(p, tris) {
+  const admin = me.role === "admin", mine = p.owner === me.user_id;
+  const editable = mine && (p.status === "draft" || p.status === "returned");
+  const canTune = editable || admin;                 // turn the model, mark spots
+  bar(p.title || "פרויקט חדש", { back: true });
+  steps(p);
+  if (p.status === "returned") card("↩ מאיר החזיר לתיקון", "red", p.admin_notes || "בלי הערה");
+  if (p.description) card("📝 התיאור", "line", p.description);
+  if (p.image_path) { const img = h(`<img class="idea" alt="">`); download(p.image_path).then(b => img.src = URL.createObjectURL(b)).catch(() => img.remove()); }
+
+  let s = null;
+  if (tris) {
+    const [rx, ry] = p.rotation || [0, 0];
+    const pos = G.rotate(tris, rx, ry);
+    s = G.analyze(pos);
+    section("🧊 ההדמיה");
+    const box = h(`<div class="viewer"><div class="hint">גררי לסיבוב · צביטה לזום · אדום = זווית מעל ${G.OVERHANG_DEG}° שצריכה תמיכה</div></div>`);
+    const sp = p.settings && spoolOf(p.settings.printer, p.settings.slot);
+    let marking = false;
+    const form = document.createElement("div");
+    mountViewer(box, pos, s, sp ? sp.color_hex : "#e8c26a", p.marks, tri => {
+      if (!marking) return;
+      form.innerHTML = "";
+      const note = field("מה לשנות כאן? (למשל: לעבות, צבע אחר, לא צריך)", "text", "", form);
+      pill("📍 שמירת הסימון", "cyan", () => act(async () => {
+        await db.set(`slicer_projects?id=eq.${p.id}`, { marks: [...p.marks, { tri, note: note.value.trim() }] });
+        go(project, p.id);
+      }), form);
+      note.focus();
+    });
+    if (canTune) {
+      const save = (r) => act(async () => {
+        await db.set(`slicer_projects?id=eq.${p.id}`, { rotation: r, stats: statsForDb(G.analyze(G.rotate(tris, r[0], r[1]))) });
+        go(project, p.id);
+      });
+      choices([["auto", "✨ כיוון אוטומטי"], ["x", "↻ סיבוב קדימה"], ["y", "↻ סיבוב לצד"], ["mark", "📍 סמני מקום"]], "", (v, b) => {
+        if (v === "auto") { const best = G.bestOrientation(tris); return save([best.rx, best.ry]); }
+        if (v === "x") return save([(rx + 1) % 4, ry]);
+        if (v === "y") return save([rx, (ry + 1) % 4]);
+        marking = !marking; b.classList.toggle("sel", marking); box.classList.toggle("marking", marking);
+        toast(marking ? "געי במודל במקום שאת רוצה לסמן" : "סימון כבוי");
+      });
+    }
+    app.appendChild(form);
+    p.marks.forEach((m, i) => {
+      const el = card(`📍 סימון ${i + 1}`, "cyan", m.note || "בלי הערה");
+      if (canTune) { const x = link("הסרה", () => act(async () => { await db.set(`slicer_projects?id=eq.${p.id}`, { marks: p.marks.filter((_, j) => j !== i) }); go(project, p.id); }), el); x.style.padding = "4px"; }
+    });
+    statsCard(s);
+  } else if (p.kind === "idea") {
+    card("🧪 יצירת מודל מהרעיון", "line", "השלב הזה מתווסף בגרסה הבאה. הרעיון, התמונה והתשובות נשמרים ויחכו לו.");
+  }
+
+  questionsBlock(p, editable);
+  if (p.settings) settingsBlock(p);
+  if (admin && p.status === "pending_review") reviewBlock(p, s);
+  actionsBlock(p, editable, s);
+}
+
+function statsCard(s) {
+  const c = h(`<div class="card" style="--accent:var(--line)"><b>🔍 בדיקות בקוד</b><dl class="rows"></dl></div>`), dl = c.querySelector("dl");
+  const add = (k, v) => dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd>${v}</dd>`);
+  add("מידות", `${s.size.join(" × ")} מ"מ`);
+  add("נפח", `${s.volume_cm3} סמ"ק`);
+  const o = s.overhang_pct;
+  add(`זווית מעל ${G.OVERHANG_DEG}°`, `<span class="${o > 5 ? "bad" : o > 0 ? "warn" : "ok"}">${o}% מהשטח</span>`);
+  const base = Math.sqrt(s.bottom_cm2 * 100);
+  add("מגע במגש", s.bottom_cm2 ? `<span class="${s.size[2] > 3 * base ? "warn" : "ok"}">${s.bottom_cm2} סמ"ר${s.size[2] > 3 * base ? " — צר לגובה, כדאי שוליים" : ""}</span>` : `<span class="warn">אין משטח שטוח שנוגע במגש</span>`);
+  add("נכנס למגש", printers.map(p => `${esc(p.name)} ${G.fits(s.size, p) ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>'}`).join(" · "));
+}
+
+function questionsBlock(p, editable) {
+  section("🧭 שאלות הכוונה");
+  if (!p.questions) {
+    if (editable) pill("המשך — ה-AI ישאל כמה שאלות קצרות", "gold", () => aiStep(p, "questions"));
+    else label("עוד לא נענו שאלות");
+    return;
+  }
+  if (p.questions.summary) label("ה-AI הבין: " + p.questions.summary);
+  const answers = new Map((p.answers || []).map(a => [a.q, a.a]));
+  for (const q of p.questions.questions) {
+    h(`<div class="q"><b>${esc(q.q)}</b></div>`);
+    const row = choices(q.options.map(o => [o, o]), answers.get(q.q), (v, b) => {
+      if (!editable) return;
+      answers.set(q.q, v); row.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === b));
+    });
+  }
+  if (!editable) return;
+  pill(p.kind === "idea" ? "שמירת התשובות" : p.settings ? "🔄 המלצה חדשה לפי התשובות" : "🛠️ קבלי המלצת הדפסה", "gold", () => act(async () => {
+    if (p.questions.questions.some(q => !answers.has(q.q))) return toast("עני קודם על כל השאלות");
+    p.answers = p.questions.questions.map(q => ({ q: q.q, a: answers.get(q.q) }));
+    await db.set(`slicer_projects?id=eq.${p.id}`, { answers: p.answers });
+    if (p.kind === "idea") return go(project, p.id);
+    await aiStep(p, "settings");
+  }));
+}
+
+async function aiStep(p, action) {
+  const w = card(action === "questions" ? "🧭 המתכנן מנסח שאלות…" : "🛠️ מהנדס ההדפסה בוחר הגדרות…", "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
+  try {
+    const r = await ai(action, p.id);
+    if (action === "settings" && p.stats) await saveGrams(p, r.settings);
+    go(project, p.id);
+  } catch (e) { w.remove(); toast(errText(e)); }
+}
+async function saveGrams(p, s) {
+  const sp = spoolOf(s.printer, s.slot);
+  await db.set(`slicer_projects?id=eq.${p.id}`, { est_grams: G.estimateGrams(p.stats, s, sp ? sp.material : "PLA") });
+}
+
+function settingsBlock(p) {
+  const s = p.settings, sp = spoolOf(s.printer, s.slot);
+  section("🛠️ ההמלצה");
+  if (s.summary) card("💬 " + s.summary, "gold");
+  const c = h(`<div class="card" style="--accent:var(--line)"><dl class="rows"></dl></div>`), dl = c.querySelector("dl");
+  const add = (k, v) => dl.insertAdjacentHTML("beforeend", `<dt>${esc(k)}</dt><dd>${v}</dd>`);
+  add("מדפסת", esc(PRINTER[s.printer]));
+  add("גליל", `${sp ? `<span class="dot" style="background:${esc(sp.color_hex)}"></span>` : ""}T${s.slot} · ${esc(spoolName(sp))}`);
+  add("איכות", `${esc(LAYER(s.layer_height))} (שכבה ${s.layer_height} מ"מ)`);
+  add("חוזק", `${s.walls} קירות · ${s.infill_pct}% מילוי ${esc(s.infill_pattern)}`);
+  add("תמיכות", esc(SUPPORTS[s.supports]) + (s.brim_mm ? ` · שוליים ${s.brim_mm} מ"מ` : ""));
+  if (p.est_grams != null) {
+    const enough = sp && Number(sp.grams_left) >= p.est_grams * 1.15;
+    add("חומר משוער", `~${p.est_grams} גרם <span class="${enough ? "ok" : "bad"}">(${sp ? `נשארו ${Math.round(sp.grams_left)}` : "אין גליל"})</span>`);
+  }
+  if (s.why?.length) h(`<ul class="list">${s.why.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, c);
+  if (s.risks?.length) {
+    const r = card("⚠️ סיכונים ונקודות לתשומת לב", "red");
+    h(`<ul class="list">${s.risks.map(x => `<li class="${x.level === "high" ? "bad" : x.level === "medium" ? "warn" : ""}">${esc(x.text)}</li>`).join("")}</ul>`, r);
+  }
+  if (s.ideas?.length) {
+    const r = card("💡 רעיונות לשיפור", "cyan");
+    h(`<ul class="list">${s.ideas.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`, r);
+  }
+}
+
+// admin: tune the recommendation, then approve or send back with a note (optionally saved as a lesson for the AI)
+function reviewBlock(p, s) {
+  section("👑 בדיקת מנהל");
+  const c = h(`<div class="card"><b>שינוי הגדרות לפני אישור</b></div>`);
+  const cur = { ...(p.settings || { printer: "u1", slot: 1, layer_height: 0.2, walls: 2, top_bottom: 4, infill_pct: 15, infill_pattern: "gyroid", supports: "none", brim_mm: 0 }) };
+  const sel = (lbl, key, opts) => {
+    const el = h(`<div class="label">${esc(lbl)}</div><select>${opts.map(([v, t]) => `<option value="${esc(v)}" ${String(cur[key]) === String(v) ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`, c);
+    const select = c.lastElementChild; select.onchange = () => { cur[key] = typeof cur[key] === "number" ? Number(select.value) : select.value; };
+    return select;
+  };
+  const spoolOpts = () => spools.map(x => [`${x.printer_id}|${x.slot}`, `${PRINTER[x.printer_id]} · T${x.slot} · ${spoolName(x)}`]);
+  h(`<div class="label">מדפסת וגליל</div><select>${spoolOpts().map(([v, t]) => `<option value="${esc(v)}" ${v === `${cur.printer}|${cur.slot}` ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`, c);
+  const ps = c.lastElementChild; ps.onchange = () => { const [a, b] = ps.value.split("|"); cur.printer = a; cur.slot = Number(b); };
+  sel("גובה שכבה", "layer_height", [0.08, 0.12, 0.16, 0.2, 0.24, 0.28].map(v => [v, `${v} מ"מ — ${LAYER(v)}`]));
+  sel("קירות", "walls", [1, 2, 3, 4, 5, 6].map(v => [v, String(v)]));
+  sel("מילוי", "infill_pct", [0, 5, 10, 15, 20, 25, 30, 40, 50, 100].map(v => [v, v + "%"]));
+  sel("דוגמת מילוי", "infill_pattern", ["gyroid", "grid", "cubic", "lightning", "rectilinear"].map(v => [v, v]));
+  sel("תמיכות", "supports", Object.entries(SUPPORTS));
+  sel("שוליים (brim)", "brim_mm", [0, 3, 5, 8].map(v => [v, v ? v + ' מ"מ' : "בלי"]));
+  const notes = h(`<textarea placeholder="הערה לאבישג / מה תיקנת ולמה"></textarea>`, c);
+  const lesson = h(`<label class="label" style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto;margin:0"> לשמור כלקח לסוכן (ייכנס לכל ההמלצות הבאות)</label>`, c).querySelector("input");
+  const finish = (status) => act(async () => {
+    const text = notes.value.trim();
+    if (status === "returned" && !text) return toast("כתוב מה לתקן");
+    const sp = spoolOf(cur.printer, cur.slot);
+    await db.set(`slicer_projects?id=eq.${p.id}`, {
+      status, settings: cur, admin_notes: text, reviewed_at: new Date().toISOString(),
+      est_grams: p.stats ? G.estimateGrams(p.stats, cur, sp ? sp.material : "PLA") : null,
+    });
+    if (lesson.checked && text) await db.add("slicer_lessons", { project_id: p.id, text });
+    toast(status === "approved" ? "אושר ✓" : "הוחזר לתיקון");
+    go(project, p.id);
+  });
+  pill("✅ אישור", "green", () => finish("approved"), c);
+  pill("↩ החזרה לתיקון", "red", () => finish("returned"), c);
+}
+
+function actionsBlock(p, editable, s) {
+  const admin = me.role === "admin";
+  if (editable && p.settings && p.kind === "file") {
+    const high = (p.settings.risks || []).some(r => r.level === "high");
+    pill("📤 שליחה לאישור מנהל", "gold", () => act(async () => {
+      await db.set(`slicer_projects?id=eq.${p.id}`, { status: "pending_review" });
+      toast("נשלח למאיר ✓"); go(project, p.id);
+    }));
+    if (high) label("יש סיכון גבוה בהמלצה — מאיר יראה אותו בבדיקה.");
+  }
+  if (p.status === "pending_review" && !admin) card("⏳ נשלח למאיר לבדיקה", "gold", "תקבלי את ההחלטה כאן.");
+  if (p.status === "approved") {
+    card("✅ אושר" + (p.admin_notes ? " — " + p.admin_notes : ""), "cyan", "השלב הבא — חיתוך אוטומטי לקובץ מדפסת — יתחבר כשהשרת במחשב יופעל.\nכשההדפסה מסתיימת, לחצי 'הודפס' והחומר יירד מהמלאי.");
+    pill("🖨️ הודפס — להוריד מהמלאי", "green", () => act(async () => {
+      const left = await rpc("slicer_mark_printed", { p_id: p.id });
+      toast(left == null ? "סומן כהודפס" : `ירדו ~${p.est_grams} גרם. נשארו ${Math.round(left)} גרם בגליל`);
+      go(project, p.id);
+    }));
+  }
+  if (p.status === "printed") card("🎉 הודפס", "green", p.printed_at ? ddmm(p.printed_at) : "");
+  if (editable || admin) {
+    let sure = false;
+    const del = link("🗑️ מחיקת הפרויקט", () => act(async () => {
+      if (!sure) { sure = true; del.textContent = "למחוק לגמרי? לחצי שוב"; return; }
+      await db.del(`slicer_projects?id=eq.${p.id}`);
+      const paths = [p.file_path, p.image_path].filter(Boolean);
+      if (paths.length) await fetch(`${SUPABASE_URL}/storage/v1/object/slicer`, { method: "DELETE", headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + await token(), "Content-Type": "application/json" }, body: JSON.stringify({ prefixes: paths }) }).catch(() => {});
+      toast("נמחק"); go(home);
+    }));
+  }
+}
+
+// ---------- admin: filament per printer — how many spools, then material / colour / brand / catalog name / grams per slot ----------
+function spoolSvg(color, slot) {
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#2a3566" stroke="#9aa3c7" stroke-width="3"/>
+    <circle cx="50" cy="50" r="38" fill="${esc(color)}"/>${[0, 1, 2, 3, 4].map(i => `<circle cx="50" cy="50" r="${36 - i * 3.4}" fill="none" stroke="#0002" stroke-width="1"/>`).join("")}
+    <circle cx="50" cy="50" r="17" fill="#1d2753" stroke="#9aa3c7" stroke-width="2"/><text x="50" y="56" text-anchor="middle" font-size="16" fill="#f2c45c" font-weight="700">T${slot}</text></svg>`;
+}
+function drawSpools() {
+  label("כמה גלילים יש בכל מדפסת, ומה בכל אחד. החומר יורד אוטומטית מכל הדפסה שמסומנת 'הודפס'.");
+  for (const pr of printers) {
+    const box = h(`<div class="card" style="--accent:var(--cyan)"></div>`);
+    const mine = spools.filter(s => s.printer_id === pr.id);
+    const st = { mmu: pr.mmu, count: Math.max(1, mine.length), slots: [1, 2, 3, 4, 5].map(i => ({ material: "PLA", color_hex: "#ffffff", color_name: "", color_code: "", brand: "", product: "", grams_left: 1000, ...(mine.find(s => s.slot === i) || {}) })) };
+    drawPrinter(box, pr, st);
+  }
+}
+function drawPrinter(box, pr, st) {
+  const max = pr.id === "mk4s" ? (st.mmu ? 5 : 1) : 4;
+  st.count = Math.min(st.count, max);
+  box.innerHTML = `<b>🖨️ ${esc(pr.name)}</b>`;
+  const inner = (html) => h(html, box);
+  if (pr.id === "mk4s") {
+    const r = inner(`<div class="choices"><button data-v="1" class="${st.mmu ? "sel" : ""}">עם MMU3</button><button data-v="0" class="${st.mmu ? "" : "sel"}">בלי MMU3</button></div>`);
+    r.querySelectorAll("button").forEach(b => b.onclick = () => { st.mmu = b.dataset.v === "1"; drawPrinter(box, pr, st); });
+  }
+  inner(`<div class="label">כמה גלילים טעונים?</div>`);
+  const cnt = inner(`<div class="choices">${Array.from({ length: max }, (_, i) => `<button data-v="${i + 1}" class="${st.count === i + 1 ? "sel" : ""}">${i + 1}</button>`).join("")}</div>`);
+  cnt.querySelectorAll("button").forEach(b => b.onclick = () => { st.count = Number(b.dataset.v); drawPrinter(box, pr, st); });
+  const grid = inner(`<div class="spools"></div>`);
+  st.slots.slice(0, st.count).forEach((s, i) => {
+    const cell = h(`<div class="spool">${spoolSvg(s.color_hex, i + 1)}
+      <select aria-label="סוג חומר">${G.MATERIALS.map(m => `<option ${m === s.material ? "selected" : ""}>${esc(m)}</option>`).join("")}</select>
+      <small>צבע</small><input type="color" value="${esc(s.color_hex)}">
+      <input placeholder="שם הצבע" value="${esc(s.color_name)}">
+      <input placeholder="מספר צבע" value="${esc(s.color_code)}">
+      <input placeholder="חברה" value="${esc(s.brand)}">
+      <input placeholder="שם קטלוגי" value="${esc(s.product)}">
+      <small>גרם שנשארו</small><input type="number" inputmode="numeric" min="0" step="10" value="${esc(Math.round(s.grams_left))}"></div>`, grid);
+    const [mat] = cell.querySelectorAll("select"), [color, cname, ccode, brand, product, grams] = cell.querySelectorAll("input");
+    mat.onchange = () => s.material = mat.value;
+    color.oninput = () => { s.color_hex = color.value; cell.querySelector("svg circle:nth-of-type(2)").setAttribute("fill", color.value); };
+    cname.oninput = () => s.color_name = cname.value.trim();
+    ccode.oninput = () => s.color_code = ccode.value.trim();
+    brand.oninput = () => s.brand = brand.value.trim();
+    product.oninput = () => s.product = product.value.trim();
+    grams.oninput = () => s.grams_left = Math.max(0, Number(grams.value) || 0);
+  });
+  pill("💾 שמירה", "cyan", () => act(async () => {
+    const rows = st.slots.slice(0, st.count).map((s, i) => ({ printer_id: pr.id, slot: i + 1, material: s.material, color_hex: s.color_hex, color_name: s.color_name,
+      color_code: s.color_code, brand: s.brand, product: s.product, grams_left: s.grams_left, updated_at: new Date().toISOString() }));
+    await http("POST", "/rest/v1/slicer_spools?on_conflict=printer_id,slot", rows, await token(), { Prefer: "resolution=merge-duplicates,return=minimal" });
+    await db.del(`slicer_spools?printer_id=eq.${pr.id}&slot=gt.${st.count}`);
+    await db.set(`slicer_printers?id=eq.${pr.id}`, { mmu: st.mmu, slots: st.count });
+    pr.mmu = st.mmu; pr.slots = st.count;
+    spools = await db.get("slicer_spools?select=*&order=printer_id,slot");
+    toast(`${pr.name} נשמרה ✓`);
+  }), box);
+}
+
+// ---------- admin popup: a project waiting for approval (checked every 20 s while the app is open) ----------
+function startAdminPoll() {
+  clearInterval(adminPoll);
+  if (me?.role !== "admin") return;
+  const tick = async () => {
+    try {
+      const rows = await db.get("slicer_projects?status=eq.pending_review&select=id,title,owner,updated_at&order=updated_at");
+      const seen = store.get("seen") || {}, fresh = rows.find(r => seen[r.id] !== r.updated_at);
+      if (!fresh || modal.innerHTML) return;
+      seen[fresh.id] = fresh.updated_at; store.set("seen", seen);
+      navigator.vibrate?.([120, 60, 120]);
+      modal.innerHTML = `<div class="back"><div class="card"><b>📬 ${esc(names[fresh.owner] || "")} שלחה פרויקט לאישור</b><span>${esc(fresh.title || "בלי שם")}</span></div></div>`;
+      const c = modal.querySelector(".card");
+      pill("לפתיחה", "gold", () => { modal.innerHTML = ""; go(project, fresh.id); }, c);
+      link("אחר כך", () => modal.innerHTML = "", c);
+    } catch {}
+  };
+  tick(); adminPoll = setInterval(tick, 20000);
+}
+
+// ---------- 3D: load STL / 3MF / OBJ into one triangle list, and the viewer ----------
+let T = null;
+async function three() {
+  if (!T) {
+    const [THREE, { OrbitControls }] = await Promise.all([import("three"), import("three/addons/controls/OrbitControls.js")]);
+    T = { THREE, OrbitControls };
+  }
+  return T;
+}
+async function parseModel(buf, name) {
+  await three();
+  const ext = (name.split(".").pop() || "").toLowerCase(), geos = [];
+  if (ext === "stl") {
+    const { STLLoader } = await import("three/addons/loaders/STLLoader.js");
+    geos.push(new STLLoader().parse(buf));
+  } else {
+    let root;
+    if (ext === "obj") { const { OBJLoader } = await import("three/addons/loaders/OBJLoader.js"); root = new OBJLoader().parse(new TextDecoder().decode(buf)); }
+    else if (ext === "3mf") { const { ThreeMFLoader } = await import("three/addons/loaders/3MFLoader.js"); root = new ThreeMFLoader().parse(buf); }
+    else throw new Error("סוג קובץ לא נתמך — רק STL, 3MF או OBJ");
+    root.position.set(0, 0, 0); root.rotation.set(0, 0, 0); root.scale.set(1, 1, 1); root.updateMatrixWorld(true);
+    root.traverse(o => { if (o.isMesh) geos.push(o.geometry.clone().applyMatrix4(o.matrixWorld)); });
+  }
+  const parts = geos.map(g => (g.index ? g.toNonIndexed() : g).getAttribute("position").array);
+  const total = parts.reduce((n, a) => n + a.length, 0);
+  if (!total) throw new Error("לא נמצא מודל בקובץ");
+  const out = new Float32Array(total);
+  let o = 0; for (const a of parts) { out.set(a, o); o += a.length; }
+  return out;
+}
+async function mountViewer(box, pos, s, color, marks, onTap) {
+  let THREE, OrbitControls;
+  try { ({ THREE, OrbitControls } = await three()); } catch { box.querySelector(".hint").textContent = "לא הצלחתי לטעון את ההדמיה — בדקי אינטרנט"; return; }
+  if (!box.isConnected) return;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(box.clientWidth, box.clientHeight);
+  box.prepend(renderer.domElement);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(40, box.clientWidth / box.clientHeight, 0.1, 20000);
+  cam.up.set(0, 0, 1);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x334466, 1.7));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(1, -1.5, 2.5); scene.add(sun);
+  // the model sits on the plate (z = 0), centred
+  const [sx, sy, sz] = s.size, mn = s.min, c = new Float32Array(pos.length);
+  for (let i = 0; i < pos.length; i += 3) { c[i] = pos[i] - mn[0] - sx / 2; c[i + 1] = pos[i + 1] - mn[1] - sy / 2; c[i + 2] = pos[i + 2] - mn[2]; }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(c, 3)); geo.computeVertexNormals();
+  const base = new THREE.Color(color), red = new THREE.Color("#ff4d5a"), col = new Float32Array(pos.length);
+  for (let t = 0; t < s.mask.length; t++) { const k = s.mask[t] ? red : base; for (let v = 0; v < 3; v++) { col[t * 9 + v * 3] = k.r; col[t * 9 + v * 3 + 1] = k.g; col[t * 9 + v * 3 + 2] = k.b; } }
+  geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }));
+  scene.add(mesh);
+  const R = Math.max(sx, sy, sz, 20), cells = Math.ceil(R * 1.6 / 10);
+  const grid = new THREE.GridHelper(cells * 10, cells, 0x5fd4f4, 0x3a4578); grid.rotation.x = Math.PI / 2; scene.add(grid);
+  const dotGeo = new THREE.SphereGeometry(R / 45, 12, 8), dotMat = new THREE.MeshBasicMaterial({ color: 0x5fd4f4 });
+  for (const m of marks || []) {
+    const o = m.tri * 9; if (o + 8 >= c.length) continue;
+    const d = new THREE.Mesh(dotGeo, dotMat);
+    d.position.set((c[o] + c[o + 3] + c[o + 6]) / 3, (c[o + 1] + c[o + 4] + c[o + 7]) / 3, (c[o + 2] + c[o + 5] + c[o + 8]) / 3);
+    scene.add(d);
+  }
+  cam.position.set(R * 1.2, -R * 1.7, sz / 2 + R * 1.1);
+  const ctl = new OrbitControls(cam, renderer.domElement);
+  ctl.target.set(0, 0, sz / 2); ctl.update();
+  const render = () => renderer.render(scene, cam);
+  ctl.addEventListener("change", render);              // draw only when something moves (battery)
+  // a short tap without dragging picks a triangle
+  let down = null;
+  renderer.domElement.addEventListener("pointerdown", e => down = { x: e.clientX, y: e.clientY, t: Date.now() });
+  renderer.domElement.addEventListener("pointerup", e => {
+    if (!down) return;
+    const tap = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8 && Date.now() - down.t < 450; down = null;
+    if (!tap) return;
+    const r = renderer.domElement.getBoundingClientRect(), ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), cam);
+    const hit = ray.intersectObject(mesh)[0];
+    if (hit) onTap(hit.faceIndex);
+  });
+  const ro = new ResizeObserver(() => {
+    const w = box.clientWidth, hh = box.clientHeight; if (!w || !hh) return;
+    renderer.setSize(w, hh); cam.aspect = w / hh; cam.updateProjectionMatrix(); render();
+  });
+  ro.observe(box);
+  render();
+  view = { dispose() { ro.disconnect(); ctl.dispose(); geo.dispose(); dotGeo.dispose(); renderer.dispose(); } };
+}
+
+// ---------- "📲 הורדה לטלפון" (like the other family apps) ----------
+let installEvt = null;
+const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; });
+window.addEventListener("appinstalled", () => { installEvt = null; document.querySelectorAll(".install-btn").forEach(b => b.remove()); toast("הותקן ✓ — פתחי מהמסך הראשי"); });
+function installButton() {
+  if (standalone()) return;
+  const btn = pill("📲 הורדה לטלפון", "cyan", async () => {
+    for (let i = 0; i < 40 && !installEvt; i++) await new Promise(r => setTimeout(r, 100));
+    if (installEvt) { const ev = installEvt; ev.prompt(); const c = await ev.userChoice; if (c && c.outcome === "accepted") installEvt = null; return; }
+    if (/android/i.test(navigator.userAgent) && !/Chrome\//.test(navigator.userAgent.replace(/SamsungBrowser.*/, ""))) {
+      location.href = "intent://" + location.host + location.pathname + "#Intent;scheme=https;package=com.android.chrome;end"; return;
+    }
+    toast("בתפריט הדפדפן ⋮ בחרי 'התקנת אפליקציה' או 'הוספה למסך הבית'");
+  });
+  btn.classList.add("install-btn");
+}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+route();
+</script>
+</body>
+</html>
