@@ -66,6 +66,11 @@
   #prank .bit { position:absolute; font-size:18px; transition:transform .6s ease-out, opacity .6s; pointer-events:none; }
   #prank .mercy { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 160px); display:none; z-index:2;
                   background:#fff; color:#120a0a; border:0; border-radius:28px; padding:14px 26px; font:inherit; font-weight:800; font-size:20px; box-shadow:0 0 24px #ff2d2d; }
+  /* partner: a funny poop shower (never blocks anything) */
+  #poop { position:fixed; inset:0; z-index:41; background:#2a1a0acc; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  #poop .t { color:#fff; font-weight:800; font-size:clamp(28px,9vw,48px); text-align:center; padding:0 18px; text-shadow:0 0 18px #8b5a2b; }
+  #poop .drop { position:absolute; top:-60px; font-size:40px; animation:fall linear forwards; pointer-events:none; }
+  @keyframes fall { to { transform:translateY(calc(100vh + 120px)) rotate(360deg); } }
   @keyframes beat { 50% { transform:translate(-50%,-50%) rotate(-32deg) scale(1.06); } }
 </style>
 </head>
@@ -79,7 +84,7 @@
 const SUPABASE_URL = "https://enhqzgjqqyubgfysnjib.supabase.co";
 const SUPABASE_KEY = "sb_publishable_w3aqbIxj_ECmMOUhANPebw_thGqD9o1";
 const VAPID_PUBLIC = "BGqmEpQHwvDEXD9X5wpcbmuLUFe_0lGojHmijB4ky-ajBYdW87J7qhz-h0cEdiuuFpdQB2sveAbRcvrmLJKZowo";
-const VERSION = "1.12";
+const VERSION = "1.13";
 const MIN_PASSWORD = 8;
 const app = document.getElementById("app");
 let pollTimer = null;
@@ -256,6 +261,13 @@ async function route(quiet = false) {
   if (location.hash.includes("type=recovery")) return showNewPassword();
   if (!loggedIn()) { clear(); return showLogin(); }
   if (!quiet) { clear(); label("טוען…"); }
+  // opened a partner invite link: join that group as the partner (one-time link)
+  const partnerToken = store.get("partner_token");
+  if (partnerToken) {
+    store.del("partner_token");
+    try { await rpc("pow_join_partner", { p_token: partnerToken }); store.set("mode", "member"); toast("💑 הצטרפת כבן/בת זוג"); }
+    catch { toast("קישור ההזמנה כבר לא בתוקף, בקש/י קישור חדש"); }
+  }
   try {
     // "I'm the manager" shows my own group (listed first by the server); "I'm a user" shows the group I opened
     const mode0 = store.get("mode");
@@ -276,6 +288,7 @@ async function route(quiet = false) {
 }
 
 function showLogin() {
+  if (store.get("partner_token")) setTimeout(() => toast("💑 הוזמנת כבן/בת זוג: הירשם/י או התחבר/י כדי להצטרף"), 300);
   h(`<div class="brand"><img src="icon-180.png" alt=""><h2>Pay or Wait</h2><div class="muted">קודי כניסה לחשבונות המשפחתיים</div></div>`);
   installButton();
   const name = field("שם (בהרשמה)", "text", "name");
@@ -378,6 +391,8 @@ function showMember(s) {
   onMemberScreen = true;
   if (s.prank_until) return showPrank(s.prank_until);
   hidePrank(); // pardoned by the owner before the time was up
+  if (s.poop_at && store.get("poop_seen") !== s.poop_at) { store.set("poop_seen", s.poop_at); showPoop(s.owner_name); }
+  if (s.partner) label(`💑 את/ה בן/בת הזוג של ${s.owner_name || "המנהל"}: קודים מהרשויות מגיעים אלייך לבד.`);
   label(`הקבוצה של ${s.owner_name || "המנהל"}`);
   installButton();
   if (!pushOn()) card("🔔 הפעל התראות", "cyan", standalone() || !isIOS() ? "לחץ כאן כדי לקבל את הקוד גם כשהאפליקציה סגורה." : "באייפון התראות עובדות רק אחרי 'הורד לטלפון' ופתיחה מהאייקון.", () => act(enablePush));
@@ -405,6 +420,8 @@ function showMember(s) {
   if (!s.services.length) label("המנהל עוד לא נתן לך גישה לשירות.");
   const today = new Date(); today.setHours(0, 0, 0, 0);
   for (const o of s.services) {
+    // authority codes (municipality, electricity...) reach the partner by themselves
+    if (o.auto) { card(`📨 ${o.name}`, "cyan", "כל קוד מגיע אלייך אוטומטית, בלי ללחוץ כלום"); continue; }
     const price = Number(o.price || 0);
     const until = o.paid_until ? new Date(o.paid_until + "T00:00:00") : null;
     const dueSoon = !o.blocked && until && (until - today) <= 7 * 86400000;
@@ -598,7 +615,31 @@ function showPrank(untilIso) {
   tick();
 }
 
+// partner only: "X is pooping on you" — a few seconds of falling poop, tap to close
+function showPoop(who) {
+  if (document.getElementById("poop")) return;
+  const box = document.createElement("div"); box.id = "poop";
+  box.innerHTML = `<div class="t"></div>`;
+  box.querySelector(".t").textContent = `${who || "בן/בת הזוג"} עושה עלייך קקי 💩`;
+  document.body.appendChild(box);
+  new Audio("sounds/fart" + (1 + Math.floor(Math.random() * 3)) + ".mp3").play().catch(() => {});
+  let n = 0;
+  const rain = setInterval(() => {
+    if (++n > 40) return clearInterval(rain);
+    const d = document.createElement("div"); d.className = "drop"; d.textContent = "💩";
+    d.style.left = Math.random() * 92 + "vw"; d.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    box.appendChild(d); setTimeout(() => d.remove(), 3400);
+  }, 120);
+  const close = () => { clearInterval(rain); box.remove(); };
+  box.onclick = close; setTimeout(close, 8000);
+}
+
 // ---------- start ----------
+// a partner invite link (?partner=...) is kept until the person is logged in
+{
+  const pt = new URLSearchParams(location.search).get("partner");
+  if (pt) { store.set("partner_token", pt); history.replaceState(null, "", location.pathname); }
+}
 // portrait only (the manifest says so for the installed app; this covers browsers that allow locking)
 try { if (standalone()) screen.orientation.lock("portrait").catch(() => {}); } catch {}
 if ("serviceWorker" in navigator) {
