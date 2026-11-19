@@ -634,6 +634,16 @@ function showPoop(who) {
   box.onclick = close; setTimeout(close, 8000);
 }
 
+// the app moved to ai-mproject.github.io/pow: the old address keeps working, with a note pointing to the new one
+if (location.hostname === "meirbal.github.io") {
+  const m = document.createElement("a");
+  m.href = "https://ai-mproject.github.io/pow/";
+  m.textContent = "🆕 Pay or Wait עבר לכתובת חדשה: לחץ כאן, התחבר שם ולחץ '📲 הורד לטלפון'";
+  m.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:30;padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);background:#f2c45c;color:#121a3a;font-weight:700;text-align:center;text-decoration:none";
+  document.body.appendChild(m);
+  document.body.style.paddingBottom = "70px";
+}
+
 // ---------- start ----------
 // a partner invite link (?partner=...) is kept until the person is logged in
 {
