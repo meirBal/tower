@@ -693,7 +693,7 @@ function questionsBlock(p, editable) {
 
 const AI_WORK = { questions: "🧭 המתכנן מנסח שאלות…", settings: "🛠️ מהנדס ההדפסה בוחר הגדרות…", plan: "📐 ה-AI מתכנן — חלקים, מידות וסקיצה…", model: "✍️ ה-AI כותב את המודל ושולח למחשב…" };
 async function aiStep(p, action, extra) {
-  const w = card(AI_WORK[action], "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
+  const w = card(AI_WORK[action] || "🔄 שולח שוב ל-AI…", "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
   w.scrollIntoView({ behavior: "smooth", block: "center" });
   try {
     const r = await ai(action, p.id, extra);
@@ -780,7 +780,14 @@ async function pickConcept(p, c, note) {
 
 // the request waits for a busy / over-quota AI: the server retries by itself; this screen checks every 15 s and pops up when it's done
 function waitingCard(p, w, inChat) {
-  if (w.failed) { if (!inChat) card("⚠️ ה-AI לא ענה אחרי כמה ניסיונות", "red", "אפשר לנסות שוב עכשיו."); return; }
+  if (w.failed) {
+    if (inChat) return;
+    const a = w.step || w.action, c = card("⚠️ ה-AI לא ענה אחרי כמה ניסיונות", "red", "אפשר לנסות שוב עכשיו.");
+    if (p.owner !== me.user_id && me.role !== "admin") return;
+    pill("🔄 לנסות שוב", "gold", () => aiStep(p, a), c);
+    if (a === "model" && p.plan) pill("↩ חזרה לתוכנית", "cyan", () => act(async () => { await setP(p.id, { plan_ok: false }); go(project, p.id); }), c);
+    return;
+  }
   if (!inChat) card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `השרת מנסה שוב לבד${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
   const my = screen;
   screenTimer = setInterval(async () => {
