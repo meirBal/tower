@@ -720,6 +720,7 @@ function chatBlock(p, editable, wait) {
   if (wait?.step && wait.failed) say("bot", "⚠️ לא הצלחתי לענות אחרי כמה ניסיונות 🙏");
   const send = (o) => chatSend(p, box, o);
   if (editable && !queued && last?.role === "bot" && last.chips?.length && !done) box.appendChild(choices(last.chips.map(c => [c, c]), "", v => send({ message: v })));
+  if (editable && !queued && last?.role === "bot" && !done) pill("✨ תשלים לבד ותמשיך", "cyan", () => send({ message: "תשלים את השאר לבד ותמשיך", finish: true }), box);
   if (idea && done) {
     if (p.concepts) {
       const b = h(`<div class="bubble bot wide">🎨 הכנתי לך ${p.concepts.items.length} סקיצות — איזו הכי קרובה למה שדמיינת?<div class="concepts">${p.concepts.items.map((c, i) =>
@@ -754,17 +755,17 @@ function chatBlock(p, editable, wait) {
   if (!chat.length && !wait && !autoChat.has(p.id)) { autoChat.add(p.id); send({}); }   // the assistant opens the conversation
 }
 // one turn: her bubble + typing dots now; a closing turn goes straight on to the sketches (idea) or the settings (file)
-async function chatSend(p, box, { message = "", file = null, action = "chat" }) {
+async function chatSend(p, box, { message = "", file = null, action = "chat", finish = false }) {
   if (box.classList.contains("sending")) return;
   box.classList.add("sending");
-  box.parentElement.querySelectorAll(".chat-input button, .chat-input input, .chat .choices button").forEach(x => x.disabled = true);
+  box.parentElement.querySelectorAll(".chat-input button, .chat-input input, .chat .choices button, .chat > .pill").forEach(x => x.disabled = true);
   if (message || file) { const b = bubble(box, "me", message); if (file) h(`<img alt="" src="${URL.createObjectURL(file)}">`, b); }
   const typing = (text = "") => { const t = h(`<div class="bubble bot typing">${esc(text)} <i></i><i></i><i></i></div>`, box); t.scrollIntoView({ behavior: "smooth", block: "center" }); return t; };
   let t = typing(action === "concepts" ? "🎨 מצייר 3 סקיצות" : "");
   try {
     let image;
     if (file) { image = `${p.id}/chat-${Date.now()}.jpg`; await upload(image, await shrink(file)); }
-    const r = await ai(action, p.id, action === "chat" ? { message, image } : {});
+    const r = await ai(action, p.id, action === "chat" ? { message, image, finish } : {});
     if (r?.done) {
       t.remove(); bubble(box, "bot", r.reply);
       t = typing(p.kind === "idea" ? "🎨 מצייר 3 סקיצות" : "🛠️ בוחר הגדרות הדפסה");
