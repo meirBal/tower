@@ -86,6 +86,9 @@
   .typing i { display:inline-block; width:7px; height:7px; margin:0 2px; border-radius:50%; background:var(--gold); animation:blink 1.2s infinite; }
   .typing i:nth-child(2) { animation-delay:.2s; } .typing i:nth-child(3) { animation-delay:.4s; }
   @keyframes blink { 0%,80%,100% { opacity:.2; } 40% { opacity:1; } }
+  .prog { margin-top:8px; font-size:.82em; color:var(--muted); }
+  .prog > div { height:6px; border-radius:3px; background:#ffffff1a; overflow:hidden; margin-bottom:4px; }
+  .prog > div > b { display:block; height:100%; width:3%; background:linear-gradient(90deg,var(--cyan),var(--gold)); transition:width 1s linear; }
   .chat .choices { align-self:stretch; margin-top:0; }
   .chat-input { display:flex; gap:6px; align-items:center; margin-top:10px; }
   .chat-input input { flex:1; margin:0; }
@@ -595,7 +598,6 @@ function planBlock(p, editable) {
     if (P.sketch_svg) h(`<img class="idea" alt="סקיצה" src="data:image/svg+xml;base64,${b64(P.sketch_svg)}">`, c);      // an <img>: scripts in the SVG never run
     h(`<ul class="list">${(P.parts || []).map(x => `<li><span style="color:var(--text)">${esc(x.name)}</span> — ${esc(Object.entries(x.dims || {}).map(([k, v]) => `${k} ${v} מ"מ`).join(" · "))}${x.notes ? `<br>${esc(x.notes)}` : ""}</li>`).join("")}</ul>`, c);
     if (P.key_dims?.length) h(`<dl class="rows">${P.key_dims.map(k => `<dt>${esc(k.name)}</dt><dd>${esc(k.mm)} מ"מ${k.from ? ` <span class="muted">(${esc(k.from)})</span>` : ""}</dd>`).join("")}</dl>`, c);
-    listCard("⚠️ חשוב לדעת", "red", P.warnings);
     listCard("🤔 מה ה-AI הניח", "line", P.assumptions);
   }
   if (!editable) return;
@@ -654,7 +656,6 @@ function questionsBlock(p, editable) {
   }
   const Q = p.questions;
   if (Q.summary) label("ה-AI הבין: " + Q.summary);
-  listCard("⚠️ חשוב לדעת", "red", Q.warnings);
   const old = new Map((p.answers || []).map(a => [a.q, a.a]));
   const read = [];                                   // per question: () => answer text or ""
   for (const q of Q.questions) {
@@ -693,13 +694,24 @@ function questionsBlock(p, editable) {
 
 const AI_WORK = { questions: "🧭 המתכנן מנסח שאלות…", settings: "🛠️ מהנדס ההדפסה בוחר הגדרות…", plan: "📐 ה-AI מתכנן — חלקים, מידות וסקיצה…", model: "✍️ ה-AI כותב את המודל ושולח למחשב…" };
 async function aiStep(p, action, extra) {
-  const w = card(AI_WORK[action] || "🔄 שולח שוב ל-AI…", "cyan", "לוקח עד דקה. אפשר לחכות כאן.");
+  const w = card(AI_WORK[action] || "🔄 שולח שוב ל-AI…", "cyan", "אפשר לחכות כאן.");
+  progress(w, action === "model" ? 90 : 60);
   w.scrollIntoView({ behavior: "smooth", block: "center" });
   try {
     const r = await ai(action, p.id, extra);
     if (r && r.queued) toast("ה-AI עמוס — הבקשה הועברה לתור ✓");
     go(project, p.id);
   } catch (e) { w.remove(); toast(errText(e)); }
+}
+function progress(el, expect) {
+  const p = h(`<div class="prog"><div><b></b></div><span></span></div>`, el), bar = p.querySelector("b"), txt = p.querySelector("span"), t0 = Date.now();
+  const tick = () => {
+    if (!p.isConnected) return clearInterval(id);
+    const s = Math.round((Date.now() - t0) / 1000);
+    bar.style.width = Math.min(95, 100 * (1 - Math.exp(-s / expect))) + "%";
+    txt.textContent = s < expect ? `⏱ ${s} שניות · בדרך כלל עד ${expect}` : `⏱ ${s} שניות · לוקח יותר מהרגיל — עדיין עובד, אפשר לחכות`;
+  };
+  const id = setInterval(tick, 1000); tick();
 }
 // ---------- the assistant chat (v2.1): one question per turn, quick replies, free text and photos; ideas end with 3 concept sketches ----------
 const CONCEPT_Q = "סקיצה שנבחרה";
@@ -709,14 +721,13 @@ function chatBlock(p, editable, wait) {
   const idea = p.kind === "idea", chat = p.chat || [], done = !!p.answers, last = chat[chat.length - 1];
   const chosen = (p.answers || []).find(a => a.q === CONCEPT_Q), queued = wait?.step && !wait.failed;
   section("💬 השיחה עם העוזר");
-  listCard("⚠️ חשוב לדעת", "red", p.questions?.warnings);
   const box = h(`<div class="chat"></div>`);
   const say = (who, text) => bubble(box, who, text);
   for (const m of chat) {
     const b = say(m.role === "bot" ? "bot" : "me", m.text);
     if (m.image) { const img = h(`<img alt="">`, b); download(m.image).then(x => img.src = URL.createObjectURL(x)).catch(() => img.remove()); }
   }
-  if (queued) say("bot", "⏳ אני עמוס כרגע — הבקשה בתור ואענה לבד ברגע שאפשר. אפשר גם לסגור את האפליקציה, תגיע התראה.");
+  if (queued) say("bot", `⏳ ה-AI עמוס כרגע. אנסה שוב לבד ב-${new Date(wait.next_at).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} (ניסיון ${wait.tries + 1}). אפשר לסגור את האפליקציה — תגיע התראה כשאענה.`);
   if (wait?.step && wait.failed) say("bot", "⚠️ לא הצלחתי לענות אחרי כמה ניסיונות 🙏");
   const send = (o) => chatSend(p, box, o);
   if (editable && !queued && last?.role === "bot" && last.chips?.length && !done) box.appendChild(choices(last.chips.map(c => [c, c]), "", v => send({ message: v })));
@@ -760,7 +771,7 @@ async function chatSend(p, box, { message = "", file = null, action = "chat", fi
   box.classList.add("sending");
   box.parentElement.querySelectorAll(".chat-input button, .chat-input input, .chat .choices button, .chat > .pill").forEach(x => x.disabled = true);
   if (message || file) { const b = bubble(box, "me", message); if (file) h(`<img alt="" src="${URL.createObjectURL(file)}">`, b); }
-  const typing = (text = "") => { const t = h(`<div class="bubble bot typing">${esc(text)} <i></i><i></i><i></i></div>`, box); t.scrollIntoView({ behavior: "smooth", block: "center" }); return t; };
+  const typing = (text = "") => { const t = h(`<div class="bubble bot typing">${esc(text || "חושב")} <i></i><i></i><i></i></div>`, box); progress(t, text ? 60 : 30); t.scrollIntoView({ behavior: "smooth", block: "center" }); return t; };
   let t = typing(action === "concepts" ? "🎨 מצייר 3 סקיצות" : "");
   try {
     let image;
@@ -789,7 +800,7 @@ function waitingCard(p, w, inChat) {
     if (a === "model" && p.plan) pill("↩ חזרה לתוכנית", "cyan", () => act(async () => { await setP(p.id, { plan_ok: false }); go(project, p.id); }), c);
     return;
   }
-  if (!inChat) card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `השרת מנסה שוב לבד${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
+  if (!inChat) card("⏳ ה-AI עמוס — הבקשה הועברה לתור", "gold", `ניסיון הבא ב-${new Date(w.next_at).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}${w.tries ? ` (ניסיון ${w.tries + 1})` : ""}.\nכשהתשובה מוכנה תקפוץ כאן הודעה, ותגיע גם התראה לטלפון אם ההתראות פועלות.`);
   const my = screen;
   screenTimer = setInterval(async () => {
     if (my !== screen) return clearInterval(screenTimer);

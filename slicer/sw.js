@@ -1,6 +1,6 @@
 // הסלייסר החכם — service worker: installs to the home screen and shows push notifications. The page always comes from
 // the network when there is one; Supabase calls and the 3D library (other sites) never go through here.
-const CACHE = "slicer-8";
+const CACHE = "slicer-9";
 const SHELL = ["./", "./index.html", "./geo.js", "./manifest.webmanifest", "./icon-192.png", "./icon-180.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
