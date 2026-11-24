@@ -730,6 +730,16 @@ function chatBlock(p, editable, wait) {
   if (queued) say("bot", `⏳ ה-AI עמוס כרגע. אנסה שוב לבד ב-${new Date(wait.next_at).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })} (ניסיון ${wait.tries + 1}). אפשר לסגור את האפליקציה — תגיע התראה כשאענה.`);
   if (wait?.step && wait.failed) say("bot", "⚠️ לא הצלחתי לענות אחרי כמה ניסיונות 🙏");
   const send = (o) => chatSend(p, box, o);
+  // Claude in the chat: woken by her button (a run on Meir's subscription); while he's here his replies come in by themselves
+  const cl = p.claude?.state, clOn = (cl === "waking" || cl === "here") && Date.now() - Date.parse(p.claude.at) < 30 * 60_000;
+  if (clOn) {
+    const my = screen, n = chat.length;
+    const t = setInterval(async () => {
+      if (my !== screen) return clearInterval(t);
+      try { const [q] = await db.get(`slicer_projects?id=eq.${p.id}&select=chat,claude`); if ((q.chat || []).length !== n || q.claude?.state !== cl) { clearInterval(t); go(project, p.id); } } catch {}
+    }, 8000);
+    if (cl === "waking") h(`<div class="bubble bot typing">Claude בדרך <i></i><i></i><i></i></div>`, box);
+  } else if (editable && !done) pill(cl === "away" ? "✨ תעירי את Claude" : "✨ לדבר עם Claude", "gold", () => send({ action: "claude" }), box);
   if (editable && !queued && last?.role === "bot" && last.chips?.length && !done) box.appendChild(choices(last.chips.map(c => [c, c]), "", v => send({ message: v })));
   if (editable && !queued && last?.role === "bot" && !done) pill("✨ תשלים לבד ותמשיך", "cyan", () => send({ message: "תשלים את השאר לבד ותמשיך", finish: true }), box);
   if (idea && done) {
